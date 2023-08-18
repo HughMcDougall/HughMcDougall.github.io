@@ -6,7 +6,7 @@ import pandas
 from copy import deepcopy as copy
 
 #========================
-recursion = 1
+recursion = 2
 destfile = "./bloghome.md"
 
 
@@ -71,19 +71,29 @@ entries, folders, levels = scanfol("./", recursion)
 
 # Write these to the blog index .md file
 findex = open(index, 'w')
-for entry, folder, level in zip(entries, folders, levels):
-    # Load destination _init.dat
+for entry, level in zip(entries, levels):
 
+    folder = entry.replace("_init.dat","")
+    
+    # Load destination _init.dat
     finit = open(entry)
 
+    # Extract data from _init.dat
     init_data = copy(default_init)
     for line in finit:
+        line = line.replace(":\t","\t")
+        while "\t\t" in line: line=line.replace("\t\t","\t")
         key, val = line.split("\t")
         while "\n" in val: val=val.replace("\n","")
         init_data = init_data|{key:val}
-
-    
     finit.close()
+
+    # Write as human readable line
+    findex.write("\t"*(level-1))
+    findex.write("[%s](%s)" %(init_data["title"], folder+init_data["doc"].replace("./","")))
+    findex.write("\n")
+
+
 findex.close()
 
 #========================
@@ -97,7 +107,7 @@ if os.path.isfile(header):
     fheader = open(header,  'r')
     for line in fheader:
         fout.write(line)
-        fout.write("\n")
+    fout.write("\n")
     fheader.close()
 
 #-----
@@ -105,7 +115,7 @@ if os.path.isfile(header):
 findex  = open(index,   'r')
 for line in findex:
     fout.write(line)
-    fout.write("\n")
+fout.write("\n")
 findex.close()
 
 #-----
@@ -114,7 +124,7 @@ if os.path.isfile(footer):
     ffooter = open(footer,  'r')
     for line in ffooter:
         fout.write(line)
-        fout.write("\n")
+    fout.write("\n")
     ffooter.close()
 
 #-----
