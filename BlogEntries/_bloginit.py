@@ -90,6 +90,8 @@ for entry, level in zip(entries, levels):
 
     # Take data from the _init.md and write as a markdown line / url
     findex.write("\t"*(level-1))
+    findex.write("  "*(level-1))
+    findex.write("*")
     findex.write("[%s](%s)" %(init_data["title"], folder+init_data["doc"].replace("./","").replace(".md",".html")))
 
     # Do markdown & html friendly line breaks
