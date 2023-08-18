@@ -89,9 +89,9 @@ for entry, level in zip(entries, levels):
     finit.close()
 
     # Take data from the _init.md and write as a markdown line / url
-    findex.write("\t"*(level-1))
-    findex.write("  "*(level-1))
-    findex.write("*")
+    findex.write("\t"*(level-1)) # Readable indentation
+    findex.write("  "*(level-1)) # markdown indentation
+    findex.write("* ")
     findex.write("[%s](%s)" %(init_data["title"], folder+init_data["doc"].replace("./","").replace(".md",".html")))
 
     # Do markdown & html friendly line breaks
@@ -112,7 +112,7 @@ if os.path.isfile(header):
     fheader = open(header,  'r')
     for line in fheader:
         fout.write(line)
-    fout.write("\n")
+    fout.write("  \n")
     fheader.close()
 
 #-----
@@ -120,7 +120,7 @@ if os.path.isfile(header):
 findex  = open(index,   'r')
 for line in findex:
     fout.write(line)
-fout.write("\n")
+fout.write("  \n")
 findex.close()
 
 #-----
@@ -129,7 +129,7 @@ if os.path.isfile(footer):
     ffooter = open(footer,  'r')
     for line in ffooter:
         fout.write(line)
-    fout.write("\n")
+    fout.write("  \n")
     ffooter.close()
 
 #-----
