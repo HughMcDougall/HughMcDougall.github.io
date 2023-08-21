@@ -28,6 +28,9 @@ header  = "./_bloghead.md"
 index   = "./_blogindex.md"
 footer  = "./_blogfoot.md"
 
+default_header  = "./_bloghead.md"
+default_footer  = "./_blogfoot.md"
+
 flog = open('./_flog.dat','w')
 
 #========================
@@ -217,6 +220,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     except: pass
     try: f_foot.close()
     except: pass
+    try: f_source.close()
+    except: pass
     try: f_head.close()
     except: pass
     
@@ -233,6 +238,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         initdata = readinit(entry)
     except:
         flog.write("Something went wrong loading _init file %s \n" %entry)
+
+    try:
+        fout = open(entryfol + initdata["doc"], "w")            
+    except:
+        flog.write("unable to open destination file in entry %s \n" %(entry))
+        continue
 
     # Locate next, previous & parent files
     prevfile, nextfile, parentfile = None, None, None
@@ -264,14 +275,10 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
 
     # Attempt to locate source and dest files
     if initdata["source"]!="NONE":
+        f_source = open(entryfol+initdata["source"], "r")
         if not os.path.isfile(entryfol+initdata["source"]):
             flog.write("unable to find source file %s in entry %s \n" %(entryfol+initdata["source"], entry))
-    try:
-        fout = open(entryfol + initdata["doc"], "w")
         do_file = True
-    except:
-        flog.write("unable to open destination file %s in entry %s \n" %(entryfol+initdata["doc"], entry))
-        continue
 
     # Generate nav tree
     if initdata["tree"]!="FALSE":
@@ -289,9 +296,14 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 flog.write("unable to find header file %s in entry %s \n" %(entryfol+initdata["header"], entry))        
         
         # Otherwise, check if there is a _header.md file
+        if os.path.isfile(entryfol+"_header.md"):
+            f_head = open(entryfol+"_header.md",'r')
+            do_header = True
         
-
         # Otherwise, use the default header
+        else:
+            f_head = open(default_header,'r')
+            do_header = True
 
     if initdata["footer"]!="FALSE":
         # Check if a specific file is being nominated
@@ -303,9 +315,15 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 flog.write("unable to find footer file %s in entry %s \n" %(entry, entryfol+initdata["footer"]))
         
         # Otherwise, check if there is a _header.md file
-
-        # Otherwise, use the default header 
-
+        if os.path.isfile(entryfol+"_footer.md"):
+            f_foot = open(entryfol+"_footer.md",'r')
+            do_footer = True
+        
+        # Otherwise, use the default header
+        else:
+            f_foot = open(default_header,'r')
+            do_footer = True
+            
     #------------------------------------
     # FILE WRITE
 
@@ -313,28 +331,52 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     if do_nav:
         if prevfile !=None:
             fout.write("Previous File: [%s](%s)" %(prevfile["title"], prevfile_url))
-            fout.write("&nbsp")
+            fout.write("\t &nbsp \t")
         if nextfile != None:
             fout.write("Next File: [%s](%s)" %(nextfile["title"], nextfile_url))
         fout.write("\n  ")
 
         if parentfile != None:
             fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
-            fout.write("\n  ")
+            fout.write("\t &nbsp \t ")
+
+        fout.write("Return to [blog home](%s)" %os.path.relpath(entry,__file__))
+        fout.write("\n  ")
     # write header
     if do_header:
-        fout.write("I am writing a header")
+        for line in f_head:
+            fout.write(line)
+            fout.write("\n  ")
 
     # write tree
-
+    if do_tree:
+        fout.write("\n  ")
+        fout.write("Tree Goes Here")
+        fout.write("\n  ")
+        
     # write doc
+    if do_file:
+        for line in f_source:
+            fout.write(line)
+            fout.write("\n  ")
 
     # write footer
+    if do_footer:
+        for line in f_foot:
+            fout.write(line)
+            fout.write("\n  ")
 
     #-----
     # FINISH & CLEANUP
 
-    fout.close()
+    try: fout.close()
+    except: pass
+    try: f_foot.close()
+    except: pass
+    try: f_source.close()
+    except: pass
+    try: f_head.close()
+    except: pass
 
 
 #================================================================================================
