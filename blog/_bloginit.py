@@ -332,22 +332,20 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # write nav
     if do_nav:
         if prevfile !=None:
-            fout.write("Previous File: [%s](%s)" %(prevfile["title"], prevfile_url))
+            fout.write("Previous Entry: [%s](%s)" %(prevfile["title"], prevfile_url))
             fout.write("\t")
             fout.write(tab)
         if nextfile != None:
-            fout.write("Next File: [%s](%s)" %(nextfile["title"], nextfile_url))
+            fout.write("Next Entry: [%s](%s)" %(nextfile["title"], nextfile_url))
         fout.write("  \n")
         fout.write("  \n")
 
         if parentfile != None:
             fout.write("  \n")
+            fout.write("Go Back: [%s](%s)" %(parentfile["title"], parentfile_url))
             fout.write("  \n")
-            fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
-            fout.write("\t")
-            fout.write(tab)
 
-        fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry))
+        fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry)[1:])
         fout.write("  \n")
         fout.write("  \n")
     
@@ -384,6 +382,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 # Do markdown & html friendly line breaks
                 fout.write("  ")
                 fout.write("\n")
+        fout.write("  \n")
+        fout.write("  \n")
                 
             
     # write doc
@@ -391,12 +391,14 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         for line in f_source:
             fout.write(line)
             fout.write("  \n")
+        fout.write("  \n")
 
     # write footer
     if do_footer:
         for line in f_foot:
             fout.write(line)
             fout.write("  \n")
+        fout.write("  \n")
 
     #-----
     # FINISH & CLEANUP
