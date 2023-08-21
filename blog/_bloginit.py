@@ -4,11 +4,7 @@ _bloginit.py
 A python file to assemble a tree of files available in all subdirectories here and hereafter.
 
 TODO:
-    - Generalize this to search for generic footers
-    - Alternately, have a second .py file to add navigation headers / footers to all valid .md files, and a .bat to trigger this
-    - Probably also want some kind of recursive trigger so I can fire these off for all sub folders if I want navigation sub-pages
-
-    -HM 18/8
+    - Change index construction to a function and trigger recursively
 '''
 #================================================================================================
 
@@ -16,27 +12,40 @@ import glob as glob
 import os
 import pandas
 from copy import deepcopy as copy
+import time
 
+                               
 #================================================================================================
 
-recursion = 2
-tree_depth = recursion
+recursion = 10  # Depth of folders in tree generation
+tree_depth = 3  # Depth to display in navigation trees
+
+KEYWORDS = ["NONE", "TRUE", "FALSE"]
 
 destfile = "./bloghome.md"
 
 header  = "./_bloghead.md"
 index   = "./_blogindex.md"
 footer  = "./_blogfoot.md"
+
+flog = open('./_flog.dat','w')
+
 #========================
 
 default_init = {
-                "doc":     None,
-                "title":   "n/a",
-                "desc":    "n/a",
-                "date":    "n/a",
-                "series":  None,
+                "doc":      "NONE",
+                "source":   "NONE",
+                "title":   "NONE",
+                "desc":    "NONE",
+                "date":    "NONE",
+                "series":  "NONE",
+                "header":   "DEFAULT",
+                "footer":   "DEFAULT",
                 "entry":   0,
-                "notebook_url": "n/a"}
+                "notebook_url": "NONE",
+                "navheader": "TRUE",
+                "tree": "TRUE",
+                }
 
 #================================================================================================
 
@@ -68,19 +77,28 @@ def scanfol(url="./", recursion = 0, level = None, ):
     
     #----
     for entry in glob.glob(url+"*/"):
-        fols.append(entry)
+        if os.path.isfile(entry+"_init.dat"):
+            fols.append(entry)
     levels = [recursion-level]*len(entries)
+    newfols = []
     for fol in fols:
         fol_entries, fol_fols, fol_levels = scanfol(fol, recursion=recursion, level = level-1)
+        if len(fol_fols)>0 and len(fol_entries)>0:
+            newfols.append(fol_fols)
 
         for e,l in zip(fol_entries,fol_levels):
             entries.append(e)
             levels.append(l)
+    
+    if len(newfols)!=0:
+        for newfol in newfols: fols.append(newfol)
 
-    return(entries,fols,levels)
-
+    return(entries, fols, levels)
 
 def readinit(url):
+    '''
+    Read a _init.md file to extract information into a dictionary
+    '''
 
     finit = open(url)
     out   = copy(default_init)
@@ -94,8 +112,36 @@ def readinit(url):
 
     return(out)
 
+def flatten_list(X):
+    out=[]
+    if len(X)==0:
+        return([])
+    
+    for x in X:
+        if type(x)!=list:
+            out.append(x)
+        else:
+            for y in flatten_list(x): out.append(y)
+    return(out)
+
+def _timef():
+    '''Returns local time as a formatted string. For printing start/ end times'''
+    
+    t= time.localtime()
+    wkdays = ["Mon","Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    return "%02i:%02i %s %02i/%02i" %(t.tm_hour, t.tm_min, wkdays[t.tm_wday], t.tm_mday, t.tm_mon)
+
+def relative_url(destination, source):
+    absolute_path = os.path.dirname(__file__)
+    relative_path = "src/lib"
+    full_path = os.path.join(absolute_path, relative_path)
+                               
 #================================================================================================
 # Build index
+'''
+Run through all folders and subfolders to generate
+SCRAP THIS
+'''
 
 # Locate all folders and subfolders, to depth 'recursion', with an _init.md file
 entries, folders, levels = scanfol("./", recursion)
@@ -124,6 +170,9 @@ findex.close()
 
 #========================
 # Save everything to the actual human-readable .md file
+'''
+SCRAP THIS
+'''
 
 fout = open(destfile, 'w')
 
@@ -156,5 +205,137 @@ if os.path.isfile(footer):
 #-----
 fout.close()
 
+
 #================================================================================================
-# Construct navigation .md files for non-existant sub-folders 
+
+flog.write(_timef()+"\n")
+#Generate actual docs
+for i, entry, level in zip(range(len(entries)), entries, levels):
+
+    # Close all open files in case there was an error on the previous entry
+    try: fout.close()
+    except: pass
+    try: f_foot.close()
+    except: pass
+    try: f_head.close()
+    except: pass
+    
+    entryfol = entry.replace("_init.dat", "")
+    print(entryfol)
+
+    do_nav, do_header, do_tree, do_file, do_footer = False, False, False, False, False # Reset all
+
+    #------------------------------------
+    # LOAD & CHECK
+    
+    # load init data
+    try:
+        initdata = readinit(entry)
+    except:
+        flog.write("Something went wrong loading _init file %s \n" %entry)
+
+    # Locate next, previous & parent files
+    prevfile, nextfile, parentfile = None, None, None
+    prevfile_url, nextfile_url, parentfile_url = None, None, None
+    if initdata["navheader"]!="FALSE":
+        if i!=0:
+            if levels[i]==levels[i-1]:
+                prevfile_url = entries[i-1]
+                prevfile = readinit(prevfile_url)
+                prevfile_url = prevfile_url.replace("_init.dat", prevfile["doc"])
+                prevfile_url=os.path.relpath(prevfile_url, entry).replace(".md",".html")
+                            
+            j = 0
+            while i-j>=0 and levels[i-j]==levels[i]:
+                j+=1
+            parentfile_url = entries[i-j]
+            parentfile = readinit(parentfile_url)
+            parentfile_url = parentfile_url.replace("_init.dat", parentfile["doc"])
+            parentfile_url =os.path.relpath(parentfile_url, entry).replace(".md",".html")
+        
+        if i!=len(entries)-1:
+            if levels[i]==levels[i+1]:
+                nextfile_url = entries[i+1]
+                nextfile = readinit(nextfile_url)
+                nextfile_url = nextfile_url.replace("_init.dat", nextfile["doc"])
+                nextfile_url=os.path.relpath(nextfile_url, entry).replace(".md",".html")
+
+        do_nav = True
+
+    # Attempt to locate source and dest files
+    if initdata["source"]!="NONE":
+        if not os.path.isfile(entryfol+initdata["source"]):
+            flog.write("unable to find source file %s in entry %s \n" %(entryfol+initdata["source"], entry))
+    try:
+        fout = open(entryfol + initdata["doc"], "w")
+        do_file = True
+    except:
+        flog.write("unable to open destination file %s in entry %s \n" %(entryfol+initdata["doc"], entry))
+        continue
+
+    # Generate nav tree
+    if initdata["tree"]!="FALSE":
+        tree, treefols, tree_levels = scanfol(entryfol, tree_depth, tree_depth)
+        do_tree = True
+
+    # Attempt to load header and footer
+    if initdata["header"]!="FALSE":
+        # Check if a specific file is being nominated
+        if initdata["header"] != "DEFAULT":
+            try:
+                f_head = open(entryfol+initdata["header"],'r')
+                do_header = True
+            except:
+                flog.write("unable to find header file %s in entry %s \n" %(entryfol+initdata["header"], entry))        
+        
+        # Otherwise, check if there is a _header.md file
+        
+
+        # Otherwise, use the default header
+
+    if initdata["footer"]!="FALSE":
+        # Check if a specific file is being nominated
+        if initdata["footer"] != "DEFAULT":
+            try:
+                f_foot = open(entryfol+initdata["footer"],'r')
+                do_footer= True                
+            except:
+                flog.write("unable to find footer file %s in entry %s \n" %(entry, entryfol+initdata["footer"]))
+        
+        # Otherwise, check if there is a _header.md file
+
+        # Otherwise, use the default header 
+
+    #------------------------------------
+    # FILE WRITE
+
+    # write nav
+    if do_nav:
+        if prevfile !=None:
+            fout.write("Previous File: [%s](%s)" %(prevfile["title"], prevfile_url))
+            fout.write("&nbsp")
+        if nextfile != None:
+            fout.write("Next File: [%s](%s)" %(nextfile["title"], nextfile_url))
+        fout.write("\n  ")
+
+        if parentfile != None:
+            fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
+            fout.write("\n  ")
+    # write header
+    if do_header:
+        fout.write("I am writing a header")
+
+    # write tree
+
+    # write doc
+
+    # write footer
+
+    #-----
+    # FINISH & CLEANUP
+
+    fout.close()
+
+
+#================================================================================================
+flog.close()

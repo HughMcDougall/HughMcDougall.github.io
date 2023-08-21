@@ -1,4 +1,5 @@
-doc:	./item.md
+doc:	./item2.md
+source:	./item.md
 title:	Blog series 02 entry 02
 date:	18/8/23
 desc:	a test entry to check my blog compilation including recursion
