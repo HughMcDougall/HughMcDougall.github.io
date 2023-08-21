@@ -1,3 +1,15 @@
+'''
+_bloginit.py
+
+A python file to assemble a tree of files available in all subdirectories here and hereafter.
+
+TODO:
+    - Generalize this to search for generic footers
+    - Alternately, have a second .py file to add navigation headers / footers to all valid .md files, and a .bat to trigger this
+    - Probably also want some kind of recursive trigger so I can fire these off for all sub folders if I want navigation sub-pages
+
+    -HM 18/8
+'''
 #========================
 
 import glob as glob
@@ -7,8 +19,9 @@ from copy import deepcopy as copy
 
 #========================
 recursion = 2
-destfile = "./bloghome.md"
+tree_depth = recursion
 
+destfile = "./bloghome.md"
 
 header  = "./_bloghead.md"
 index   = "./_blogindex.md"
@@ -21,7 +34,8 @@ default_init = {
                 "desc":    "n/a",
                 "date":    "n/a",
                 "series":  None,
-                "entry":   0}
+                "entry":   0,
+                "notebook_url": "n/a"}
 
 #========================
 
@@ -62,9 +76,24 @@ def scanfol(url="./", recursion = 0, level = None, ):
             entries.append(e)
             levels.append(l)
 
-    return(entries,fols,levels)    
+    return(entries,fols,levels)
+
+def readinit(url):
+
+    finit = open(url)
+    out   = copy(default_init)
+    for line in finit:
+        line = line.replace(":\t","\t")
+        while "\t\t" in line: line=line.replace("\t\t","\t")
+        key, val = line.split("\t")
+        while "\n" in val: val=val.replace("\n","")
+        out = out|{key:val}
+    finit.close()
+
+    return(out)
 
 #========================
+# Build index
 
 # Locate all folders and subfolders, to depth 'recursion', with an _init.md file
 entries, folders, levels = scanfol("./", recursion)
@@ -76,17 +105,7 @@ for entry, level in zip(entries, levels):
     folder = entry.replace("_init.dat","")
     
     # Load destination _init.dat
-    finit = open(entry)
-
-    # Extract data from _init.dat
-    init_data = copy(default_init)
-    for line in finit:
-        line = line.replace(":\t","\t")
-        while "\t\t" in line: line=line.replace("\t\t","\t")
-        key, val = line.split("\t")
-        while "\n" in val: val=val.replace("\n","")
-        init_data = init_data|{key:val}
-    finit.close()
+    init_data = readinit(entry)
 
     # Take data from the _init.md and write as a markdown line / url
     findex.write("\t"*(level-1)) # Readable indentation
