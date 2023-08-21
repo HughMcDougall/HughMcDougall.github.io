@@ -1,6 +1,8 @@
-Previous File: [hello world](..\..\01_helloworld\01helloworld_out.html)	 &ensp 	
+Previous File: [hello world](.\..\01_helloworld\01helloworld_out.html)	 
   
-  Parent File: [Hugh McDougall Astro Blog](..\..\bloghome.html)	 &nbsp 	 Return to [blog home](..\..\bloghome.html)
+  
+  
+  Parent File: [Hugh McDougall Astro Blog](.\..\bloghome.html)	 Return to [blog home](..\..\bloghome.html)
   
   # Blog
 

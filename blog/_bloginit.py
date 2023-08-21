@@ -21,6 +21,7 @@ recursion = 10  # Depth of folders in tree generation
 tree_depth = 3  # Depth to display in navigation trees
 
 KEYWORDS = ["NONE", "TRUE", "FALSE"]
+tab = " "
 
 destfile = "./bloghome.md"
 
@@ -255,7 +256,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 prevfile_url = entries[i-1]
                 prevfile = readinit(prevfile_url)
                 prevfile_url = prevfile_url.replace("_init.dat", prevfile["doc"])
-                prevfile_url=os.path.relpath(prevfile_url, entry).replace(".md",".html")
+                prevfile_url=os.path.relpath(prevfile_url, entry).replace(".md",".html")[1:]
                             
             j = 0
             while i-j>=0 and levels[i-j]==levels[i]:
@@ -263,14 +264,14 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
             parentfile_url = entries[i-j]
             parentfile = readinit(parentfile_url)
             parentfile_url = parentfile_url.replace("_init.dat", parentfile["doc"])
-            parentfile_url =os.path.relpath(parentfile_url, entry).replace(".md",".html")
+            parentfile_url =os.path.relpath(parentfile_url, entry).replace(".md",".html")[1:]
         
         if i!=len(entries)-1:
             if levels[i]==levels[i+1]:
                 nextfile_url = entries[i+1]
                 nextfile = readinit(nextfile_url)
                 nextfile_url = nextfile_url.replace("_init.dat", nextfile["doc"])
-                nextfile_url=os.path.relpath(nextfile_url, entry).replace(".md",".html")
+                nextfile_url=os.path.relpath(nextfile_url, entry).replace(".md",".html")[1:]
 
         do_nav = True
 
@@ -332,15 +333,19 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     if do_nav:
         if prevfile !=None:
             fout.write("Previous File: [%s](%s)" %(prevfile["title"], prevfile_url))
-            fout.write("\t &ensp \t")
+            fout.write("\t")
+            fout.write(tab)
         if nextfile != None:
             fout.write("Next File: [%s](%s)" %(nextfile["title"], nextfile_url))
+        fout.write("\n  ")
         fout.write("\n  ")
 
         if parentfile != None:
             fout.write("\n  ")
+            fout.write("\n  ")
             fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
-            fout.write("\t &nbsp \t ")
+            fout.write("\t")
+            fout.write(tab)
 
         fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry))
         fout.write("\n  ")

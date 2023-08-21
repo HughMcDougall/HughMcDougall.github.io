@@ -1,6 +1,8 @@
-Next File: [Blog series 02 homepage](..\..\02_series\02home.html)
+Next File: [Blog series 02 homepage](.\..\02_series\02home.html)
   
-  Parent File: [Hugh McDougall Astro Blog](..\..\bloghome.html)	 &nbsp 	 Return to [blog home](..\..\bloghome.html)
+  
+  
+  Parent File: [Hugh McDougall Astro Blog](.\..\bloghome.html)	 Return to [blog home](..\..\bloghome.html)
   
   This particlar file uses a custom header  
   Hello world!

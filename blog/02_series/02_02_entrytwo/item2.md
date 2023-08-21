@@ -1,6 +1,8 @@
-Previous File: [Blog series 02 entry 01](..\..\02_01_entryone\entry02-02.html)	 &ensp 	
+Previous File: [Blog series 02 entry 01](.\..\02_01_entryone\entry02-02.html)	 
   
-  Parent File: [Blog series 02 homepage](..\..\02home.html)	 &nbsp 	 Return to [blog home](..\..\..\bloghome.html)
+  
+  
+  Parent File: [Blog series 02 homepage](.\..\02home.html)	 Return to [blog home](..\..\..\bloghome.html)
   
   # Blog
 
