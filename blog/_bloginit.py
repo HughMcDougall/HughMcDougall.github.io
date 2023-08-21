@@ -10,14 +10,15 @@ TODO:
 
     -HM 18/8
 '''
-#========================
+#================================================================================================
 
 import glob as glob
 import os
 import pandas
 from copy import deepcopy as copy
 
-#========================
+#================================================================================================
+
 recursion = 2
 tree_depth = recursion
 
@@ -37,7 +38,7 @@ default_init = {
                 "entry":   0,
                 "notebook_url": "n/a"}
 
-#========================
+#================================================================================================
 
 def scanfol(url="./", recursion = 0, level = None, ):
     '''
@@ -78,6 +79,7 @@ def scanfol(url="./", recursion = 0, level = None, ):
 
     return(entries,fols,levels)
 
+
 def readinit(url):
 
     finit = open(url)
@@ -92,7 +94,7 @@ def readinit(url):
 
     return(out)
 
-#========================
+#================================================================================================
 # Build index
 
 # Locate all folders and subfolders, to depth 'recursion', with an _init.md file
@@ -153,3 +155,6 @@ if os.path.isfile(footer):
 
 #-----
 fout.close()
+
+#================================================================================================
+# Construct navigation .md files for non-existant sub-folders 
