@@ -363,10 +363,9 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 treeinit = readinit(tree_entry)
                 tree_title  = treeinit['title']
                 tree_relurl = os.path.relpath(tree_entry, entry).replace("_init.dat",treeinit['doc'])
-                tree_relurl = tree_relurl.replace(".md",".html")
+                tree_relurl = tree_relurl.replace(".md",".html")[1:]
 
                 print("\t\t",tree_title, tree_relurl)
-                
 
                 # Take data from the _init.md and write as a markdown line / url
                 fout.write("\t"*(tree_level-1)) # Readable indentation
