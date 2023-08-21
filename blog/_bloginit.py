@@ -24,9 +24,9 @@ KEYWORDS = ["NONE", "TRUE", "FALSE"]
 
 destfile = "./bloghome.md"
 
-header  = "./_bloghead.md"
-index   = "./_blogindex.md"
-footer  = "./_blogfoot.md"
+#header  = "./_bloghead.md"
+#index   = "./_blogindex.md"
+#footer  = "./_blogfoot.md"
 
 default_header  = "./_bloghead.md"
 default_footer  = "./_blogfoot.md"
@@ -149,6 +149,7 @@ SCRAP THIS
 # Locate all folders and subfolders, to depth 'recursion', with an _init.md file
 entries, folders, levels = scanfol("./", recursion)
 
+'''
 # Write these to the blog index .md file
 findex = open(index, 'w')
 for entry, level in zip(entries, levels):
@@ -168,15 +169,15 @@ for entry, level in zip(entries, levels):
     findex.write("  ")
     findex.write("\n")
 
-
 findex.close()
+'''
 
 #========================
 # Save everything to the actual human-readable .md file
 '''
 SCRAP THIS
 '''
-
+'''
 fout = open(destfile, 'w')
 
 #-----
@@ -207,7 +208,7 @@ if os.path.isfile(footer):
 
 #-----
 fout.close()
-
+'''
 
 #================================================================================================
 
@@ -321,7 +322,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         
         # Otherwise, use the default header
         else:
-            f_foot = open(default_header,'r')
+            f_foot = open(default_footer,'r')
             do_footer = True
             
     #------------------------------------
@@ -340,7 +341,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
             fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
             fout.write("\t &nbsp \t ")
 
-        fout.write("Return to [blog home](%s)" %os.path.relpath(entry,__file__))
+        fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry))
         fout.write("\n  ")
     # write header
     if do_header:
@@ -350,10 +351,26 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
 
     # write tree
     if do_tree:
-        fout.write("\n  ")
-        fout.write("Tree Goes Here")
-        fout.write("\n  ")
-        
+        # Scan entry's tree
+        tree_entries, tree_folders, tree_levels = scanfol(entryfol, tree_depth)
+
+        # Write these to the blog index .md file
+        for tree_entry, tree_level in zip(tree_entries, tree_levels):
+
+            treeinit = readinit(entry)
+            tree_relurl = os.path.relpath(treeinit['doc'], entry).replace(".md",".html")
+            tree_title  = treeinit['title']
+
+            # Take data from the _init.md and write as a markdown line / url
+            fout.write("\t"*(tree_level-1)) # Readable indentation
+            fout.write("  "*(tree_level-1)) # markdown indentation
+            fout.write("* ")
+            fout.write("[%s](%s)" %(tree_title, tree_relurl))
+
+            # Do markdown & html friendly line breaks
+            fout.write("  ")
+            fout.write("\n")
+            
     # write doc
     if do_file:
         for line in f_source:
