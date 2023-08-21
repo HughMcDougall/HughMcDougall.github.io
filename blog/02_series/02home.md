@@ -1,4 +1,5 @@
-Previous Entry: [hello world](.\..\01_helloworld\01helloworld_out.html)	   
+Previous Entry: [hello world](.\..\01_helloworld\01helloworld_out.html)  
+   
   
   
 Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)  

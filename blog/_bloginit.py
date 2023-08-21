@@ -333,7 +333,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     if do_nav:
         if prevfile !=None:
             fout.write("Previous Entry: [%s](%s)" %(prevfile["title"], prevfile_url))
-            fout.write("\t")
+            fout.write("  \n")
             fout.write(tab)
         if nextfile != None:
             fout.write("Next Entry: [%s](%s)" %(nextfile["title"], nextfile_url))

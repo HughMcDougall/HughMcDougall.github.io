@@ -1,4 +1,5 @@
-Previous Entry: [Blog series 02 entry 01](.\..\02_01_entryone\entry02-02.html)	 Next Entry: [Blog series 03 entry 03](.\..\02_03_entrythree\item2.html)  
+Previous Entry: [Blog series 02 entry 01](.\..\02_01_entryone\entry02-02.html)  
+ Next Entry: [Blog series 03 entry 03](.\..\02_03_entrythree\item2.html)  
   
   
 Go Back: [Blog series 02 homepage](.\..\02home.html)  
