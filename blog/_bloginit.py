@@ -332,17 +332,20 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     if do_nav:
         if prevfile !=None:
             fout.write("Previous File: [%s](%s)" %(prevfile["title"], prevfile_url))
-            fout.write("\t &nbsp \t")
+            fout.write("\t &ensp \t")
         if nextfile != None:
             fout.write("Next File: [%s](%s)" %(nextfile["title"], nextfile_url))
         fout.write("\n  ")
 
         if parentfile != None:
+            fout.write("\n  ")
             fout.write("Parent File: [%s](%s)" %(parentfile["title"], parentfile_url))
             fout.write("\t &nbsp \t ")
 
         fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry))
         fout.write("\n  ")
+        fout.write("\n  ")
+    
     # write header
     if do_header:
         for line in f_head:
