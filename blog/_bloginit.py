@@ -354,22 +354,30 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         # Scan entry's tree
         tree_entries, tree_folders, tree_levels = scanfol(entryfol, tree_depth)
 
-        # Write these to the blog index .md file
-        for tree_entry, tree_level in zip(tree_entries, tree_levels):
+        if len(tree_entries)>2:
+            # Write these to the blog index .md file
+            for tree_entry, tree_level in zip(tree_entries[1:], tree_levels[1:]):
 
-            treeinit = readinit(entry)
-            tree_relurl = os.path.relpath(treeinit['doc'], entry).replace(".md",".html")
-            tree_title  = treeinit['title']
+                print("\t",tree_entry,tree_level)
 
-            # Take data from the _init.md and write as a markdown line / url
-            fout.write("\t"*(tree_level-1)) # Readable indentation
-            fout.write("  "*(tree_level-1)) # markdown indentation
-            fout.write("* ")
-            fout.write("[%s](%s)" %(tree_title, tree_relurl))
+                treeinit = readinit(tree_entry)
+                tree_title  = treeinit['title']
+                tree_relurl = os.path.relpath(tree_entry, entry).replace("_init.dat",treeinit['doc'])
+                tree_relurl = tree_relurl.replace(".md",".html")
 
-            # Do markdown & html friendly line breaks
-            fout.write("  ")
-            fout.write("\n")
+                print("\t\t",tree_title, tree_relurl)
+                
+
+                # Take data from the _init.md and write as a markdown line / url
+                fout.write("\t"*(tree_level-1)) # Readable indentation
+                fout.write("  "*(tree_level-1)) # markdown indentation
+                fout.write("* ")
+                fout.write("[%s](%s)" %(tree_title, tree_relurl))
+
+                # Do markdown & html friendly line breaks
+                fout.write("  ")
+                fout.write("\n")
+                
             
     # write doc
     if do_file:
