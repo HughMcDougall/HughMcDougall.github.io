@@ -15,8 +15,8 @@ from copy import deepcopy as copy
 import time
 
 replacements = [
-    ("\begin{equation}", "$$\begin{equation}"),
-    ("\end{equation}", "\end{equation}$$"),
+    (r"\begin{equation}", r"$$\begin{equation}"),
+    (r"\end{equation}", r"\end{equation}$$"),
                 ]
                                
 #================================================================================================

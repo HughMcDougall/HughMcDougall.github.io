@@ -33,7 +33,7 @@ $x = y ^2 $
   
 
   
-\begin{equation}
+$$\begin{equation}
   
 x^2=y
   
@@ -41,7 +41,7 @@ x^2=y
   
 
   
-\\begin{equation}
+\$$\begin{equation}
   
 x^2=y
   
@@ -51,7 +51,7 @@ x^2=y
   
 $$
   
-\begin{equation}
+$$\begin{equation}
   
 x = y ^2  \\
   
