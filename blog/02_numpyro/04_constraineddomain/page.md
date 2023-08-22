@@ -138,7 +138,7 @@ Converting the variables between the constrained and unconstrained domains is ea
   
     P(x_{con}) = P(x_{uncon}) \cdot \frac{dx_{uncon}}{dx_{con}}
   
-\end{equation}
+\end{equation}$$
   
 
   

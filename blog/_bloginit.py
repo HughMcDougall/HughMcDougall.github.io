@@ -293,6 +293,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # write header
     if do_header:
         for line in f_head:
+            for replacement in replacements:
+                line = line.replace(replacement[0],replacement[1])
             fout.write(line)
             fout.write("  \n")
 
@@ -330,6 +332,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # write doc
     if do_file:
         for line in f_source:
+            for replacement in replacements:
+                line = line.replace(replacement[0],replacement[1])
             fout.write(line)
             fout.write("  \n")
         fout.write("  \n")

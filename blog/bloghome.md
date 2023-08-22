@@ -37,7 +37,7 @@ $x = y ^2 $
   
 x^2=y
   
-\end{equation}
+\end{equation}$$
   
 
   
@@ -45,7 +45,7 @@ x^2=y
   
 x^2=y
   
-\\end{equation}
+\\end{equation}$$
   
 
   
@@ -57,7 +57,7 @@ x = y ^2  \\
   
 a^2 + b^2 = c^2  
   
-\end{equation}
+\end{equation}$$
   
 $$
   
