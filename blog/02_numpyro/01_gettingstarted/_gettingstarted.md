@@ -52,16 +52,107 @@ If you're planning on using nested sampling with numpyro, you'll need the follow
 ```
 
 ## Your First Model
+
 - Show imports & Data
 - In this example, show a simple linear regression
 
 
 ```python
 import jax, numpyro, chainconsumer
+import jax.numpy as jnp
+
 import matplotlib.pyplot as plt
+import numpy as np
 ```
 
 
 ```python
+m = 2
+c = 3.5
 
+ebar, escatter = 1.5, 10
+
+np.random.seed(1)
+X = np.linspace(0,10,32)
+E = np.random.poisson(lam=escatter, size=len(X)) / escatter * ebar
+Y = m*X + c + E*np.random.normal(size=len(X))
+
+#--------------
+plt.figure()
+plt.errorbar(X,Y,E,fmt='none', capsize=2, label='Measurements')
+plt.axline([0,c],slope=m, c='k', ls='--', label='True Relationship')
+plt.legend(loc='best')
+plt.xlabel("X"), plt.ylabel("Y")
+plt.show()
 ```
+
+
+    
+![png](output_4_0.png)
+    
+
+
+- Likelihood given by $\chi^2$ distribution:
+\begin{equation}
+    \mathcal{L}(m,c \| y_i) = \sum_i{\left(\frac{y_i-m*x_i+c}{E_i}\right)^2}
+\end{equation}
+- Need to fit numpyro model
+- 
+
+
+```python
+def model(X,Y,E):
+    m = numpyro.sample('m', numpyro.distributions.Uniform(-5,5)) # prior on m
+    c = numpyro.sample('c', numpyro.distributions.Uniform(-5,5)) # Prior on c
+
+    with numpyro.plate('plate', len(X)):
+        y_model = m*X + c
+        numpyro.sample('y', numpyro.distributions.Normal(y_model,E), obs = Y)
+```
+
+- Looks like a python 'function', but doesn't necessarily work like one, e.g. we don't "return" a likelihood. Instead, each "numpyro.sample" statement implies an effect on the likelihood
+- Emphasize lack of "return" statement
+- Explain each component of the code
+- Note also that the 'plate' is a little ambigious about what is or isn't vectorized. The `y = m*x+c` line can actually go inside or outside the loop
+- e.g. the following model will produce the same distribution
+
+
+```python
+def model(X,Y,E):
+    m = numpyro.sample('m', numpyro.distributions.Uniform(-5,5)) # prior on m
+    c = numpyro.sample('c', numpyro.distributions.Uniform(-5,5)) # Prior on c
+
+    y_model = m*X+c
+    
+    for i in range(len(X)):
+        numpyro.sample('y_%i' %i, numpyro.distributions.Normal(y_model[i], E[i]), obs=Y[i])
+```
+
+
+
+
+```python
+sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model), 
+                             num_chains  = 1, 
+                             num_samples = 5000, 
+                             num_warmup  = 500)
+sampler.run(jax.random.PRNGKey(1), X,Y,E)
+```
+
+    sample: 100%|█████████| 5500/5500 [00:02<00:00, 2633.63it/s, 7 steps of size 1.51e-01. acc. prob=0.94]
+
+
+
+```python
+results = sampler.get_samples() # Dictionary of MCMC samples
+C = chainconsumer.ChainConsumer()
+C.add_chain(results, name = "MCMC Results")
+C.plotter.plot(extents={'m': [-5,5], 'c':[-5,5]}, truth = {'m':m, 'c':c})
+plt.show()
+```
+
+
+    
+![png](output_11_0.png)
+    
+
