@@ -1,9 +1,15 @@
 theme: jekyll-theme-cayman
 title: Hugh McDougall
 description: Blog of Hugh McDougall (BE / BSc)
-
+markdown:    kramdown
+highlighter: rouge
 
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+  entity_output: as_char
+  toc_levels: 1..6
+  enable_coderay: false
+  auto_ids: true
+  footnote_nr: 1
   
