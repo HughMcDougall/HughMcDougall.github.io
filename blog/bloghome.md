@@ -39,59 +39,6 @@ x^2=y
   
 \end{equation}$$
   
-
-  
-\$$\begin{equation}
-  
-x^2=y
-  
-\\end{equation}$$
-  
-
-  
-$$
-  
-$$\begin{equation}
-  
-x = y ^2  \\
-  
-a^2 + b^2 = c^2  
-  
-\end{equation}$$
-  
-$$
-  
-
-  
-\[
-  
-x^2=y
-  
-\]
-  
-
-  
-\\[
-  
-x^2=y
-  
-\\]
-  
-
-  
-\(
-  
-x^2=y
-  
-\)
-  
-
-  
-\\(
-  
-x^2=y
-  
-\\)  
   
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   

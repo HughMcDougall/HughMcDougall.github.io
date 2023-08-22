@@ -44,22 +44,6 @@ from chainconsumer import ChainConsumer
   
 
   
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  
-      from .autonotebook import tqdm as notebook_tqdm
-  
-    INFO[2023-08-22 10:07:10,443]: Unable to initialize backend 'cuda': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
-  
-    INFO[2023-08-22 10:07:10,443]: Unable to initialize backend 'rocm': module 'jaxlib.xla_extension' has no attribute 'GpuAllocatorConfig'
-  
-    INFO[2023-08-22 10:07:10,449]: Unable to initialize backend 'tpu': INVALID_ARGUMENT: TpuPlatform is not available.
-  
-    WARNING[2023-08-22 10:07:10,450]: No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
-  
-
-  
-
-  
 -Explain constrained vs unconstrained
   
 -Demonstrate an example uniform distribution
@@ -160,7 +144,7 @@ Now we feed our unconstrained parameters into the likelihood function, which we 
   
 
   
-$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+test $PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
   
 
   
