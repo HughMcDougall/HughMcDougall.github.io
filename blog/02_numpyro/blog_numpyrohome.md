@@ -13,7 +13,6 @@ This is the default header
 * [WebGuide](.\05_parallelizing\./page.html)  
   
   
-[PUT INTRO HERE]  
-  
+[PUT INTRO HERE]    
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
