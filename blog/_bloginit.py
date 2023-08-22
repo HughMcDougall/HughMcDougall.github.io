@@ -14,6 +14,10 @@ import pandas
 from copy import deepcopy as copy
 import time
 
+replacements = [
+    ("\begin{equation}", "$$\begin{equation}"),
+    ("\end{equation}", "\end{equation}$$"),
+                ]
                                
 #================================================================================================
 
@@ -333,6 +337,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # write footer
     if do_footer:
         for line in f_foot:
+            for replacement in replacements:
+                line = line.replace(replacement[0],replacement[1])
             fout.write(line)
             fout.write("  \n")
         fout.write("  \n")
