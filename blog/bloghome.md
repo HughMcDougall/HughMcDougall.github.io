@@ -1,4 +1,6 @@
-  
+---
+usemathjax: true
+---  
   
 Return to [blog home](.\bloghome.html)  
   
