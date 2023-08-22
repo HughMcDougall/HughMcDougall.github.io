@@ -21,15 +21,19 @@ This is a test equation:
   
 $$
   
-x = y ^2 
+	x = y ^2  
   
-a^2 + b^2 = c^2
+	a^2 + b^2 = c^2  
   
 $$
   
 
   
-$ x = y ^2 $
+$
+  
+	x = y ^2 
+  
+$
   
 
   
@@ -41,7 +45,11 @@ $ x = y ^2 $
   
 
   
-hello world  
+\\begin{equation}
+  
+	x^2=y
+  
+\\end{equation}  
   
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
