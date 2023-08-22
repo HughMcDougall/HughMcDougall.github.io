@@ -1,7 +1,7 @@
-doc:	./page.md
-source:	./_page.md
-title:	WebGuide
-date:	21/8/23
-desc:	How to use this blog homepage
+doc:	./MCMCSamplers.md
+source:	./_MCMCSamplers.md
+title:	MCMC Samplers
+date:	23/8/23
+desc:	A quick overview of the different samplers in numpyro and their strengths / weaknesses
 nav:	TRUE
 tree:	TRUE

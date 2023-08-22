@@ -1,0 +1,84 @@
+;This file was created by Graph (http://www.padowan.dk)
+;Do not change this file from other programs.
+[Graph]
+Version = 4.4.2.543
+MinVersion = 2.5
+OS = Windows NT 6.2 
+
+[Axes]
+xMin = 0
+xMax = 1
+xTickUnit = 0.1
+xGridUnit = 0.1
+yMin = 0
+yMax = 1
+yTickUnit = 0.2
+yGridUnit = 0.2
+AxesColor = clBlue
+GridColor = 0x00FF9999
+ShowLegend = 0
+Radian = 1
+
+[Func1]
+FuncType = 0
+y = l(10,x)
+Color = clRed
+
+[Func2]
+FuncType = 0
+y = l(9,x)
+Color = clRed
+
+[Func3]
+FuncType = 0
+y = l(8,x)
+Color = clRed
+
+[Func4]
+FuncType = 0
+y = l(7,x)
+Color = clRed
+
+[Func5]
+FuncType = 0
+y = l(6,x)
+Color = clRed
+
+[Func6]
+FuncType = 0
+y = l(5,x)
+Color = clRed
+
+[Func7]
+FuncType = 0
+y = l(4,x)
+Color = clRed
+
+[Func8]
+FuncType = 0
+y = l(3,x)
+Color = clRed
+
+[Func9]
+FuncType = 0
+y = l(2,x)
+Color = clRed
+
+[Func10]
+FuncType = 0
+y = l(1,x)
+Color = clRed
+
+[Data]
+TextLabelCount = 0
+FuncCount = 10
+PointSeriesCount = 0
+ShadeCount = 0
+RelationCount = 0
+OleObjectCount = 0
+
+[CustomFunctions]
+f(a,x) = a-abs(a)*x/(11-a)
+N = 10
+l(j,x) = j/N-j/(N+1-j)*x
+

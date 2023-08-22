@@ -1,4 +1,4 @@
-Next Entry: [WebGuide](.\..\02_suspiciousness\page.html)  
+Next Entry: [Bayesian Suspiciousness](.\..\02_suspiciousness\page.html)  
   
   
 Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  

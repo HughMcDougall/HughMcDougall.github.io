@@ -5,7 +5,7 @@ Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)	&nbsp;	Return to
   
 ---------------------------------------------------------------------------  
 * [WebGuide](.\01_nestedsampling\./page.html)  
-* [WebGuide](.\02_suspiciousness\./page.html)  
+* [Bayesian Suspiciousness](.\02_suspiciousness\./page.html)  
   
   
 [Todo]  

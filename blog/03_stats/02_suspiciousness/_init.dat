@@ -1,7 +1,7 @@
 doc:	./page.md
-source:	./_page.md
-title:	WebGuide
-date:	21/8/23
-desc:	How to use this blog homepage
+source:	./_suspiciousness.md
+title:	Bayesian Suspiciousness
+date:	23/8/23
+desc:	An explanation / demonstration of the 'suspiciousness statistic', an alternative to Bayesian evidence or infomation in cases where priors are poorly defined
 nav:	TRUE
 tree:	TRUE

@@ -5,7 +5,7 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog 
   
 ---------------------------------------------------------------------------  
 * [NumPyro - Getting Started](.\01_gettingstarted\./gettingstarted.html)  
-* [WebGuide](.\02_mcmcsamplers\./page.html)  
+* [MCMC Samplers](.\02_mcmcsamplers\./MCMCSamplers.html)  
 * [WebGuide](.\03_nestedsampling\./page.html)  
 * [Constrained Domain](.\04_constraineddomain\./page.html)  
 * [WebGuide](.\05_parallelizing\./page.html)  

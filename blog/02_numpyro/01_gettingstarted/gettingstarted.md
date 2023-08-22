@@ -1,4 +1,4 @@
-Next Entry: [WebGuide](.\..\02_mcmcsamplers\page.html)  
+Next Entry: [MCMC Samplers](.\..\02_mcmcsamplers\MCMCSamplers.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  

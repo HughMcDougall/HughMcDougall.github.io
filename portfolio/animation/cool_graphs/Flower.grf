@@ -1,0 +1,69 @@
+;This file was created by Graph (http://www.padowan.dk)
+;Do not change this file from other programs.
+[Graph]
+Version = 4.4.2.543
+MinVersion = 2.5
+OS = Windows NT 6.2 
+
+[Axes]
+xMin = -3.13810596
+xMax = 3.13810596
+xTickUnit = 1
+xGridUnit = 1
+yMin = -1.9883141
+yMax = 1.9883141
+yTickUnit = 1
+yGridUnit = 1
+AxesColor = clBlue
+GridColor = 0x00FF9999
+ShowLegend = 0
+Radian = 1
+AxesStyle = 0
+
+[Func1]
+FuncType = 2
+r = f(t)
+From = 0
+To = 2pi
+Steps = 1000
+Style = 2
+Color = clSkyBlue
+StartPoint = 1
+
+[Func2]
+FuncType = 2
+r = f(t+pi/4)
+From = 0
+To = 2pi
+Steps = 1000
+Style = 2
+Color = clMaroon
+
+[PointSeries1]
+FillColor = clWhite
+LineColor = clGray
+Size = 2
+Style = 0
+LineStyle = 2
+LabelPosition = 1
+PointCount = 5
+Points = f(a)*cos(a),f(a)*sin(a);-f(2a)*cos(2a),f(2a)*sin(2a);f(5a)*cos(5a),f(3a)*sin(3a);f(2a)*cos(2a),f(5a)*sin(5a);f(a)*cos(a),f(a)*sin(a);
+LegendText = Series 1
+
+[Data]
+TextLabelCount = 0
+FuncCount = 2
+PointSeriesCount = 1
+ShadeCount = 0
+RelationCount = 0
+OleObjectCount = 0
+
+[CustomFunctions]
+a = 1
+f(t) = (2-cos(4*(a+t)))*cos(t)*sin(t)
+
+[Animate]
+Constant = a
+FramesPerSecond = 48
+%a = 0;pi/2;.01
+
