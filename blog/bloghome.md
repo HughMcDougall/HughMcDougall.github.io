@@ -17,11 +17,7 @@ This is the non-default header
   
 This is a test equation:
   
-
-  
-$$ x=y $$
-  
-
+$$ x = y ^2 $$
   
 hello world  
   
