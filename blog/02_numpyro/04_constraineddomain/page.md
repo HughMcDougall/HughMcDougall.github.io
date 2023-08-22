@@ -134,11 +134,11 @@ Converting the variables between the constrained and unconstrained domains is ea
   
 
   
-$$
+\begin{equation}
   
     P(x_{con}) = P(x_{uncon}) \cdot \frac{dx_{uncon}}{dx_{con}}
   
-$$
+\end{equation}
   
 
   
@@ -160,7 +160,7 @@ Now we feed our unconstrained parameters into the likelihood function, which we 
   
 
   
-$$$$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$$$$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
   
 
   
@@ -202,9 +202,9 @@ plt.plot(x_con[2:], y, c='blue', lw=2)
   
 plt.grid()
   
-plt.xlabel("$$$$x_{con}$$$$")
+plt.xlabel("$x_{con}$")
   
-plt.ylabel("$$$$\mathcal{L}(x) (Approx)$$$$")
+plt.ylabel("$\mathcal{L}(x) (Approx)$")
   
 plt.show()
   
@@ -232,11 +232,11 @@ plt.show()
   
 
   
-Looking above, we can see that the likelihood function plateaus at $$$$\mathcal{L}\approx 0.5$$$$ for most of the domain, and is constrained to $$$$x \in [0,2]$$$$, both of which are what we expect from our $$$$x \sim U(0,2)$$$$ distribution. 
+Looking above, we can see that the likelihood function plateaus at $\mathcal{L}\approx 0.5$ for most of the domain, and is constrained to $x \in [0,2]$, both of which are what we expect from our $x \sim U(0,2)$ distribution. 
   
 
   
-The unusual behaviour at the edges of the domain is a result of our poor esimate of $$$$\frac{dx_{uncon}}{dx_{con}}$$$$. Fortunately, we can use JAX's native autodifferentiation to get an *analytically accurate* derivative function.
+The unusual behaviour at the edges of the domain is a result of our poor esimate of $\frac{dx_{uncon}}{dx_{con}}$. Fortunately, we can use JAX's native autodifferentiation to get an *analytically accurate* derivative function.
   
 
   
@@ -326,9 +326,9 @@ plt.ylim(ymin=0, ymax = np.max(y)*2)
   
 plt.grid()
   
-plt.xlabel("$$$$x_{con}$$$$")
+plt.xlabel("$x_{con}$")
   
-plt.ylabel("$$$$\mathcal{L}(x)$$$$")
+plt.ylabel("$\mathcal{L}(x)$")
   
 plt.show()
   

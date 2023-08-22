@@ -15,6 +15,15 @@ This is the non-default header
 	  * [WebGuide](.\03_stats\02_suspiciousness\./page.html)  
   
   
+This is a test equation:
+  
+
+  
+$$ x=y $$
+  
+
+  
+hello world  
   
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
