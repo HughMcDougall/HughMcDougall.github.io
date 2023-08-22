@@ -1,10 +1,9 @@
 Next Entry: [Comfortably NumPyro](.\..\02_numpyro\blog_numpyrohome.html)  
   
   
-Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)  
-Return to [blog home](.\..\bloghome.html)  
+Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 [Todo]  

@@ -1,10 +1,9 @@
   
   
   
-Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)  
-Return to [blog home](.\..\bloghome.html)  
+Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
 * [WebGuide](.\01_nestedsampling\./page.html)  
 * [WebGuide](.\02_suspiciousness\./page.html)  
   

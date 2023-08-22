@@ -1,11 +1,9 @@
-Previous Entry: [NumPyro - Getting Started](.\..\01_gettingstarted\gettingstarted.html)  
- Next Entry: [WebGuide](.\..\03_nestedsampling\page.html)  
+Previous Entry: [NumPyro - Getting Started](.\..\01_gettingstarted\gettingstarted.html)	&nbsp;	 Next Entry: [WebGuide](.\..\03_nestedsampling\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)  
-Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 [Todo]  

@@ -1,11 +1,9 @@
-Previous Entry: [WebGuide](.\..\03_nestedsampling\page.html)  
- Next Entry: [WebGuide](.\..\05_parallelizing\page.html)  
+Previous Entry: [WebGuide](.\..\03_nestedsampling\page.html)	&nbsp;	 Next Entry: [WebGuide](.\..\05_parallelizing\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)  
-Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 # Constrained / Unconstrained Parameters & Using Jax's Vmap & Autograd  

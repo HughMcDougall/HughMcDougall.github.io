@@ -284,7 +284,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         if parentfile != None:
             fout.write("  \n")
             fout.write("Go Back: [%s](%s)" %(parentfile["title"], parentfile_url))
-            fout.write("\t&nbsp;\t
+            fout.write("\t&nbsp;\t")
 
             fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry)[1:])
             fout.write("  \n")
@@ -295,7 +295,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         for line in f_head:
             for replacement in replacements:
                 line = line.replace(replacement[0],replacement[1])
-            fout.write(line.replace("\n","  \n")
+            fout.write(line.replace("\n","  \n"))
             fout.write("  \n")
 
     # write tree
@@ -342,7 +342,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         for line in f_foot:
             for replacement in replacements:
                 line = line.replace(replacement[0],replacement[1])
-            fout.write(line.replace("\n","  \n")
+            fout.write(line.replace("\n","  \n"))
             fout.write("  \n")
         fout.write("  \n")
 

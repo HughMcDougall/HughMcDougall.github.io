@@ -1,11 +1,9 @@
-Previous Entry: [WebGuide](.\..\02_mcmcsamplers\page.html)  
- Next Entry: [Constrained Domain](.\..\04_constraineddomain\page.html)  
+Previous Entry: [WebGuide](.\..\02_mcmcsamplers\page.html)	&nbsp;	 Next Entry: [Constrained Domain](.\..\04_constraineddomain\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)  
-Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 [Todo]  

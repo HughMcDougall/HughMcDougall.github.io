@@ -1,11 +1,9 @@
-Previous Entry: [WebGuide](.\..\01_webguide\page.html)  
-   
+Previous Entry: [WebGuide](.\..\01_webguide\page.html)	&nbsp;	   
   
   
-Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)  
-Return to [blog home](.\..\bloghome.html)  
+Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
 * [NumPyro - Getting Started](.\01_gettingstarted\./gettingstarted.html)  
 * [WebGuide](.\02_mcmcsamplers\./page.html)  
 * [WebGuide](.\03_nestedsampling\./page.html)  

@@ -1,7 +1,5 @@
   
   
-Return to [blog home](.\bloghome.html)  
-  
 This is the non-default header  
 * [WebGuide](.\01_webguide\./page.html)  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  

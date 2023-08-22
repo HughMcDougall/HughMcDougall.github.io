@@ -1,10 +1,9 @@
 Next Entry: [WebGuide](.\..\02_suspiciousness\page.html)  
   
   
-Go Back: [WebGuide](.\..\page.html)  
-Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 [Todo]  

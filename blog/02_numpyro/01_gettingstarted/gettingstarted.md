@@ -1,10 +1,9 @@
 Next Entry: [WebGuide](.\..\02_mcmcsamplers\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)  
-Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
-This is the default header  
+---------------------------------------------------------------------------  
   
   
 # Getting Started  
