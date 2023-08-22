@@ -2,16 +2,18 @@
   
 Return to [blog home](.\bloghome.html)  
   
-# Blog
+This is the non-default header  
+* [WebGuide](.\01_webguide\./page.html)  
+* [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  
+	  * [WebGuide](.\02_numpyro\01_gettingstarted\./page.html)  
+	  * [WebGuide](.\02_numpyro\02_mcmcsamplers\./page.html)  
+	  * [WebGuide](.\02_numpyro\03_nestedsampling\./page.html)  
+	  * [WebGuide](.\02_numpyro\04_constraineddomain\./page.html)  
+	  * [WebGuide](.\02_numpyro\05_parallelizing\./page.html)  
+* [WebGuide](.\03_stats\./page.html)  
+	  * [WebGuide](.\03_stats\01_nestedsampling\./page.html)  
+	  * [WebGuide](.\03_stats\02_suspiciousness\./page.html)  
   
-
-  
-Welcome to my blog index. This page (currently a WIP) will host links to various tutorials guides, mainly focusing on quick and easy introductions to using NumPyro / Bayesian statistics for astronomy  
-* [hello world](.\01_helloworld\01helloworld_out.html)  
-* [Blog series 02 homepage](.\02_series\02home.html)  
-	  * [Blog series 02 entry 01](.\02_series\02_01_entryone\./entry02-02.html)  
-	  * [Blog series 02 entry 02](.\02_series\02_02_entrytwo\./item2.html)  
-	  * [Blog series 03 entry 03](.\02_series\02_03_entrythree\./item2.html)  
   
   
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  

@@ -1,9 +1,8 @@
 doc:	./bloghome.md
-source:	NONE
+source:	./_bloghome_src.md
 title:	Hugh McDougall Astro Blog
 date:	21/8/23
-header:	./_bloghead.md
-footer:	./_blogfoot.md
 desc:	My blog homepage
+header:	./_homepageheader.md
 nav:	TRUE
 tree:	TRUE

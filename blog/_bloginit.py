@@ -25,12 +25,9 @@ tab = " "
 
 destfile = "./bloghome.md"
 
-#header  = "./_bloghead.md"
-#index   = "./_blogindex.md"
-#footer  = "./_blogfoot.md"
 
-default_header  = "./_bloghead.md"
-default_footer  = "./_blogfoot.md"
+default_header  = "./_components/_bloghead.md"
+default_footer  = "./_components/_blogfoot.md"
 
 flog = open('./_flog.dat','w')
 
@@ -144,72 +141,10 @@ def relative_url(destination, source):
 # Build index
 '''
 Run through all folders and subfolders to generate
-SCRAP THIS
 '''
 
 # Locate all folders and subfolders, to depth 'recursion', with an _init.md file
 entries, folders, levels = scanfol("./", recursion)
-
-'''
-# Write these to the blog index .md file
-findex = open(index, 'w')
-for entry, level in zip(entries, levels):
-
-    folder = entry.replace("_init.dat","")
-    
-    # Load destination _init.dat
-    init_data = readinit(entry)
-
-    # Take data from the _init.md and write as a markdown line / url
-    findex.write("\t"*(level-1)) # Readable indentation
-    findex.write("  "*(level-1)) # markdown indentation
-    findex.write("* ")
-    findex.write("[%s](%s)" %(init_data["title"], folder+init_data["doc"].replace("./","").replace(".md",".html")))
-
-    # Do markdown & html friendly line breaks
-    findex.write("  ")
-    findex.write("\n")
-
-findex.close()
-'''
-
-#========================
-# Save everything to the actual human-readable .md file
-'''
-SCRAP THIS
-'''
-'''
-fout = open(destfile, 'w')
-
-#-----
-# Write Header
-if os.path.isfile(header):
-    fheader = open(header,  'r')
-    for line in fheader:
-        fout.write(line)
-    fout.write("  \n")
-    fheader.close()
-
-#-----
-# Write index
-findex  = open(index,   'r')
-for line in findex:
-    fout.write(line)
-fout.write("  \n")
-findex.close()
-
-#-----
-# Write Footer
-if os.path.isfile(footer):
-    ffooter = open(footer,  'r')
-    for line in ffooter:
-        fout.write(line)
-    fout.write("  \n")
-    ffooter.close()
-
-#-----
-fout.close()
-'''
 
 #================================================================================================
 
@@ -277,10 +212,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
 
     # Attempt to locate source and dest files
     if initdata["source"]!="NONE":
-        f_source = open(entryfol+initdata["source"], "r")
-        if not os.path.isfile(entryfol+initdata["source"]):
+        try:
+            f_source = open(entryfol+initdata["source"], "r")
+            do_file = True
+        except:
             flog.write("unable to find source file %s in entry %s \n" %(entryfol+initdata["source"], entry))
-        do_file = True
+        
 
     # Generate nav tree
     if initdata["tree"]!="FALSE":
@@ -298,12 +235,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 flog.write("unable to find header file %s in entry %s \n" %(entryfol+initdata["header"], entry))        
         
         # Otherwise, check if there is a _header.md file
-        if os.path.isfile(entryfol+"_header.md"):
+        if do_header==False and os.path.isfile(entryfol+"_header.md"):
             f_head = open(entryfol+"_header.md",'r')
             do_header = True
         
         # Otherwise, use the default header
-        else:
+        elif do_header==False:
             f_head = open(default_header,'r')
             do_header = True
 
@@ -317,12 +254,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 flog.write("unable to find footer file %s in entry %s \n" %(entry, entryfol+initdata["footer"]))
         
         # Otherwise, check if there is a _header.md file
-        if os.path.isfile(entryfol+"_footer.md"):
+        if do_footer==False and os.path.isfile(entryfol+"_footer.md"):
             f_foot = open(entryfol+"_footer.md",'r')
             do_footer = True
         
         # Otherwise, use the default header
-        else:
+        elif do_footer==False:
             f_foot = open(default_footer,'r')
             do_footer = True
             
