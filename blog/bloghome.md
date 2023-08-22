@@ -15,18 +15,21 @@ This is the non-default header
 	  * [WebGuide](.\03_stats\02_suspiciousness\./page.html)  
   
   
-This is a test equation:  
+**Example multiline equation 1:**  
     
 $$  
 x = y ^2    
 a^2 + b^2 = c^2    
 $$  
   
-$x = y ^2 $  
+  
+**Example multiline equation 2:**  
   
 $$\begin{equation}  
 x^2=y  
 \end{equation}$$  
   
+  
+**Example inline equation:** $x = y ^2 $.  
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
