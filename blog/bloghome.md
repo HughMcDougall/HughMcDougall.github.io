@@ -15,29 +15,21 @@ This is the non-default header
 	  * [WebGuide](.\03_stats\02_suspiciousness\./page.html)  
   
   
----
-  
-usemathjax: True
-  
----
-  
 This is a test equation:
+  
+  
+  
+$$
+  
+x = y ^2 
+  
+a^2 + b^2 = c^2
+  
+$$
   
 
   
-This is a test equation:
-  
-  
-  
-$$ x = y ^2 $$  
-  
-$ x = y ^2 $  
-  
-[ x = y ^2 ]  
-  
-/[ x = y ^2 /]  
-  
-\[ x = y ^2 \]  
+$ x = y ^2 $
   
 
   
