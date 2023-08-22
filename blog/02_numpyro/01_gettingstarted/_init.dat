@@ -1,7 +1,7 @@
-doc:	./page.md
-source:	./_page.md
-title:	WebGuide
-date:	21/8/23
-desc:	How to use this blog homepage
+doc:	./gettingstarted.md
+source:	./_gettingstarted.md
+title:	NumPyro - Getting Started
+date:	22/8/23
+desc:	An absolute beginners guide to NumPyro
 nav:	TRUE
 tree:	TRUE

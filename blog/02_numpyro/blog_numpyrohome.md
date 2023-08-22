@@ -6,7 +6,7 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)
 Return to [blog home](.\..\bloghome.html)  
   
 This is the default header  
-* [WebGuide](.\01_gettingstarted\./page.html)  
+* [NumPyro - Getting Started](.\01_gettingstarted\./gettingstarted.html)  
 * [WebGuide](.\02_mcmcsamplers\./page.html)  
 * [WebGuide](.\03_nestedsampling\./page.html)  
 * [Constrained Domain](.\04_constraineddomain\./page.html)  

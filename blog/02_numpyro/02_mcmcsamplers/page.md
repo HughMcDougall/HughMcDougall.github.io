@@ -1,4 +1,4 @@
-Previous Entry: [WebGuide](.\..\01_gettingstarted\page.html)  
+Previous Entry: [NumPyro - Getting Started](.\..\01_gettingstarted\gettingstarted.html)  
  Next Entry: [WebGuide](.\..\03_nestedsampling\page.html)  
   
   

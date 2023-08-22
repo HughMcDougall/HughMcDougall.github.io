@@ -5,7 +5,7 @@ Return to [blog home](.\bloghome.html)
 This is the non-default header  
 * [WebGuide](.\01_webguide\./page.html)  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  
-	  * [WebGuide](.\02_numpyro\01_gettingstarted\./page.html)  
+	  * [NumPyro - Getting Started](.\02_numpyro\01_gettingstarted\./gettingstarted.html)  
 	  * [WebGuide](.\02_numpyro\02_mcmcsamplers\./page.html)  
 	  * [WebGuide](.\02_numpyro\03_nestedsampling\./page.html)  
 	  * [Constrained Domain](.\02_numpyro\04_constraineddomain\./page.html)  
