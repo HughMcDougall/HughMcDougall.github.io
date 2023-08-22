@@ -1,6 +1,4 @@
----
-usemathjax: true
----  
+  
   
 Return to [blog home](.\bloghome.html)  
   
@@ -19,11 +17,31 @@ This is the non-default header
   
 This is a test equation:
   
+
+  
+This is a test equation:
+  
+  
+  
 $$ x = y ^2 $$  
+  
 $ x = y ^2 $  
+  
 [ x = y ^2 ]  
+  
 /[ x = y ^2 /]  
+  
 \[ x = y ^2 \]  
+  
+
+  
+\begin{equation}
+  
+	x^2=y
+  
+\end{equation}
+  
+
   
 hello world  
   
