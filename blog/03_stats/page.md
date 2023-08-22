@@ -9,7 +9,7 @@ This is the default header
 * [WebGuide](.\02_suspiciousness\./page.html)  
   
   
-[Todo]
-  Fill this out    
+[Todo]  
+Fill this out  
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
