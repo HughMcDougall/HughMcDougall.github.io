@@ -15,6 +15,12 @@ This is the non-default header
 	  * [WebGuide](.\03_stats\02_suspiciousness\./page.html)  
   
   
+---
+  
+usemathjax: True
+  
+---
+  
 This is a test equation:
   
 
