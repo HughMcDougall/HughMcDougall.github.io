@@ -1,5 +1,5 @@
 Previous Entry: [WebGuide](.\..\02_mcmcsamplers\page.html)  
- Next Entry: [WebGuide](.\..\04_constraineddomain\page.html)  
+ Next Entry: [Constrained Domain](.\..\04_constraineddomain\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)  

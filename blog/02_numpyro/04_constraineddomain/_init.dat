@@ -1,7 +1,7 @@
 doc:	./page.md
-source:	./_page.md
-title:	WebGuide
+source:	./constrained_transform/constrained_transform.md
+title:	Constrained Domain
 date:	21/8/23
-desc:	How to use this blog homepage
+desc:	Explanation of constranied vs unconstrained domains in NumPyro
 nav:	TRUE
 tree:	TRUE

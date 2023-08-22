@@ -1,4 +1,4 @@
-Previous Entry: [WebGuide](.\..\04_constraineddomain\page.html)  
+Previous Entry: [Constrained Domain](.\..\04_constraineddomain\page.html)  
    
   
   

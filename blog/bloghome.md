@@ -8,7 +8,7 @@ This is the non-default header
 	  * [WebGuide](.\02_numpyro\01_gettingstarted\./page.html)  
 	  * [WebGuide](.\02_numpyro\02_mcmcsamplers\./page.html)  
 	  * [WebGuide](.\02_numpyro\03_nestedsampling\./page.html)  
-	  * [WebGuide](.\02_numpyro\04_constraineddomain\./page.html)  
+	  * [Constrained Domain](.\02_numpyro\04_constraineddomain\./page.html)  
 	  * [WebGuide](.\02_numpyro\05_parallelizing\./page.html)  
 * [WebGuide](.\03_stats\./page.html)  
 	  * [WebGuide](.\03_stats\01_nestedsampling\./page.html)  

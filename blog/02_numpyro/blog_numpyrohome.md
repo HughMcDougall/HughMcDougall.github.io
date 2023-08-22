@@ -9,7 +9,7 @@ This is the default header
 * [WebGuide](.\01_gettingstarted\./page.html)  
 * [WebGuide](.\02_mcmcsamplers\./page.html)  
 * [WebGuide](.\03_nestedsampling\./page.html)  
-* [WebGuide](.\04_constraineddomain\./page.html)  
+* [Constrained Domain](.\04_constraineddomain\./page.html)  
 * [WebGuide](.\05_parallelizing\./page.html)  
   
   
