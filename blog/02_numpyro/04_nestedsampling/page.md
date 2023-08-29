@@ -1,4 +1,4 @@
-Previous Entry: [WebGuide](.\..\03_nestedsampling\page.html)	&nbsp;	 Next Entry: [WebGuide](.\..\05_parallelizing\page.html)  
+Previous Entry: [MCMC Samplers](.\..\03_mcmcsamplers\page.html)	&nbsp;	 Next Entry: [WebGuide](.\..\05_parallelizing\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
@@ -6,6 +6,8 @@ Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blo
 ---------------------------------------------------------------------------  
   
   
+[Todo]  
+Fill this out  
   
 ---------  
   

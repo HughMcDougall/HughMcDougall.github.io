@@ -5,15 +5,19 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog 
   
 ---------------------------------------------------------------------------  
 * [NumPyro - Getting Started](.\01_gettingstarted\./page.html)  
-* [MCMC Samplers](.\02_mcmcsamplers\./page.html)  
-* [WebGuide](.\03_nestedsampling\./page.html)  
-* [Constrained Domain](.\04_constraineddomain\./page.html)  
+* [Constrained Domain](.\02_constraineddomain\./page.html)  
+* [MCMC Samplers](.\03_mcmcsamplers\./page.html)  
+* [WebGuide](.\04_nestedsampling\./page.html)  
 * [WebGuide](.\05_parallelizing\./page.html)  
   
   
 # Comfortably NumPyro  
   
-![logo](../../images/thumbs/cnpy.jpg)  
+![logo]()  
+  
+<p align="center">  
+  <img width="370" height="217" src="../../images/thumbs/cnpy.jpg">  
+</p>  
   
 It's a generally accepted fact amongst most reasonable people (see: people who agree with me) that Bayesian analysis is the correct approach to most any non trivial statistical problem. In the modern world, we're equipped with a suite of tools that alleviate the tedium of constructing and running these models: Bayesian analysis lets us do things right, probabalistic programming language interfaces let us do it easily, and the magical power of JIT compiled languages allows us to to it _fast_. The [JAX](https://github.com/Joshuaalbert/jaxns)-based PPL [NumPyro](num.pyro.ai/) brings all three together: a python interface that gives great speed and versatility that makes problems like MCMC and model comparison cheap in both human-time and machine-time.  
   

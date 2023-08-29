@@ -1,7 +1,8 @@
 doc:	./page.md
-source:	./_constrainedtransform.md
+source:	./constraineddomain.md
 title:	Constrained Domain
 date:	21/8/23
 desc:	Explanation of constranied vs unconstrained domains in NumPyro
 nav:	TRUE
 tree:	TRUE
+notebook:	./_constraineddomain.jpynb

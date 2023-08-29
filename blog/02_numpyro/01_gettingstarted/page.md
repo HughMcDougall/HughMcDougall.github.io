@@ -1,4 +1,4 @@
-Next Entry: [MCMC Samplers](.\..\02_mcmcsamplers\page.html)  
+Next Entry: [Constrained Domain](.\..\02_constraineddomain\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  

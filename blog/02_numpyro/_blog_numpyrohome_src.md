@@ -1,6 +1,10 @@
 # Comfortably NumPyro
 
-![logo](../../images/thumbs/cnpy.jpg)
+![logo]()
+
+<p align="center">
+  <img width="370" height="217" src="../../images/thumbs/cnpy.jpg">
+</p>
 
 It's a generally accepted fact amongst most reasonable people (see: people who agree with me) that Bayesian analysis is the correct approach to most any non trivial statistical problem. In the modern world, we're equipped with a suite of tools that alleviate the tedium of constructing and running these models: Bayesian analysis lets us do things right, probabalistic programming language interfaces let us do it easily, and the magical power of JIT compiled languages allows us to to it _fast_. The [JAX](https://github.com/Joshuaalbert/jaxns)-based PPL [NumPyro](num.pyro.ai/) brings all three together: a python interface that gives great speed and versatility that makes problems like MCMC and model comparison cheap in both human-time and machine-time.
 
