@@ -10,6 +10,7 @@ Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)	&nbsp;	Return to
   
 [Todo]  
 Fill this out  
+  
 ---------  
   
 This page by Hugh McDougall, 2023  

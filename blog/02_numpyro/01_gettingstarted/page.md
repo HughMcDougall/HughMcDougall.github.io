@@ -234,6 +234,7 @@ Small adjustments to this simple case will cover most basic cases of usnig NumPy
 1. Raw MCMC outputs don't inform of us how well the model performs, only how well it constrains parameters. For cases like that, we need to use some kind of [model comparison](../modelcomparison/page.html) technique.  
 2. Most MCMC samplers (including NUTS) fail in multimodal distributions. NUTS fails when there is more than one 'island' of probability, and fails entirely if the likelihood function is 'bumpy' in between these island. In these cases, we need to either [post-process](../multimodality/page.html) our chains or use a more robust sampler like [nested sampling](../nestedsampling/page.html).  
   
+  
 ---------  
   
 This page by Hugh McDougall, 2023  

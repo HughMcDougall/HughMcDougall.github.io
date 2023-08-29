@@ -339,6 +339,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
 
     # write footer
     if do_footer:
+        fout.write("  \n")
         for line in f_foot:
             for replacement in replacements:
                 line = line.replace(replacement[0],replacement[1])

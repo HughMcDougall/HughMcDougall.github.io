@@ -29,6 +29,7 @@ x^2=y
   
   
 **Example inline equation:** $x = y ^2 $.  
+  
 ---------  
   
 This page by Hugh McDougall, 2023  

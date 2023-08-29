@@ -8,6 +8,7 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog 
   
 [Todo]  
 Fill this out  
+  
 ---------  
   
 This page by Hugh McDougall, 2023  

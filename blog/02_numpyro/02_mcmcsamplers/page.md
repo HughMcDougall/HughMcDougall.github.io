@@ -6,6 +6,7 @@ Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blo
 ---------------------------------------------------------------------------  
   
   
+  
 ---------  
   
 This page by Hugh McDougall, 2023  
