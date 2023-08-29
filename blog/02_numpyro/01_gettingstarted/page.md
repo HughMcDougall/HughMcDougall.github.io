@@ -1,4 +1,4 @@
-Next Entry: [MCMC Samplers](.\..\02_mcmcsamplers\MCMCSamplers.html)  
+Next Entry: [MCMC Samplers](.\..\02_mcmcsamplers\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
@@ -233,6 +233,12 @@ plt.show()
 Small adjustments to this simple case will cover most basic cases of usnig NumPyro, but you can still find yourself limited in two main ways:  
 1. Raw MCMC outputs don't inform of us how well the model performs, only how well it constrains parameters. For cases like that, we need to use some kind of [model comparison](../modelcomparison/page.html) technique.  
 2. Most MCMC samplers (including NUTS) fail in multimodal distributions. NUTS fails when there is more than one 'island' of probability, and fails entirely if the likelihood function is 'bumpy' in between these island. In these cases, we need to either [post-process](../multimodality/page.html) our chains or use a more robust sampler like [nested sampling](../nestedsampling/page.html).  
+  
+---------  
+  
+This page by Hugh McDougall, 2023  
+  
+  
   
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   

@@ -1,7 +1,8 @@
-doc:	./gettingstarted.md
+doc:	./page.md
 source:	./_gettingstarted.md
 title:	NumPyro - Getting Started
 date:	22/8/23
 desc:	An absolute beginners guide to NumPyro
 nav:	TRUE
 tree:	TRUE
+notebook:	./_gettingstarted.ipynb

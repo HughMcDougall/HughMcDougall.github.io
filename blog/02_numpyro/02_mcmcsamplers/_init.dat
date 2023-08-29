@@ -1,4 +1,4 @@
-doc:	./MCMCSamplers.md
+doc:	./page.md
 source:	./_MCMCSamplers.md
 title:	MCMC Samplers
 date:	23/8/23

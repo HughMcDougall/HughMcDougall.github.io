@@ -3,8 +3,8 @@
 This is the non-default header  
 * [WebGuide](.\01_webguide\./page.html)  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  
-	  * [NumPyro - Getting Started](.\02_numpyro\01_gettingstarted\./gettingstarted.html)  
-	  * [MCMC Samplers](.\02_numpyro\02_mcmcsamplers\./MCMCSamplers.html)  
+	  * [NumPyro - Getting Started](.\02_numpyro\01_gettingstarted\./page.html)  
+	  * [MCMC Samplers](.\02_numpyro\02_mcmcsamplers\./page.html)  
 	  * [WebGuide](.\02_numpyro\03_nestedsampling\./page.html)  
 	  * [Constrained Domain](.\02_numpyro\04_constraineddomain\./page.html)  
 	  * [WebGuide](.\02_numpyro\05_parallelizing\./page.html)  
@@ -29,5 +29,11 @@ x^2=y
   
   
 **Example inline equation:** $x = y ^2 $.  
+---------  
+  
+This page by Hugh McDougall, 2023  
+  
+  
+  
 For more detailed information, feel free to check my [GitHub repos](https://github.com/HughMcDougall/) or [contact me directly](hughmcdougallemail@gmail.com).  
   
