@@ -4,11 +4,13 @@
 Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+**Navigation**  
 * [NumPyro - Getting Started](.\01_gettingstarted\./page.html)  
 * [Constrained Domain](.\02_constraineddomain\./page.html)  
 * [MCMC Samplers](.\03_mcmcsamplers\./page.html)  
 * [WebGuide](.\04_nestedsampling\./page.html)  
 * [WebGuide](.\05_parallelizing\./page.html)  
+---------  
   
   
 # Comfortably NumPyro  

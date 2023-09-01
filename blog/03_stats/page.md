@@ -4,8 +4,10 @@
 Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+**Navigation**  
 * [WebGuide](.\01_nestedsampling\./page.html)  
 * [Bayesian Suspiciousness](.\02_suspiciousness\./page.html)  
+---------  
   
   
 [Todo]  

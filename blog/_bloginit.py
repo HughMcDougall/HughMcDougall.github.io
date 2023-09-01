@@ -47,7 +47,7 @@ default_init = {
                 "header":   "DEFAULT",
                 "footer":   "DEFAULT",
                 "entry":   0,
-                "notebook_url": "NONE",
+                "notebook": "NONE",
                 "navheader": "TRUE",
                 "tree": "TRUE",
                 }
@@ -304,6 +304,10 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         tree_entries, tree_folders, tree_levels = scanfol(entryfol, tree_depth)
 
         if len(tree_entries)>2:
+            
+            fout.write("**Navigation**")
+            fout.write("  ")
+            fout.write("\n")
             # Write these to the blog index .md file
             for tree_entry, tree_level in zip(tree_entries[1:], tree_levels[1:]):
 
@@ -325,6 +329,9 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 # Do markdown & html friendly line breaks
                 fout.write("  ")
                 fout.write("\n")
+        fout.write("---------")
+        fout.write("  \n")
+
         fout.write("  \n")
         fout.write("  \n")
                 

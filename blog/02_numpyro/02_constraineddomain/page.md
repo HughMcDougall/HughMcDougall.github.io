@@ -4,6 +4,7 @@ Previous Entry: [NumPyro - Getting Started](.\..\01_gettingstarted\page.html)	&n
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+---------  
   
   
 # The Constrained / Unconstrained Domains & Getting Likelihoods from MCMC  

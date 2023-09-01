@@ -4,6 +4,7 @@ Previous Entry: [MCMC Samplers](.\..\03_mcmcsamplers\page.html)	&nbsp;	 Next Ent
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+---------  
   
   
 [Todo]  

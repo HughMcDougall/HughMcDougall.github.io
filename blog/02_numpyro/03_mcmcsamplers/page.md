@@ -4,6 +4,7 @@ Previous Entry: [Constrained Domain](.\..\02_constraineddomain\page.html)	&nbsp;
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+---------  
   
   
 # Multimodality & Different Samplers  

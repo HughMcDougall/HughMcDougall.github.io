@@ -4,6 +4,7 @@ Previous Entry: [WebGuide](.\..\04_nestedsampling\page.html)	&nbsp;
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+---------  
   
   
 [Todo]  
