@@ -1,4 +1,4 @@
-Previous Entry: [WebGuide](.\..\01_webguide\page.html)	&nbsp;	   
+  
   
   
 Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  

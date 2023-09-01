@@ -1,5 +1,5 @@
 doc:	./page.md
-source:	./constraineddomain.md
+source:	./_constraineddomain.md
 title:	Constrained Domain
 date:	21/8/23
 desc:	Explanation of constranied vs unconstrained domains in NumPyro

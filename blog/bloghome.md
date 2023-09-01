@@ -1,7 +1,6 @@
   
   
-This is the non-default header  
-* [WebGuide](.\01_webguide\./page.html)  
+Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), a astronomer PhD student at the University of Queensland. Here in this blog, I'll be posting little instructional guides on the tools and topics I focus on in my study, with a specific eye towards providing a clear and uncomplicated foothold on some obscure corners of data-science.  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  
 	  * [NumPyro - Getting Started](.\02_numpyro\01_gettingstarted\./page.html)  
 	  * [Constrained Domain](.\02_numpyro\02_constraineddomain\./page.html)  
@@ -13,22 +12,7 @@ This is the non-default header
 	  * [Bayesian Suspiciousness](.\03_stats\02_suspiciousness\./page.html)  
   
   
-**Example multiline equation 1:**  
-    
-$$  
-x = y ^2    
-a^2 + b^2 = c^2    
-$$  
   
-  
-**Example multiline equation 2:**  
-  
-$$\begin{equation}  
-x^2=y  
-\end{equation}$$  
-  
-  
-**Example inline equation:** $x = y ^2 $.  
   
 ---------  
   
