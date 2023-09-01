@@ -72,10 +72,6 @@ import numpy as np
 import chainconsumer  
 ```  
   
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html  
-      from .autonotebook import tqdm as notebook_tqdm  
-  
-  
 Now the fun part: we'll use NumPy to hack together some data akin to the real world measurments you would apply NumPyro to. We'll both generate and fit according to a simple linear model:  
   
 $$\begin{equation}  
@@ -157,9 +153,6 @@ The `plate` object in NumPyro can be a little unintuitive because of the way it 
   
   
 ```python  
-%%script echo " "   
-#Cell for demonstration only. Above line makes sure it doesn't run  
-  
 def model(X,Y,E):  
     m = numpyro.sample('m', numpyro.distributions.Uniform(-5,5)) # prior on m  
     c = numpyro.sample('c', numpyro.distributions.Uniform(-5,5)) # Prior on c  
@@ -201,9 +194,6 @@ sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
                              num_warmup  = 500)  
 sampler.run(jax.random.PRNGKey(1), X,Y,E)  
 ```  
-  
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
-    sample: 100%|███████████████████████████| 5500/5500 [00:01<00:00, 2790.23it/s, 7 steps of size 2.95e-01. acc. prob=0.93]  
   
   
 When the `numpyro.infer.MCMC` object is created, we feed it a `numpyro.infer.NUTS` object, which in turn wraps around our probabalistic model. This argument determines what kind of MCMC sampler we use (in this case the No U-Turn Sampler (NUTS)). You can think of the `.infer.NUTS` sampler as being the actual machine for sampling parameter space, and the `.infer.MCMC` object as being a "handler" that controls it.  If you want to use a different sampler (e.g. the crude but fast sample adaptive sampler), we can swap this first argument out. You can find a list of all [NumPyro's standard samplers](https://num.pyro.ai/en/latest/mcmc.html) in its documentation.  
