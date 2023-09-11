@@ -32,8 +32,8 @@ In SVI, we seek to tweak the tuning variables $\phi$ of our surrogate model $q_{
   
 $$\begin{equation}  
     KL_{p \rightarrow q_{\theta}}   
-    = \mathbb{E_{q_{\theta}}} \left[ \ln \left| \frac{q_{\theta}(z)}{p(z)} \right| \right]    
-    = \int{   q_{\theta}(z) \ln \left| \frac{q_{\theta}(z)}{p(z)} \right| } dz  
+    = \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{q_{\theta}(z)}{p(z)} \rvert \right]    
+    = \int{   q_{\theta}(z) \ln \lvert \frac{q_{\theta}(z)}{p(z)} \rvert } dz  
 \end{equation}$$  
   
 The KL Divergence also shows itself in discussions about the "information" or "entropy" of distributions, measures of how well they constrain parameters, but in this case we can just think of it as a measure of the "distance" we seek to minimize between our two distributions. It's worth noting that $KL=0$ when $q_{\theta}(z) = p(z)$, which tells us that KL is strictly positive: $KL \ge 0$. In most applications, we don't _actually_ have access to the normalized posterior distribution $p(z)$, and instead will have it in the un-normalized form that we normally perform MCMC on. We can evaluate the "shape" of the posterior, but only up to its normalizing constant / evidence '$Z$':  
@@ -46,19 +46,19 @@ Having the evidence is basically the same as having already solved for $p(z)$, a
   
 \begin{eqnarray}  
     KL_{p \rightarrow q_{\theta}}   
-    = & \mathbb{E_{q_{\theta}}} \left[ \ln \left| \frac{P(z)}{q_{\theta}(z)} \right| \right] + \mathbb{E_{q_{\theta}}} \left[ \ln \left| Z \right| \right]\\  
-    = & -\text{ELBO} + \ln \left| Z \right| \\  
+    = & \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{P(z)}{q_{\theta}(z)} \rvert \right] + \mathbb{E_{q_{\theta}}} \left[ \ln \lvert Z \rvert \right]\\  
+    = & -\text{ELBO} + \ln \lvert Z \rvert \\  
 \end{eqnarray}  
   
 Here we've defined the **Evidence Lower Bound** (ELBO), an evidence-free proxy for the KL-divergence. Rather than "minimzing the KL-divergence", we speak in terms of "maximizing the ELBO", to the smae end. The name comes from the fact that it acts as a lower bound for the _true_ posterior's log-evidence:  
   
 $$\begin{equation}  
-    0 \le KL_{p \rightarrow q_{\theta}}  = -\text{ELBO} + \ln \left| Z \right|    
+    0 \le KL_{p \rightarrow q_{\theta}}  = -\text{ELBO} + \ln \lvert Z \rvert    
     \;\; \rightarrow \;\;   
-    \text{ELBO} \le \ln \left| Z \right|  
+    \text{ELBO} \le \ln \lvert Z \rvert  
 \end{equation}$$  
   
-This is the core of SVI: we optimize the surrogate model's tuning parameters to maximize the ELBO. There are some special-case versions of SVI with analytical solutions, but in NumPyro terms this is a pure numerical optimziation problem, well suited to JAX's autodiff. Obviously, $\text{ELBO} = \mathbb{E_{q_{\theta}}} \left[ \ln \left| \frac{q_{\theta}(z)}{P(z)} \right| \right]$ is an expectation value and still requires some integration over $q_{\theta}(z)$. This is done via Monte-Carlo integration, hence the "stochastic" part of "stochastic variational inference". Because we're only using to to navigate instead of defining the entire distribution, this integral can afford to be sparsely sampled without breaking our engine.  
+This is the core of SVI: we optimize the surrogate model's tuning parameters to maximize the ELBO. There are some special-case versions of SVI with analytical solutions, but in NumPyro terms this is a pure numerical optimziation problem, well suited to JAX's autodiff. Obviously, $\text{ELBO} = \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{q_{\theta}(z)}{P(z)} \rvert \right]$ is an expectation value and still requires some integration over $q_{\theta}(z)$. This is done via Monte-Carlo integration, hence the "stochastic" part of "stochastic variational inference". Because we're only using to to navigate instead of defining the entire distribution, this integral can afford to be sparsely sampled without breaking our engine.  
   
 The broad overview of SVI is then:  
  1. Choose a surrogate distribution form that we think can (with tuning) approximate the true posterior  
@@ -340,7 +340,7 @@ $$
 We have an objective function in the form of the KL divergence / ELBO, which we can minimize / maximize as a function of our dummy model parameters $\phi=\{b,\theta\}$:  
   
 $$  
-KL(b,\theta) = \iint q(x,y|b,\theta)\cdot ln\left| \frac{p(x,y)}{q(x,y|b,\theta)} \right| dx dy  
+KL(b,\theta) = \iint q(x,y|b,\theta)\cdot ln\lvert \frac{p(x,y)}{q(x,y|b,\theta)} \rvert dx dy  
 $$  
   
 Here, I demonstrate how to compose simple distributions (Normal, Uniform, Cauchy etc) into arbitrary likelihood functions within the guide using mixture models  
