@@ -15,7 +15,7 @@ Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blo
 - We often encounter problems where we already know the rough "shape" of the final distribution, e.g. a multivariate gaussian  
 - Can leverage this knowledge to instead find a good approximation for the simplified "good enough" distribution  
   
-General idea of SVI is to have some complicated posterior distribution, $p(z)$, and approximate it with some simple "surrogate distribution", $q(z|\phi)$, which is 'similar' to $p(z)$. Here, $\phi$ are tuneable variables of our surrogate distribution (_not_ model parameters) e.g. the mean and width of a normal distribution. The name "variational inference" comes from the method's pen-and-paper origins in functional analysis, but a more informative name might be something like "Surrogate Distribution Optimization of Parameters".   
+General idea of SVI is to have some complicated posterior distribution, $p(z)$, and approximate it with some simple "surrogate distribution", $q(z \vert \phi)$, which is 'similar' to $p(z)$. Here, $\phi$ are tuneable variables of our surrogate distribution (_not_ model parameters) e.g. the mean and width of a normal distribution. The name "variational inference" comes from the method's pen-and-paper origins in functional analysis, but a more informative name might be something like "Surrogate Distribution Optimization of Parameters".   
   
 SVI has two core benefits:  
  1. As an optimization problem, SVI is much cheaper and scales better into higher dimensions  
@@ -93,9 +93,6 @@ import matplotlib.pyplot as plt
 from chainconsumer import ChainConsumer  
 ```  
   
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html  
-      from .autonotebook import tqdm as notebook_tqdm  
-  
   
 ### Heads or Tails: A Simple Model  
 As a first example, we'll go over a variation of the the heads / tails example from the [old pyro documentation](http://pyro.ai/examples/svi_part_i.html) and the modern (but incomplete) equivalent from the [NumPyro documentation](https://num.pyro.ai/en/stable/svi.html). The basic setup is simple: we have a coin being tossed a certain number of times, lending heads $A$ times and tails $B$ times in no particular order. We're seeking to constrain the "fairness" of the coin, $f$, the probability of it landing heads on any given flip.  
@@ -142,9 +139,6 @@ data_headstails = jnp.concatenate([jnp.ones(A_true), jnp.zeros(B_true)])
 mean_true, var_true = A_true/(A_true + B_true), (A_true*B_true / (A_true + B_true)**2 / (A_true + B_true+1))**0.5  
   
 ```  
-  
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
-  
   
     [1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 0. 0. 0. 0. 0. 0. 0. 0.]  
   
@@ -201,8 +195,6 @@ optimizer = numpyro.optim.Adam(step_size=0.0005)
 svi = SVI(model_headstails, guide_beta, optimizer, loss=Trace_ELBO())  
 svi_result = svi.run(random.PRNGKey(1), num_steps = 10000, data_headstails)  
 ```  
-  
-    100%|██████████████████████| 10000/10000 [00:01<00:00, 5916.90it/s, init loss: 18.0005, avg. loss [9501-10000]: 14.7887]  
   
   
 - Now acquire results  
@@ -280,9 +272,6 @@ svi_norm = SVI(model_headstails , guide_normal, optimizer, loss=Trace_ELBO())
 svi_result_norm = svi_norm.run(random.PRNGKey(1), 50000, data_headstails)  
 ```  
   
-    100%|████████████████████| 50000/50000 [00:03<00:00, 15392.80it/s, init loss: 14.9509, avg. loss [47501-50000]: 14.7911]  
-  
-  
   
   
   
@@ -328,7 +317,7 @@ plt.show()
 So I want to build a guide for a dummy function of the form:  
   
 $$  
-q(x,y | b, \theta) =  [e^{-(u_1-b)^2} + e^{-(u_1+b)^2}]\cdot \frac{1}{1+u_2^2}  
+q(x,y \vert b, \theta) =  [e^{-(u_1-b)^2} + e^{-(u_1+b)^2}]\cdot \frac{1}{1+u_2^2}  
 $$  
   
 Where:  
