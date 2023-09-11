@@ -1,9 +1,10 @@
 Next Entry: [Constrained Domain](.\..\02_constraineddomain\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+  
 ---------  
   
   

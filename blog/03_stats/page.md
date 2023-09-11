@@ -1,12 +1,13 @@
   
   
   
-Go Back: [WebGuide](.\..\02_numpyro\05_parallelizing\page.html)	&nbsp;	Return to [blog home](.\..\bloghome.html)  
+Go Back: [SVI](.\..\02_numpyro\06_SVI\page.html)	&nbsp;	Return to [Blog Home](.\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [WebGuide](.\01_nestedsampling\./page.html)  
 * [Bayesian Suspiciousness](.\02_suspiciousness\./page.html)  
+  
 ---------  
   
   

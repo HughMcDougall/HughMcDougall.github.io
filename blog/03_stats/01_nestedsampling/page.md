@@ -1,9 +1,10 @@
 Next Entry: [Bayesian Suspiciousness](.\..\02_suspiciousness\page.html)  
   
   
-Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+  
 ---------  
   
   

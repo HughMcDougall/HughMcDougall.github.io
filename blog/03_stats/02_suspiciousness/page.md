@@ -1,9 +1,10 @@
 Previous Entry: [WebGuide](.\..\01_nestedsampling\page.html)	&nbsp;	   
   
   
-Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+  
 ---------  
   
   

@@ -17,10 +17,6 @@ import matplotlib.pyplot as plt
 from chainconsumer import ChainConsumer
 ```
 
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-
-
 ## The Constrained & Unconstrained Domain
 
 In this section, we look at how a simple uniform distributed parameter, $x \sim U(2,2)$, is re-paramaterized by numpyro into a domain where the sharp discontinuities at the edges of this prior are removed. In the following cell, we perform the transformation manually. First, we need to make sure we have the `transform_fn` function. We'll also define the uniform distribution as its own separate python object, as we need to feed it into our transformation later.
@@ -60,9 +56,6 @@ plt.grid()
 plt.show()
 ```
 
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
-
-
 
     
 ![png](output_5_1.png)
@@ -90,7 +83,7 @@ diff = (x_uncon[2:]-x_uncon[:-2]) / (x_con[2:]-x_con[:-2])
 
 Now we feed our unconstrained parameters into the likelihood function, which we access from the `potential_energy` utility function that NumPyro gives us. This potential energy returns the **negative log likelihood**. For our model `model_test()`, this looks something like:
 
-$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+$PE(x_{uncon}) = -ln(\mathcal{L(x_{uncon})})=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
 
 Even though we have no model `args` or `kwargs`, these fields still have to be explicitly given as empty tuples like above. In a more complicated case with data, e.g. `model_with_data(X,Y,E)`, these would be fed into the `model_args` field.
 
@@ -242,12 +235,6 @@ MCMC_sampler.run(jax.random.PRNGKey(1),
 MCMC_results = MCMC_sampler.get_samples()
 print("Sampling done")
 ```
-
-    sample: 100%|█████████████████████████| 11000/11000 [00:03<00:00, 3408.32it/s, 3 steps of size 8.64e-01. acc. prob=0.92]
-
-
-    Sampling done
-
 
 In HMC, potential energy is proportional to $\chi^2$:
 

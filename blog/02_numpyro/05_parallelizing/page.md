@@ -1,9 +1,10 @@
-Previous Entry: [WebGuide](.\..\04_nestedsampling\page.html)	&nbsp;	   
+Previous Entry: [WebGuide](.\..\04_nestedsampling\page.html)	&nbsp;	 Next Entry: [SVI](.\..\06_SVI\page.html)  
   
   
-Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [blog home](.\..\..\bloghome.html)  
+Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
+  
 ---------  
   
   

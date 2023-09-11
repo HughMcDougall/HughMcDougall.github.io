@@ -286,7 +286,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
             fout.write("Go Back: [%s](%s)" %(parentfile["title"], parentfile_url))
             fout.write("\t&nbsp;\t")
 
-            fout.write("Return to [blog home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry)[1:])
+            fout.write("Return to [Blog Home](%s)" %os.path.relpath(destfile.replace(".md",".html"), entry)[1:])
             fout.write("  \n")
             fout.write("  \n")
     
@@ -329,6 +329,8 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 # Do markdown & html friendly line breaks
                 fout.write("  ")
                 fout.write("\n")
+                
+        fout.write("  \n")                
         fout.write("---------")
         fout.write("  \n")
 

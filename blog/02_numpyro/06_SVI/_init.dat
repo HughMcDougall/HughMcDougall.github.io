@@ -1,0 +1,7 @@
+doc:	./page.md
+source:	./_SVI.md
+title:	SVI
+date:	12/9/23
+desc:	Stochastic variational inference
+nav:	TRUE
+tree:	TRUE
