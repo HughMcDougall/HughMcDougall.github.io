@@ -1,8 +1,12 @@
 # The Constrained / Unconstrained Domains & Getting Likelihoods from MCMC
 
-The moment you start trying to do anything fancy with NumPyro, it's only a matter of time before you find yourself running into issues with the constrained and unconstrained domain. NumPyro uses JAX's autodiff for a lot of its functionality: these gradients don't make sense if you have any distribution / prior with discontinuities, and so NumPyro internally performs a coordinate transformation from these _discontinuous_ distributions to a new domain with _continuous_ distributions. The danger comes in the fact that _some_ of NumPyro's features want arguments specified in this unconstrained domain, but it's not always easy to tell which. 
+The moment you start trying to do anything fancy with NumPyro, it's only a matter of time before you find yourself running into issues with the constrained and unconstrained domain. NumPyro uses JAX's autodiff for a lot of its functionality: these gradients don't make sense if you have any distribution / prior with discontinuities, and so NumPyro internally performs a coordinate transformation from these _discontinuous_ distributions to a new domain with _continuous_ distributions. The danger comes in the fact that _some_ of NumPyro's features want arguments specified in this unconstrained domain, but it's not always easy to tell which at first glance.
 
 In this example, we cover a simple 1D example of how to transform parameters between the constrained and unconstrained domain and how to use this to similarly adjust a likelihood function, and then apply these techniques to an MCMC chain to show how you can use NumPyro's normal MCMC methods to also report the likelihood at each sample.
+
+**Index**
+- [Explanation of The Constrained / Unconstrained Domain](#The-Constrained-&-Unconstrained-Domain)
+- [Getting Likelihoods from MCMC Chains](#Using-Domain-Transforms-to-get-MCMC-Sample-Likelihood)
 
 
 ```python
@@ -19,7 +23,7 @@ from chainconsumer import ChainConsumer
 
 ## The Constrained & Unconstrained Domain
 
-In this section, we look at how a simple uniform distributed parameter, $x \sim U(2,2)$, is re-paramaterized by numpyro into a domain where the sharp discontinuities at the edges of this prior are removed. In the following cell, we perform the transformation manually. First, we need to make sure we have the `transform_fn` function. We'll also define the uniform distribution as its own separate python object, as we need to feed it into our transformation later.
+In this section, we look at how a simple uniform distributed parameter, $x \sim U(2,2)$, is re-paramaterized by numpyro into a domain where the sharp discontinuities at the edges of this prior are removed. First, we need to make sure we have the `transform_fn` function, which is the engine for changing parameters from one domain to the other. I'll also define a numpyro model, keping the uniform distribution as its own separate python object as we need to feed it into our transformation later.
 
 
 ```python
@@ -37,7 +41,7 @@ This second step transforms the entire dictionary and returns as another diction
 
 By plotting the transformation, we can see that it does two things:
 1. The transformed values are _unconstrained_, i.e. $x_{uncon} \in (-\infty,\infty)$
-2. They are 'normalized' such that the "central" value is $x_{uncon} = 0$
+2. They are 'normalized' such that the "central" value of $x_{con}=1$ transforms to $x_{uncon} = 0$
 
 
 ```python
@@ -58,11 +62,11 @@ plt.show()
 
 
     
-![png](output_5_1.png)
+![png](output_5_0.png)
     
 
 
-Converting the variables between the constrained and unconstrained domains is easy enough, as shown above, but feeding these directly into a likelihood function won't give us the right answer. Instead, we need to weight by the *derivative* of this transformation to recover the correct probability. If you're note familair with how probability distributions change with coordinate transformations, the key idea is that corresponding differential elements have the same "power" contained in them:
+Converting the variables between the constrained and unconstrained domains is easy enough, as shown above, but feeding these directly into a likelihood function won't give us the right answer. Instead, we need to weight by the *derivative* of this transformation to recover the correct probability. If you're not familair with how probability distributions change with coordinate transformations, the key idea is that corresponding differential elements have the same amount of "power" in either coordinate system:
 
 \begin{equation}
     P(x_{con}) \cdot dx_{con} = P(x_{uncon}) \cdot dx_{uncon}
@@ -74,7 +78,7 @@ Such that the distribution transforms like:
     P(x_{con}) = P(x_{uncon}) \cdot \frac{dx_{uncon}}{dx_{con}}
 \end{equation}
 
-As a first pass, we'll do this using crude finite differences:
+Note that this equation is specific to the one dimensional case. In the more general sense, we multiply by the determinant of the Jacobian of the transformation. As a first pass, we'll get the derivative using crude finite differences:
 
 
 ```python
@@ -83,7 +87,7 @@ diff = (x_uncon[2:]-x_uncon[:-2]) / (x_con[2:]-x_con[:-2])
 
 Now we feed our unconstrained parameters into the likelihood function, which we access from the `potential_energy` utility function that NumPyro gives us. This potential energy returns the **negative log likelihood**. For our model `model_test()`, this looks something like:
 
-$PE(x_{uncon}) = -ln(\mathcal{L(x_{uncon})})=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
 
 Even though we have no model `args` or `kwargs`, these fields still have to be explicitly given as empty tuples like above. In a more complicated case with data, e.g. `model_with_data(X,Y,E)`, these would be fed into the `model_args` field.
 
@@ -118,12 +122,13 @@ plt.show()
 ```
 
 
+
     
-![png](output_9_0.png)
+![png](output_9_1.png)
     
 
 
-Looking above, we can see that the likelihood function plateaus at $\mathcal{L}\approx 0.5$ for most of the domain, and is constrained to $x \in [0,2]$, both of which are what we expect from our $x \sim U(0,2)$ distribution. The unusual behaviour at the edges of the domain is a result of our poor esimate of $\frac{dx_{uncon}}{dx_{con}}$, coupled with the extreme asymptotic gradients at $c \in \{0,2\}$. 
+Looking above, we can see that the likelihood function plateaus at $\mathcal{L}\approx 0.5$ for most of the domain, and is constrained to $x \in [0,2]$, both of which are what we expect from our $x \sim U(0,2)$ distribution. The unusual behaviour at the edges of the domain is a result of our poor esimate of $\frac{dx_{uncon}}{dx_{con}}$ clashing with the extreme gradients of the transformation at these points.
 
 Fortunately, we can use JAX's native autodifferentiation to get an *analytically accurate* derivative function. First, re-define the transformation function to be a bit easier to read, and then apply jax's auto-diff to this, which is as easy as using `jax.grad(function)`:
 
@@ -142,7 +147,7 @@ Now take these two functions, along with the likelihood evaluation we saw before
 ```python
 def l_uncon(x):
     xdash = tform(x)
-    diff = tform_diff(x)
+    diff  = tform_diff(x)
     
     ll  = numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': xdash} )
     out = jnp.exp(-ll) * diff
@@ -171,14 +176,15 @@ plt.show()
 ```
 
 
+
     
-![png](output_15_0.png)
+![png](output_15_1.png)
     
 
 
 In this example we transformed _into_ the unconstrained domain, but transforming back out is as simple as swapping `invert=True` to `False`. Knowing how to convert between the two domains is important for cases like running multiple MCMC chains with different start locations and retrieving sample likelihoods from an MCMC chain. In the following section, we cover an example of this second application.
 
-# Using Domain Transforms to get MCMC Sample Likelihood
+## Using Domain Transforms to get MCMC Sample Likelihood
 
 In this section we tackle two problems: 
 1. Firstly, how to get a NumPyro MCMC sampler to record information about the likelihood of the MCMC samples
@@ -190,7 +196,7 @@ To keep things simple, we'll use a simple unimodal gaussian and uniform priors. 
 ```python
 #----------------------
 # Parameters / prior volume
-xmin, xmax = -5, 15
+xmin, xmax = -5, 10
 ymin, ymax = -8, 8
 V0 = (xmax-xmin) * (ymax-ymin) # Prior vol
 #----------------------
@@ -226,7 +232,7 @@ MCMC_sampler = numpyro.infer.MCMC(
     numpyro.infer.NUTS(np_model), 
     num_chains=1,
     num_warmup=1000, 
-    num_samples=int(10000))
+    num_samples=int(50000))
 
 # Run and acquire results, also storing potential energy
 MCMC_sampler.run(jax.random.PRNGKey(1), 
@@ -279,9 +285,10 @@ logLtrue = np.log(Ltrue)
 # Plotting
 plt.scatter(logLtrue, -1 * pot_en, s=1)
 plt.axline([0,1], slope=1,c='r',zorder=-1)
+plt.axis('square')
 plt.grid()
 plt.xlabel("True Likelihood")
-plt.ylabel("$-2 \\times $Potential Energy")
+plt.ylabel("$-1 \\times $Potential Energy")
 plt.show()
 ```
 
@@ -302,7 +309,7 @@ This is simple enough to do, all have to do is:
 2. Take their gradient using `jax.grad`
 3. Get a function that takes their product to get the conversion factor
 
-In the following, I just JAX's `jax.vmap` so that our final function can process all of the MCMC chain at once, this time using applying JAX's function transformations using decorators:
+In the following, I just JAX's `jax.vmap` so that our final function can process all of the MCMC chain at once, this time applying JAX's function transformations using decorators:
 
 
 ```python
@@ -324,7 +331,7 @@ def tform_diff_xy(x,y):
     return(out)
 ```
 
-Equipped with this, we can easily get the required scaling for each sample and then apply this factor to transform `potential energy` into a true log_likelihood.  Plotting the two against eachother, we can confirm that this new transformed value is the property that we're after:
+Equipped with this, we can easily get the required scaling for each sample and then apply this factor to transform `potential energy` into a true `log_likelihood`.  Plotting the two against eachother, we can confirm that this new transformed value is the property that we're after:
 
 
 ```python
