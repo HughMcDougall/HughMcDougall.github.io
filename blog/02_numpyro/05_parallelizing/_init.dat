@@ -1,6 +1,6 @@
 doc:	./page.md
 source:	./_page.md
-title:	WebGuide
+title:	Parallelization
 date:	21/8/23
 desc:	How to use this blog homepage
 nav:	TRUE

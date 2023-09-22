@@ -1,6 +1,6 @@
 doc:	./page.md
 source:	./_constraineddomain.md
-title:	Constrained Domain
+title:	The Constrained Domain
 date:	20/9/23
 desc:	Explanation of constranied vs unconstrained domains in NumPyro
 nav:	TRUE

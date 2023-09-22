@@ -1,6 +1,6 @@
 doc:	./page.md
 source:	./_multimodal.md
-title:	MCMC Samplers
+title:	Testing Different MCMC Samplers
 date:	31/8/23
 desc:	A quick overview of the different samplers in numpyro and their strengths / weaknesses
 nav:	TRUE

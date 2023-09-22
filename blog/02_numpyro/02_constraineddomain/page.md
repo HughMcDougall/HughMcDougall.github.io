@@ -1,4 +1,4 @@
-Previous Entry: [Getting Started](.\..\01_gettingstarted\page.html)	&nbsp;	 Next Entry: [MCMC Samplers](.\..\03_mcmcsamplers\page.html)  
+Previous Entry: [Getting Started](.\..\01_gettingstarted\page.html)	&nbsp;	 Next Entry: [Testing Different MCMC Samplers](.\..\03_mcmcsamplers\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

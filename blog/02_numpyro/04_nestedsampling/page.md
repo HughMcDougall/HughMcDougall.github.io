@@ -1,4 +1,4 @@
-Previous Entry: [MCMC Samplers](.\..\03_mcmcsamplers\page.html)	&nbsp;	 Next Entry: [WebGuide](.\..\05_parallelizing\page.html)  
+Previous Entry: [Testing Different MCMC Samplers](.\..\03_mcmcsamplers\page.html)	&nbsp;	 Next Entry: [Parallelization](.\..\05_parallelizing\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

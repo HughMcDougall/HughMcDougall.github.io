@@ -6,10 +6,10 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [Blog 
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [Getting Started](.\01_gettingstarted\./page.html)  
-* [Constrained Domain](.\02_constraineddomain\./page.html)  
-* [MCMC Samplers](.\03_mcmcsamplers\./page.html)  
-* [WebGuide](.\04_nestedsampling\./page.html)  
-* [WebGuide](.\05_parallelizing\./page.html)  
+* [The Constrained Domain](.\02_constraineddomain\./page.html)  
+* [Testing Different MCMC Samplers](.\03_mcmcsamplers\./page.html)  
+* [Nested Sampling](.\04_nestedsampling\./page.html)  
+* [Parallelization](.\05_parallelizing\./page.html)  
 * [SVI](.\06_SVI\./page.html)  
   
 ---------  
