@@ -41,7 +41,7 @@ Having the evidence is basically the same as having already solved for $p(z)$, a
     = & -\text{ELBO} + \ln \lvert Z \rvert \\
 \end{eqnarray}
 
-Here we've defined the **Evidence Lower Bound** (ELBO), an evidence-free proxy for the KL-divergence. Rather than "minimzing the KL-divergence", we speak in terms of "maximizing the ELBO", to the smae end. The name comes from the fact that it acts as a lower bound for the _true_ posterior's log-evidence:
+Here we've defined the **Evidence Lower Bound** (ELBO), an evidence-free proxy for the KL-divergence. Rather than "minimzing the KL-divergence", we speak in terms of "maximizing the ELBO", to the same end. The name comes from the fact that it acts as a lower bound for the _true_ posterior's log-evidence:
 
 \begin{equation}
     0 \le KL_{p \rightarrow q_{\theta}}  = -\text{ELBO} + \ln \lvert Z \rvert  
@@ -49,10 +49,10 @@ Here we've defined the **Evidence Lower Bound** (ELBO), an evidence-free proxy f
     \text{ELBO} \le \ln \lvert Z \rvert
 \end{equation}
 
-This is the core of SVI: we optimize the surrogate model's tuning parameters to maximize the ELBO. There are some special-case versions of SVI with analytical solutions, but in NumPyro terms this is a pure numerical optimziation problem, well suited to JAX's autodiff. Obviously, $\text{ELBO} = \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{q_{\theta}(z)}{P(z)} \rvert \right]$ is an expectation value and still requires some integration over $q_{\theta}(z)$. This is done via Monte-Carlo integration, hence the "stochastic" part of "stochastic variational inference". Because we're only using to to navigate instead of defining the entire distribution, this integral can afford to be sparsely sampled without breaking our engine.
+This is the core of SVI: we optimize the surrogate model's tuning parameters to maximize the ELBO. There are some special-case versions of SVI with analytical solutions, but in NumPyro terms this is a pure numerical optimziation problem, well suited to JAX's autodiff. Obviously, $\text{ELBO} = \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{q_{\theta}(z)}{P(z)} \rvert \right]$ is an expectation value and still requires some integration over $q_{\theta}(z)$. This is done via Monte-Carlo integration, hence the "stochastic" part of "stochastic variational inference". Because we're only using it to navigate instead of defining the entire distribution, this integral can afford to be sparsely sampled without breaking our engine.
 
 The broad overview of SVI is then:
- 1. Choose a surrogate distribution form that we think can (with tuning) approximate the true posterior
+ 1. Choose a surrogate distribution form that approximates the true posterior after some tuning
  2. Use monte carlo integration to estimate the ELBO (and its gradients with respect to $\theta$)
  3. Using numerical optimization, tweak $\theta$ until the ELBO reaches a stable maximum
 
@@ -63,8 +63,8 @@ The broad overview of SVI is then:
 ## Doing SVI in NumPyro <a id='numpyro'></a>
 NumPyro has ready-made tools for doing SVI without much more complexity than an MCMC run. As a quick overview, an SVI job consistent of four components:
 
-1. A standard NumPyro model that can generate a posterior and defines latent variables in the form of `numpyro.sample`s
-2. A numpyro "guide" that defines surrogate sample distributions in in terms of the optimizeable `numpyro.parameter`s
+1. A standard NumPyro model that can generate a posterior and defines latent variables in the form of `numpyro.samples`
+2. A numpyro "guide" that defines surrogate sample distributions in in terms of the optimizeable `numpyro.parameters`
 3. A JAX optimizer from the `numpyro.optim` module
 4. And a `numpyro.infer.SVI`object that takes in all of the above to perform the SVI run. This is analagous to the `numpyro.infer.MCMC` object we use in MCMC, a "handler" for our various objects and results
 
@@ -135,10 +135,13 @@ data_headstails = jnp.concatenate([jnp.ones(A_true), jnp.zeros(B_true)])
 mean_true, var_true = A_true/(A_true + B_true), (A_true*B_true / (A_true + B_true)**2 / (A_true + B_true+1))**0.5
 ```
 
-For a given fairness, the probability of any coin toss landing heads or tails follows a [bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution), such that the entire run of heads and tails follows a binomial:
+    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+
+
+For a given fairness, the probability of any coin toss landing heads or tails follows a [bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution), such that the entire run of heads and tails follows a binomial distribution:
 
 \begin{equation}
-    p(f \vert A,B) \propto \prod_A Binom(f) \cdot \prod_B Binom(1-f)
+    p(f \vert A,B) \propto \prod_A \text{Bernoulli}(f) \cdot \prod_B \text{Bernoulli}(1-f)
 \end{equation}
 
 And we can construct this as a model in numpyro:
@@ -160,9 +163,9 @@ def model_headstails(data):
 
 **Fitting A Beta Distribution with SVI**
 
-Now onto the actual SVI work. The biggest difference between MCMC and SVI in NumPyro is the '_guide_', a python function that tells numpyro the family of the surrogate distribution and whate variables we tune to choose the distribution in this family that minimizes the ELBO. Unlike numpyro models, guides include the non-stochastic elements that we need to optimize over. These are identified by variables marked as `numpyro.param`, while the model latent variables are defined as `numpyro.samples` from distributions based on these `params`.
+Now onto the actual SVI work. The biggest difference between MCMC and SVI in NumPyro is the '_guide_', a python function that tells numpyro about the  surrogate distribution and what variables we tune such that this distributions minimizes the ELBO. Unlike numpyro models, guides include non-stochastic variables that are used for optimization instead of sampling / integration. These parameters are identified by variables marked as `numpyro.param`, while the model latent variables are all `numpyro.samples`, with the `samples` being drawn from distributions that depend on the `params`.
 
-In this part, we'll construct a guide for a generic $\beta$ distribution, which has two `params` to optimize: $A$ and $B$. Notice that we apply constraints on the variables, in this case defining that $A,B>0$. All constraints come from `numpyro.distributions.constraints`, and you can find a full list in the [NumPyro documentation](https://num.pyro.ai/en/stable/_modules/numpyro/distributions/constraints.html). We also need to specify an initial value for the optimization to begin at, making sure it obeys these constraints:
+In this part, we'll construct a guide for a generic $\beta$ distribution, which has two `params` to optimize: $A$ and $B$. Notice that we apply constraints on the variables, in this case defining that $A,B>0$. All constraints come from `numpyro.distributions.constraints`, and you can find a full list in the [NumPyro documentation](https://num.pyro.ai/en/stable/_modules/numpyro/distributions/constraints.html). We also need to specify an initial value for the optimization to begin at, taking care to ensure this value doesn't violate these constraints:
 
 
 ```python
@@ -181,9 +184,9 @@ def guide_beta(data):
     numpyro.sample("latent_fairness", dist.Beta(alpha_q, beta_q))
 ```
 
-Now the fun part: we construct an `SVI` object just like we would an `MCMC` object: feeding it the statistical modelling (in his case a model and guide) and a solution method (in this case an optimizer and a loss function). The loss being given as `Trace_Elbo()` just refers to us minimizing the KL divergence in a model with entirely continuous variables, and we won't need to touch this in most cases. We also make an `Adam` optimizer, `JAX`'s native autodiff optimization routine that navigates to the best $\theta$.
+Now the fun part: we construct an `SVI` object just like we would an `MCMC` object: feeding it the statistical modelling (in his case a model and guide) and a solution method (in this case an optimizer and a loss function). The loss being given as `Trace_Elbo()` just refers to us minimizing the KL divergence in a model with entirely continuous variables, something we won't need to touch in most cases. We also make an `Adam` optimizer, `JAX`'s native autodiff-based stochastic optimization routine that will let the `SVI` object navigate to the best $\theta$.
 
-We fire this off with `.run()` and collect our results just as we would with an MCMC run:
+We fire this off with `.run()`, and collect our results just as we would with an MCMC run:
 
 
 ```python
@@ -195,7 +198,7 @@ svi_beta = SVI(model_headstails, guide_beta, optimizer, loss=Trace_ELBO())
 svi_beta_result = svi_beta.run(random.PRNGKey(1), num_steps = 10000, data = data_headstails)
 ```
 
-    100%|██████| 10000/10000 [00:01<00:00, 5676.35it/s, init loss: 7.9658, avg. loss [9501-10000]: 7.7668]
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3741.04it/s, init loss: 18.0005, avg. loss [9501-10000]: 14.7887]
 
 
 The optimal `param` values are stored as a keyed dictionary in the `svi_beta_result` object, and we can extract these to see our best fit surrogate model. In this instance, we know both the ground truth for the parameters _and_ an analytical solution for the pdf of $f$, and so we can see how well SVI has done at recovering the true distribution. We can see that SVI has, in short order, recovered the parameters to within $\approx 10 \%$, and has similarly recovered import summary statistics like the mean and variance of the pdf:
@@ -237,10 +240,10 @@ plt.show()
 
     ----------------------------------------------------------------------------
     	 Truth 	 SVI
-    A 	 6.0 	 8.9
-    B 	 4.0 	 6.4
-    Mean 	 0.60 	 0.58
-    Var 	 0.15 	 0.12
+    A 	 12.0 	 12.3
+    B 	 8.0 	 8.6
+    Mean 	 0.60 	 0.59
+    Var 	 0.11 	 0.11
     ----------------------------------------------------------------------------
 
 
@@ -252,9 +255,9 @@ plt.show()
 
 **Fitting Approximate Models with SVI** <a id='approximate_models'></a>
 
-In our simple toy mode, we were able to define a guide such that, if properly optimized, SVI recovers to the _exact_ solution the $\beta$ distribution. We rarely enjoy this luxury in the real world, as cases with analytical solutions aren't really the use case for numerical statistical methods. A more realistic use case for SVI is in fitting a simplified surrogate model that emulates a reasonable fit to the posterior without matching it exactly. As an example in our heads / tail case, we can see that $\beta$ distributions are _almost_ gaussian for large numbers of trails, and so we might consider using SVI to fit a normal distribution instead.
+In our simple toy model, we were able to define a guide that, if properly optimized, SVI recovers the _exact_ solution of the $\beta$ distribution. We rarely enjoy this luxury in the real world, as cases with analytical solutions aren't really the use case for numerical statistical methods. A more realistic use case for SVI is in fitting a simplified surrogate model that emulates a reasonable fit to the posterior without matching it exactly. In a lot of applications we crunch the posterior down to a mean and standard deviation anyway, and so we can imagine a "best fit gaussian" as being a useful tool.
 
-As before, we define a guide that describes the set of all surrogate distributions, this time tuning the mean and standard deviation of our gaussian:
+As an example in our heads / tail case, we can see that $\beta$ distributions are _almost_ gaussian for large numbers of trails, and so we might consider using SVI to fit a normal distribution instead. As before, we define a guide that describes the set of all surrogate distributions, this time tuning the mean and standard deviation of our gaussian:
 
 
 ```python
@@ -272,7 +275,7 @@ svi_norm = SVI(model_headstails , guide_normal, optimizer, loss=Trace_ELBO())
 svi_result_norm = svi_norm.run(random.PRNGKey(2), 50000, data_headstails)
 ```
 
-    100%|███████| 50000/50000 [00:03<00:00, 13599.52it/s, init loss: 8.4292, avg. loss [47501-50000]: nan]
+    100%|█████████████████████████████████████████████████████████| 50000/50000 [00:05<00:00, 9231.93it/s, init loss: 15.5589, avg. loss [47501-50000]: 14.7973]
 
 
 Running this, we acquire the gaussian that is of closest fit to the $\beta$ distribution. As $\beta$ is non-gaussian, there is an unavoidable discrepency between the two, but we still recover important summary statistics like the mean and variance of the distribution. This is one of SVI's key utilities: as long as your surrogate model can be tuned to _roughly_ match the true posterior, it can produce useful results.
@@ -304,8 +307,8 @@ plt.show()
 
     ----------------------------------------------------------------------------
     	 Truth 	 SVI
-    Mean 	 0.60 	 nan
-    B 	 0.15 	 nan
+    Mean 	 0.60 	 0.59
+    B 	 0.11 	 0.10
     ----------------------------------------------------------------------------
 
 
@@ -314,6 +317,8 @@ plt.show()
 ![png](output_18_1.png)
     
 
+
+There is a slight detail that I've smoothed over here: the $\beta$ distribution is technically only defined on the interval $x\in[0,1]$, while the normal distribution is defined over all real numbers. The two distributions have different [supports](https://en.wikipedia.org/wiki/Support_(mathematics)). We can get away with this discrepency in this well behaved case, but mixing and matching dissimilar distributions can lead to badly fit surrogate distributions, and can even break the numerical fitting procedure.
 
 ## Acquiring / Interpreting Results from SVI <a id='interpreting'></a>
 
@@ -351,7 +356,7 @@ plt.show()
 
 
     
-![png](output_21_0.png)
+![png](output_22_0.png)
     
 
 
@@ -364,15 +369,16 @@ Alternately, we use `Predict` to generate some mock-data according to our surrog
 predictive_fromguide = Predictive(model_headstails, guide=guide_beta, params=svi_beta_result.params, num_samples=1000)
 samples_fromguide = predictive_fromguide(random.PRNGKey(1), data=None)
 
-plt.figure(figsize = (8,3))
+plt.figure(figsize = (4,1.5))
 plt.hist(samples_fromguide['obs'].reshape(1000*10),bins=2, rwidth=0.75, density=True)
+plt.gca().set_xticklabels([])
 plt.show()
 
 ```
 
 
     
-![png](output_23_0.png)
+![png](output_24_0.png)
     
 
 
@@ -382,14 +388,15 @@ plt.show()
 predictive_fromsamples = Predictive(model_headstails, posterior_samples, params=svi_beta_result.params)
 samples_fromsamples = predictive_fromsamples(random.PRNGKey(1), data=None)
 
-plt.figure(figsize = (8,3))
+plt.figure(figsize = (4,1.5))
 plt.hist(samples_fromsamples['obs'].reshape(10000*10),bins=2, rwidth=0.75, density=True)
+plt.gca().set_xticklabels([])
 plt.show()
 ```
 
 
     
-![png](output_24_0.png)
+![png](output_25_0.png)
     
 
 
@@ -412,7 +419,7 @@ plt.show()
 
 
     
-![png](output_26_0.png)
+![png](output_27_0.png)
     
 
 
@@ -434,40 +441,16 @@ plt.grid()
 plt.show()
 ```
 
-    100%|████| 10000/10000 [00:02<00:00, 3828.82it/s, init loss: 15.1206, avg. loss [9501-10000]: 14.7885]
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2507.13it/s, init loss: 15.1206, avg. loss [9501-10000]: 14.7885]
 
 
 
     
-![png](output_28_1.png)
+![png](output_29_1.png)
     
 
 
 The gradient of this ELBO estimate is what guides the SVI optimization, and so increasing `num_particles` should may improved performance if you're having issues with convergence.
-
-
-```python
-# Hello
-subbed = numpyro.handlers.substitute(guide_beta, svi_beta_result.params, )
-# log_density(subbed, model_args = (data_headstails), model_kwargs = {}, params = {})[0]
-
-'''
-@jax.jit
-def f(x):    
-    conditioned = handlers.condition(subbed, {'f':x})
-    return(log_density(conditioned, data_headstails, {}, {})[0])
-f(0.5)
-'''
-Fs = np.linspace(0,1,64)
-plt.plot(Fs,[ np.exp(log_density(handlers.condition(subbed, {'latent_fairness': f, }), model_args  = (data_headstails, ), model_kwargs = {}, params = {})[0]) for f in Fs])
-plt.show()
-```
-
-
-    
-![png](output_30_0.png)
-    
-
 
 ### Building a Complicated Models From Mixtures <a id='mixtures'></a>
 
@@ -537,7 +520,7 @@ plt.show()
 
 Now we need to construct an SVI guide to describe our surrogate distribution. As always, we need to assume some approximate shape to the distribution, and I'm going to go with two gaussians rotated at angle $\theta$, separated by distance $b$, of equal height and with principle axis variances $\sigma_1$ and $\sigma_2$. To construct this as a guide, we need to use two tricks:
 1. Using the `numpyro.distributions.MixtureGeneral` to create the two modes
-2. Using a trick with `dist.Delta` to reparameterize my samples back into the latent model variables '$x$' and '$y$' as deterministic variables
+2. Using a trick with `dist.Delta` to reparameterize the samples back into the latent model variables '$x$' and '$y$'
 
 
 ```python
@@ -552,8 +535,6 @@ def guide_multimodal():
     theta = numpyro.param('theta', 0.0, constraint = constraints.interval(-np.pi/2, np.pi/2)) # Rotation
 
     #-------------------------------------
-    c, s = jnp.cos(theta), jnp.sin(theta)
-
     # Gaussian Mixture model along axis u1
     weighting = jnp.array([0.5,0.5])
     gauss_mix = numpyro.distributions.MixtureGeneral(
@@ -568,7 +549,10 @@ def guide_multimodal():
     # Simple gaussian distribution along u2
     u2 = numpyro.sample("u2", dist.Normal(0,sig2_q) ,infer={'is_auxiliary': True})
 
+    #-------------------------------------    
     # Convert to 'x' and 'y' to line up with numpyro model latent site names
+    c, s = jnp.cos(theta), jnp.sin(theta)
+
     x = numpyro.sample('x', dist.Delta(c*u1 - s*u2))
     y = numpyro.sample('y', dist.Delta(c*u2 + s*u1))
     
@@ -583,7 +567,7 @@ In the guide, the `dist.Categorical` represents the fact that any given sample h
 
 In this guide we've used the trick of separating the surrogate distribution out into two factors, $q(x,y)= q_1(u_1) \cdot q_2(u_2)$. We just need to sample $u_1$ and $u_2$ from their respective distributions and convert back into the parameters we actually care about with a deterministic reparameterization: $x=x(u_1,u_2)$ and $y=y(u_1,u_2)$. Strangely, the `numpyro.deterministic` object isn't the right tool for the job here, as NumPyro requires $x$ and $y$ to be `sample` type objects. Intead, we acomplish the same end goal by constraining them with a `delta` distribution, as $x \sim \delta(x')$ is the same as saying $x=x'$.
 
-With our guide set up, we can just run the SVI optimization the same as we would for a 1D model. As always, it's worth plotting the losses to make sure everything converged properly:
+With our guide set up, we can just run the SVI optimization the same as we would for a 1D model. As always, it's worth plotting the losses to make sure everything has converged properly:
 
 
 ```python
@@ -609,14 +593,14 @@ plt.ylabel("Loss (ELBO)")
 plt.show()
 ```
 
-    100%|█████| 10000/10000 [00:05<00:00, 1937.79it/s, init loss: 13.4245, avg. loss [9501-10000]: 3.3532]
+    100%|███████████████████████████████████████████████████████████| 10000/10000 [00:04<00:00, 2357.18it/s, init loss: 40.1734, avg. loss [9501-10000]: 4.4520]
 
 
     Optimal Guide Params
     ----------------------------------------------------------------------------
-    b:	4.993
-    sig1_q:	1.010
-    sig2_q:	7.028
+    b:	4.990
+    sig1_q:	0.505
+    sig2_q:	4.676
     theta:	44.7 deg
     ----------------------------------------------------------------------------
 
@@ -693,7 +677,7 @@ autosvi = SVI(model_forauto, autoguide, optim = optimizer_forauto, loss=Trace_EL
 autosvi_result = autosvi.run(random.PRNGKey(2), 50000)
 ```
 
-    100%|███| 50000/50000 [00:03<00:00, 15008.37it/s, init loss: 3.3177, avg. loss [47501-50000]: -2.9368]
+    100%|██████████████████████████████████████████████████████████| 50000/50000 [00:05<00:00, 8676.16it/s, init loss: 3.3177, avg. loss [47501-50000]: -2.9368]
 
 
 
@@ -731,7 +715,7 @@ plt.show()
     
 
 
-**Recovering Covariance Matrix***
+**Recovering Covariance Matrix**
 - AutoguideMultivariate stores the results in the lower triangular [Cholesky Matrix](https://en.wikipedia.org/wiki/Cholesky_decomposition), a sort of "square root" of the matrix
 
 \begin{equation}
@@ -778,8 +762,23 @@ print(thet_rec * 180/ np.pi, "deg")
 
 
 # A Practical Example: Linear Regression With Outliers
-- This section under construction
-  
+
+I've kept things in the previous sections to small toy examplesto outline the basics of SVI, but full full worked examples can help paint a clearer picture of how to actually apply it as practical tool. In this section, I use SVI to tackle a linear regression with outliers, the same problem worked through using MCMC-like tools in the first example of Dan Foreman Mackey's excellent [astronomer's introduction to numpyro](https://dfm.io/posts/intro-to-numpyro/).
+
+In this problem, we generate a set of linear observations with gaussian error, and then replace some random sub-set of these measurements with outliers drawn from a static gaussian. Our model then has five parameters: the slope '$m$' and offset '$c$' of the line, the mean '$\mu_{bg}$' and spread '$\sigma_{bg}$' of the outliers, and '$Q$', the fraction of observations that are outliers. We put this all together as a mixture model, saying that any given measurement $y_i$ obeys a linear combination of the "foreground" linear trend and the "background" outlier gaussian:
+
+$$
+y_i \sim N(m x_i + c, E_i) \cdot Q + N(\mu_{bg},\sigma_{bg})\cdot(1-Q)
+$$
+
+We're looking to constrain each of these five parameters, and I'm going to attack this problem in four ways:
+- Via MCMC as DFM does
+- By SVI using:
+   - A manually constructed guide
+   - A diagonal (uncorrelated) gaussian via an autoguide
+   - A correlated gaussian autoguide
+
+I've directly replicated the probabalistic modelling from DFM's example, including his choice of using a uniform prior over the slope _angle_ $\theta$ and perpendicular offset $b_{perp}$ instead of the gradient and vertical offset, as well as his settup for MCMC:
 
 
 ```python
@@ -820,33 +819,57 @@ true_params = [1.0, 0.0] # slope & offset of linrel
 true_outliers = [0.0, 1.0] # mean and sigma of background
 
 # Generate data
-np.random.seed(12)
-x = np.sort(np.random.uniform(-2, 2, 15))
-yerr = 0.2 * np.ones_like(x)
-y = true_params[0] * x + true_params[1] + yerr * np.random.randn(len(x))
+def gen_data(seed = 12):
+    np.random.seed(seed)
+    x = np.sort(np.random.uniform(-2, 2, 15))
+    yerr = 0.2 * np.ones_like(x)
+    y = true_params[0] * x + true_params[1] + yerr * np.random.randn(len(x))
+    
+    # Shuffle outliers
+    m_bkg = np.random.rand(len(x)) > true_frac # select these elements to re-sample from bg dist
+    y[m_bkg] = true_outliers[0]
+    y[m_bkg] += np.sqrt(true_outliers[1] + yerr[m_bkg] ** 2) * np.random.randn(sum(m_bkg))
 
-# Shuffle outliers
-m_bkg = np.random.rand(len(x)) > true_frac # select these elements to re-sample from bg dist
-y[m_bkg] = true_outliers[0]
-y[m_bkg] += np.sqrt(true_outliers[1] + yerr[m_bkg] ** 2) * np.random.randn(sum(m_bkg))
+    return(x,y,yerr)
+x, y, yerr = gen_data(seed=12)
 
 #--------------------------------------------------------
 # Run MCMC chain
 sampler = infer.MCMC(
     infer.NUTS(linear_mixture_model),
     num_warmup=1000,
-    num_samples=10000,
+    num_samples=20000,
     num_chains=1,
     progress_bar=True,
 )
-sampler.run(jax.random.PRNGKey(3), x, yerr, y=y)
+print("Doing MCMC")
+%time sampler.run(jax.random.PRNGKey(3), x, yerr, y=y)
 
 ```
 
-    sample: 100%|█| 11000/11000 [00:04<00:00, 2487.98it/s, 7 steps of size 4.31e
+    Doing MCMC
 
 
-**Constructing a guide manually**
+    sample: 100%|█████████████████████████████████████████████████████████████| 21000/21000 [00:08<00:00, 2342.58it/s, 7 steps of size 4.31e-01. acc. prob=0.95]
+
+
+    CPU times: user 10.4 s, sys: 112 ms, total: 10.5 s
+    Wall time: 11.3 s
+
+
+**Constructing a Guide Manually**  
+Now we can get onto attacking this problem with SVI as a comparison. First up, I'll construct a surrogate distribution guide manually, using a simple case where every parameter is independent. Most of the parameters end up being well constrained, and so we can get away with approximating them by normal distributions. The one exception is $Q$, the fraction of outliers. $Q$ is restricted to the domain $Q\in [0,1]$ and is poorly constrained: not only is a gaussian a bad match in terms of "shape", it can also easily break the entire SVI optimization machine. One option would be to instead use a normal distribution that had been transformed into the constrained domain, restricting to $Q \in [0,1]$, e.g.:
+
+'''python
+    Q_mu  = numpyro.param('Q_mu',  0.5, constraint =constraints.real)
+    Q_sig = numpyro.param('Q_sig', 0.1, constraint =constraints.positive)
+
+    dist = 
+
+    transformed_dist
+'''
+
+But I've instead gone for the much simpler option of using a beta distribution instead. This is a motivated choice: not only do beta distributions already have the current "support" (domain) but it is also a natural fit for estimating the "weighting" of a binary choice, which $Q$ represents:
 
 
 ```python
@@ -855,17 +878,17 @@ def manual_guide(x, yerr, y):
     #------------------------------
     # Distribution Means
     
-    bg_mean_mu = numpyro.param('bg_mean_mu', 0.0, constraint =constraints.real)
+    bg_mean_mu  = numpyro.param('bg_mean_mu',  0.0, constraint =constraints.real)
     bg_sigma_mu = numpyro.param('bg_sigma_mu', 0.5, constraint =constraints.positive)
-    theta_mu = numpyro.param('theta_mu', 0.0, constraint =constraints.interval(-jnp.pi/2, jnp.pi/2))
-    b_perp_mu = numpyro.param('bg_perp_mu', 0.0, constraint =constraints.real)
+    theta_mu    = numpyro.param('theta_mu',    0.0, constraint =constraints.interval(-jnp.pi/2, jnp.pi/2))
+    b_perp_mu   = numpyro.param('bg_perp_mu',  0.0, constraint =constraints.real)
     
     #------------------------------
     # Distribution Variances
-    bg_mean_sigma = numpyro.param('bg_mean_sigma', 1.0, constraint =constraints.positive)
-    bg_sigma_sigma = numpyro.param('bg_sigma_sigma', 0.2, constraint =constraints.less_than(bg_sigma_mu/2))
-    theta_sigma = numpyro.param('theta_sigma', 0.1, constraint =constraints.positive)
-    b_perp_sigma = numpyro.param('bg_perp_sigma', 0.1, constraint =constraints.positive)
+    bg_mean_sigma   = numpyro.param('bg_mean_sigma',  1.0, constraint =constraints.positive)
+    bg_sigma_sigma  = numpyro.param('bg_sigma_sigma', 0.2, constraint =constraints.less_than(bg_sigma_mu/2))
+    theta_sigma     = numpyro.param('theta_sigma',    0.1, constraint =constraints.positive)
+    b_perp_sigma    = numpyro.param('bg_perp_sigma',  0.1, constraint =constraints.positive)
 
     #------------------------------
     # Q performs poorly with an unconstrained distribution, so use a beta distribution instead
@@ -874,7 +897,6 @@ def manual_guide(x, yerr, y):
     
     # Construct & Sample Distributions
     numpyro.sample('bg_mean', dist.Normal(bg_mean_mu, bg_mean_sigma))
-    #numpyro.sample('bg_sigma', dist.Gamma( (bg_sigma_mu/bg_sigma_sigma)**2, bg_sigma_mu/bg_sigma_sigma**2) )
     numpyro.sample('bg_sigma', dist.Normal( bg_sigma_mu, bg_sigma_sigma ))
     numpyro.sample('theta', dist.Normal(theta_mu, theta_sigma))
     numpyro.sample('Q', dist.Beta(Q_A, Q_B))
@@ -884,41 +906,68 @@ def manual_guide(x, yerr, y):
 
 Trigger optimizers
 
+- Runtimes are betteer than MCMC by a factor of 2-3 even in a cheap case where fixed costs like compilation are a major fraction
+- Could achieve even better time of we were to fiddle with the number of particles or optimizer tuning parameters
+- In this low dimensional case, diagonal and multivariate have similar costs and perform about as well as eachother
+- 
+
 
 ```python
-optimizer_forauto = numpyro.optim.Adam(step_size=0.00025)
+optimizer_forauto = numpyro.optim.Adam(step_size=0.001)
+svi_samples = 10000
 
-if False:
-    autoguy = numpyro.infer.autoguide.AutoMultivariateNormal(linear_mixture_model)
-    autoguysvi = SVI(linear_mixture_model, autoguy, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
-    autoguysvi_result = autoguysvi.run(random.PRNGKey(2), 50000, x, yerr, y=y)
+guide_linreg_diag = numpyro.infer.autoguide.AutoMultivariateNormal(linear_mixture_model)
+svi_linreg_diag = SVI(linear_mixture_model, guide_linreg_diag, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
+%time result_linreg_diag = svi_linreg_diag.run(random.PRNGKey(1), svi_samples, x, yerr, y=y)
 
-if False:
-    autoguy_diag = numpyro.infer.autoguide.AutoDiagonalNormal(linear_mixture_model)
-    autoguysvi_diag = SVI(linear_mixture_model, autoguy_diag, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
-    autoguysvi_result_diag = autoguysvi_diag.run(random.PRNGKey(1), 50000, x, yerr, y=y)
+guide_linreg_multi = numpyro.infer.autoguide.AutoDiagonalNormal(linear_mixture_model)
+svi_linreg_multi = SVI(linear_mixture_model, guide_linreg_multi, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
+%time result_linreg_multi = svi_linreg_multi.run(random.PRNGKey(1), svi_samples, x, yerr, y=y)
 
-if True:
-    manual_guide_svi = SVI(linear_mixture_model, manual_guide, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
-    manual_guide_svi_result = manual_guide_svi.run(random.PRNGKey(123), 50000, x, yerr, y=y)
+svi_linreg_manual = SVI(linear_mixture_model, manual_guide, optim = optimizer_forauto, loss=Trace_ELBO(num_particles=8))
+%time result_linreg_manual = svi_linreg_manual.run(random.PRNGKey(1), svi_samples, x, yerr, y=y)
 ```
 
-    100%|█| 50000/50000 [00:10<00:00, 4857.05it/s, init loss: 68.7490, avg. loss
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2863.11it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.8551]
+
+
+    CPU times: user 5.19 s, sys: 76.4 ms, total: 5.27 s
+    Wall time: 5.67 s
+
+
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3519.17it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.9921]
+
+
+    CPU times: user 3.61 s, sys: 92.5 ms, total: 3.7 s
+    Wall time: 3.98 s
+
+
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:06<00:00, 1464.35it/s, init loss: 59.7463, avg. loss [9501-10000]: 20.1456]
+
+
+    CPU times: user 7.94 s, sys: 138 ms, total: 8.08 s
+    Wall time: 8.66 s
 
 
 Plot loss to ensure convergences
 
+- Working with uncorrelated distribution, so all converge to mostly the same goodness of fit (ELBO),
+- though taking different times to meander down
+
 
 ```python
-plt.plot(autoguysvi_result.losses, label = "AutoMultivariateNormal")
-plt.plot(autoguysvi_result_diag.losses, label = "AutoNormal")
-plt.plot(manual_guide_svi_result.losses, label = "Manual")
+plt.figure(figsize = (8,3))
 
-plt.xlabel("Loss")
+plt.plot(result_linreg_multi.losses, label = "AutoDiagonal")
+plt.plot(result_linreg_diag.losses, label = "AutoMutlivariate")
+plt.plot(result_linreg_manual.losses, label = "Manual")
+
+plt.ylabel("Loss")
+plt.xlabel("Itteration No.")
+plt.ylim(ymax=60)
 plt.grid()
 plt.legend()
 plt.show()
-
 ```
 
 
@@ -928,6 +977,9 @@ plt.show()
 
 
 Compare and contrast different results
+- Good agreement between all approaches
+- Squishing of contours against prior boundaries due to constrained / unconstrained
+- Only discrepency is the diagional autoguide and manual guide, both of which assume independent parameters, miss the slight correlation between $\theta$ & $b_{perp}$
 
 
 ```python
@@ -936,16 +988,17 @@ res = sampler.get_samples()
 c = ChainConsumer()
 c.add_chain(res, name="MCMC")
 
-svi_pred = Predictive(autoguy, params = autoguysvi_result.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1))
-svi_pred.pop('_auto_latent')
-svi_pred_diag = Predictive(autoguy_diag, params = autoguysvi_result_diag.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1))
+svi_pred_diag = Predictive(guide_linreg_diag, params = result_linreg_diag.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1))
 svi_pred_diag.pop('_auto_latent')
 
-manual_results = Predictive(manual_guide, params = manual_guide_svi_result.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1), x=x ,y=y, yerr=yerr)
+svi_pred_multi = Predictive(guide_linreg_multi, params = result_linreg_multi.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1))
+svi_pred_multi.pop('_auto_latent')
 
-c.add_chain(svi_pred, name="SVI, Multivariate")
+svi_pred_manual = Predictive(manual_guide, params = result_linreg_manual.params, num_samples = 20000*2)(rng_key = jax.random.PRNGKey(1), x=x ,y=y, yerr=yerr)
+
+c.add_chain(svi_pred_manual, name="Manual guide")
+c.add_chain(svi_pred_multi, name="SVI, Multivariate")
 c.add_chain(svi_pred_diag, name="SVI, Uncorrelated")
-c.add_chain(manual_results, name="Manual guide")
 c.plotter.plot(parameters = ['theta', 'b_perp', 'Q', 'bg_mean', 'bg_sigma'], 
                truth = {'theta':jnp.pi/4, 'b_perp':0, 'Q':0.8, 'bg_mean':0, 'bg_sigma':1})
 
@@ -958,48 +1011,644 @@ plt.show()
     
 
 
-### SVI Vs MCMC In High Dimensions
-- Intro
----
+**Pre-Training SVI**
 
+A major difference between MCMC and SVI is that MCMC contains both an optimization burn-in phase _and_ an exploratory sampling phase, while SVI consists of optimization _only_. If we have some foreknowledge of the distribution, we can initiate our MCMC chains at or near the high likelihood solution to cut down the burn-in time, but the impact of this cleverness is limited by the fact that we will always need a long expensive sampling phase irrespective of how we kick things off. By contrast, SVI is almost all optimization
+
+For example suppose we're handed a second set of data with similar statistical properties to above, and we want to map the posterior distribution for this new data. Using MCMC, we'd need to _at least_ repeat the $\approx 20,000$ samples, making it about as costly at the first MCMC run. Using SVI instead, we can start at our previous optimal solution and adjust to the new data in a fraction of the time, were we're then free to draw as many samples as we want at near zero cost:
 
 
 ```python
-# TEST CELL DEMONSTRATING A TRANSFORMED (CONSTRAINED) DISTRIBUTION -H
-from numpyro.infer.util import transform_fn
+# Generate some new data
+xnew, ynew, yerrnew = gen_data(123)
 
-def model_X():
-    tdist = dist.TransformedDistribution(
-        dist.Normal(0,1),
-        dist.transforms.SigmoidTransform(),
-    )
-    x = numpyro.sample('x', tdist)
-X = Predictive(model_X, num_samples=int(1E5))(jax.random.PRNGKey(1))['x']
+# Run new SVI optimization using old solution as starting point
+result_linreg_diag_new = svi_linreg_diag.run(random.PRNGKey(1), svi_samples, xnew, yerrnew, y=ynew, init_params = result_linreg_diag.params)
+result_linreg_multi_new = svi_linreg_multi.run(random.PRNGKey(1), svi_samples, xnew, yerrnew, y=ynew, init_params = result_linreg_multi.params)
+result_linreg_manual_new = svi_linreg_manual.run(random.PRNGKey(1), svi_samples, xnew, yerrnew, y=ynew, init_params=result_linreg_manual.params)
 
-transforms = {"x": dist.transforms.SigmoidTransform()}
+#-------------------------
+# Plot SVI convergence
+plt.figure(figsize = (8,3))
 
-X_uncon = transform_fn(transforms, {'x': X}, invert=True)['x']
+plt.plot(result_linreg_diag_new.losses, label = "AutoMultivariateNormal")
+plt.plot(result_linreg_multi_new.losses, label = "AutoNormal")
+plt.plot(result_linreg_manual_new.losses, label = "Manual")
 
-B = plt.hist(X,64, density=True)
-plt.plot(B[1], B[1]*(1-B[1]) * 4 * 1.6)
-
-plt.show()
-
-A = plt.hist(X_uncon,64, density=True)
-plt.plot(A[1], np.exp( -1/2 * A[1]**2)  / np.sqrt(np.pi * 2) )
+plt.ylabel("Loss")
+plt.xlabel("Itteration No.")
+plt.ylim(ymax=60)
+plt.grid()
+plt.legend()
 plt.show()
 ```
 
-
-    
-![png](output_56_0.png)
-    
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 3193.49it/s, init loss: 19.0800, avg. loss [9501-10000]: 14.3933]
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3590.46it/s, init loss: 18.2585, avg. loss [9501-10000]: 14.4270]
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:06<00:00, 1447.93it/s, init loss: 18.1025, avg. loss [9501-10000]: 13.7206]
 
 
 
     
 ![png](output_56_1.png)
     
+
+
+### SVI Vs MCMC In High Dimensions
+In the previous example, we see that SVI competes with or outperforms MCMC in low dimensions ($D<10$), but how does this scale as we climb into the dozens or hundreds of parameters?
+
+As an example, let's consider a _hierarchical_ model of linear regressions, where the measurements of series '$j$' follow a simple linear relationship with linear uncertainty:
+
+$$
+    y^j_i \sim N(m^j x_i^j + c^j, E^j_i)
+$$
+
+But the gradient '$m^j$' and offset '$c^j$' of each group follow population-wide distributions of unknown mean and variance:
+
+$$
+m^j \sim N(\mu_m,\sigma_m), \;\;\; c^j \sim N(\mu_c,\sigma_c) 
+$$
+
+If we have $J$ groups, two paramaters per group gives us $D=2J+4$ dimensions, allowing the dimensionality of the problem to easily climb into the dozens in realistic cases.
+
+
+```python
+# Data Generation
+N_data = 8
+xmin, xmax = -10, 10 # Range of X values for data sampling
+ebar, escatter = 2.5, 1000 # Average & spread of error bar
+
+lenmin, lenmax = 6, 18
+
+# Gradient & Offset of each line is normally distributed
+m_mu, m_sig, c_mu, c_sig = 0.5, 0.2, 10.0, 1.0 
+truth = {"m_mu":m_mu, "m_sig":m_sig,"c_mu":c_mu, "c_sig":c_sig}
+
+#-----------------------
+# Generate Data
+np.random.seed(1)
+
+lens = lenmin + dist.Binomial(lenmax-lenmin,0.5).sample(jax.random.PRNGKey(1), sample_shape=(N_data,)) # Number of samples for each line
+DATA = []
+Mtrue, Ctrue = [], [] 
+for i in range(N_data):
+    n = lens[i]
+
+    # Generate X values
+    X = np.random.rand(n) * (xmax-xmin) + xmin
+    X.sort()
+
+    # Generate slope & Offset for line
+    m, c = np.random.randn()*m_sig + m_mu, np.random.randn()*c_sig + c_mu
+    Mtrue.append(m), Ctrue.append(c)
+
+    # Generate Errorbars & Y values
+    E = (np.random.poisson(lam=escatter, size=len(X)) / escatter + 1)/2 * ebar
+    Y = m*X + c + E * np.random.normal(size=len(X)) # Linear rel /w random noise based on 'E'
+
+    # Append to output
+    DATA.append({"X":X,
+                "Y":Y,
+                "E":E})
+
+I        = jnp.concatenate([jnp.array([i]*len(a['X'])) for a,i in zip(DATA,range(len(DATA)))])
+X_concat = jnp.concatenate([a['X'] for a in DATA])
+Y_concat = jnp.concatenate([a['Y'] for a in DATA])
+E_concat = jnp.concatenate([a['E'] for a in DATA])
+
+DATA_concat = ({"I":I,
+                "X":X_concat,
+                "Y":Y_concat,
+                "E":E_concat})
+```
+
+In a practical context, the motivation is that any _one_ source may have insufficient data to constrain $m$ and $c$, but we can leverage their distributions across the entire population to get better constraints. In effect, we're tuning our population-level priors at the same time as we apply them. In this example, we'll uses $J=8$ groups with $I\approx12$ measurements per group. Each group has (with $1\sigma$ uncertainty) a gradient $m=0.5 \pm 0.2$ and offset $c=10 \pm 1$.
+
+
+```python
+#---------------------
+# Plotting
+
+fig, ax = plt.subplots(2,1, sharex=True, sharey=True)
+
+i=0
+colors = 'rgbcymk'
+colors*=max(1,N_data//len(colors)+1)
+colors = list(colors)
+
+ax[0].errorbar(DATA[0]['X'], DATA[0]['Y'], DATA[0]['E'], fmt="none", c = colors[i], label = i)
+for data in DATA:
+    X,Y,E = data['X'], data['Y'], data['E']
+    ax[1].errorbar(X, Y, E, fmt="none", c = colors[i], label = i)
+    i+=1
+
+#--------------------------------------------------------
+
+ax[0].grid()
+ax[1].grid()
+ax[0].set_title("One Source")
+ax[1].set_title("All Sources")
+
+#--------------------------------------------------------
+plt.tight_layout()
+plt.show()
+```
+
+
+    
+![png](output_60_0.png)
+    
+
+
+**Define Hierarchical NumPyro Model**
+First, we need to actually define a NumPyro model than can do this hierarchical linear regression. Hierarchical models like this compose easily: the population-level distributions act a bit like priors on each source:
+
+$$
+\mathcal{L}(\{ m^j,c^j \},\mu_m, \sigma_m, \mu_c, \sigma_c \vert {\{y\}_i^j}) \propto \prod_j \left(  \prod_i  N(m^j x_i^j + c^j, E^j_i)
+\right) \cdot N(m_j-\mu_m,\sigma_m)\cdot N(c_j-\mu_c,\sigma_c) 
+$$
+
+Where this likelihood is modulated by extremely vague "hyper-priors" on the population distributions. As $m$ and $c$ can be positive or negative, their mean values can be positive or negative:
+
+$$
+\mu_m \sim N(0,15), \;\; \mu_c \sim N(0,25)
+$$
+But their variability must be resticted to positive values, so I've defined these with wide "half-normal" distributions.
+$$
+\sigma_m \sim N^+(15), \;\; \sigma_c \sim N^+(25)
+$$
+
+Strictly the "correct" way to do this is to use a plate that runs over every group encapsulating each individual linear regression, but I've instead followed the [NumPyro Example](https://num.pyro.ai/en/stable/tutorials/bayesian_hierarchical_linear_regression.html) for a similar problem. This has the unusual (but computationally efficient) settup of defining _arrays_ of gradients and offsets as a single object:
+
+
+```python
+def model_hierarchy(I, X, Y=None, E=None):
+    no_sources = len(np.unique(I))
+
+    # Vague Hyperpriors
+    m_mu  = numpyro.sample('m_mu',  dist.Normal(0.0, 15.0))
+    m_sig = numpyro.sample('m_sig', dist.HalfNormal(10.0))
+    c_mu  = numpyro.sample('c_mu',  dist.Normal(0.0, 25.0))
+    c_sig = numpyro.sample('c_sig', dist.HalfNormal(15.0))
+    
+
+    # Sample grads & offsets for entire population
+    m = numpyro.sample('m', dist.Normal(m_mu, m_sig), sample_shape = (no_sources,) )
+    c = numpyro.sample('c', dist.Normal(c_mu, c_sig), sample_shape = (no_sources,) )
+    pred = m[I]*X+c[I]
+
+    # Use to sample all obervations
+    with numpyro.plate('samples', size = len(X) ):
+        numpyro.sample('y', dist.Normal(pred, E), obs = Y)
+
+numpyro.render_model( model_hierarchy, model_args = ( I, X_concat, Y_concat, E_concat, ))
+```
+
+
+
+
+    
+![svg](output_62_0.svg)
+    
+
+
+
+- Run SVI
+
+
+```python
+num_warmup = 2000
+num_samples = 20000
+num_chains = 1
+
+num_particles = 100
+svi_samples = 5000
+learning_rate = 0.01
+
+#-----------------------------------
+# MCMC
+MCMC_hierarchy = numpyro.infer.MCMC(numpyro.infer.NUTS(model_hierarchy), 
+                                    num_chains = num_chains, num_samples=num_samples, num_warmup = num_warmup, progress_bar = True)
+
+print("Doing MCMC Warmup")
+%time MCMC_hierarchy.warmup(jax.random.PRNGKey(1), I, X_concat, Y_concat, E_concat, extra_fields=("potential_energy",), collect_warmup=True)
+MCMC_energies_warmup = MCMC_hierarchy.get_extra_fields()["potential_energy"]
+
+print("Doing MCMC Sampling")
+%time MCMC_hierarchy.run(jax.random.PRNGKey(1), I, X_concat, Y_concat, E_concat, extra_fields=("potential_energy",))
+
+#-----------------------------------
+# SVI
+optimizer_hierarchy = numpyro.optim.Adam(step_size=learning_rate)
+print("Doing Diagonal SVI")
+autoguide_diag = numpyro.infer.autoguide.AutoDiagonalNormal(model_hierarchy)
+SVI_diagonal = numpyro.infer.SVI(model_hierarchy, 
+                                 autoguide_diag,
+                                 optim = optimizer_hierarchy, 
+                                 loss=numpyro.infer.Trace_ELBO(num_particles=num_particles))
+%time SVI_diagonal_results = SVI_diagonal.run(jax.random.PRNGKey(1), svi_samples, I, X_concat, Y_concat, E_concat,)
+
+print("Doing Multivariate SVI")
+autoguide_multi = numpyro.infer.autoguide.AutoMultivariateNormal(model_hierarchy)
+SVI_multivariate = numpyro.infer.SVI(model_hierarchy, 
+                                 autoguide_multi,
+                                 optim = optimizer_hierarchy, 
+                                 loss=numpyro.infer.Trace_ELBO(num_particles=num_particles))
+%time SVI_multivariate_results = SVI_multivariate.run(jax.random.PRNGKey(1), svi_samples, I, X_concat, Y_concat, E_concat,)
+```
+
+    Doing MCMC Warmup
+
+
+    warmup: 100%|███████████████████████████████████████████████████████████████| 2000/2000 [00:03<00:00, 651.54it/s, 15 steps of size 2.70e-01. acc. prob=0.79]
+
+
+    CPU times: user 4.09 s, sys: 81.4 ms, total: 4.17 s
+    Wall time: 4.47 s
+    Doing MCMC Sampling
+
+
+    sample: 100%|████████████████████████████████████████████████████████████| 20000/20000 [00:12<00:00, 1625.77it/s, 15 steps of size 2.70e-01. acc. prob=0.88]
+
+
+    CPU times: user 11.6 s, sys: 97.1 ms, total: 11.7 s
+    Wall time: 12.6 s
+    Doing Diagonal SVI
+
+
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:07<00:00, 656.36it/s, init loss: 1566.4958, avg. loss [4751-5000]: 238.6858]
+
+
+    CPU times: user 8.79 s, sys: 3.77 s, total: 12.6 s
+    Wall time: 8.49 s
+    Doing Multivariate SVI
+
+
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:06<00:00, 783.45it/s, init loss: 1566.4958, avg. loss [4751-5000]: 237.8878]
+
+
+    CPU times: user 13.5 s, sys: 22 s, total: 35.5 s
+    Wall time: 8.1 s
+
+
+Per usual, plot the losses to ensure everything has meaningfully converged.
+- SVI converges _extremely_ fast, in far less itterations and, even with my absurd particle count, in a markedly shorter run-time than MCMC
+
+
+```python
+fig, ax = plt.subplots(2,1, sharex=True)
+
+ax[0].plot(SVI_diagonal_results.losses, lw=1, label = "Diagonal")
+ax[0].plot(SVI_multivariate_results.losses, lw=1, label = "Multivariate")
+
+ax[0].set_ylim(ymax=np.min(SVI_multivariate_results.losses)+ np.median(SVI_multivariate_results.losses-np.min(SVI_multivariate_results.losses))*20, ymin=np.min(SVI_multivariate_results.losses))
+ax[0].grid()
+
+ax[0].axhline(SVI_diagonal_results.losses[-svi_samples // 10:].mean(), c='r', ls='--', zorder = -2)
+ax[0].axhline(SVI_multivariate_results.losses[-svi_samples // 10:].mean(), c='b', ls='--', zorder = -2)
+
+MCMC_energies = np.concatenate([MCMC_energies_warmup, MCMC_hierarchy.get_extra_fields()["potential_energy"]])
+
+ax[1].plot(MCMC_energies - MCMC_energies.min())
+ax[1].grid()
+#ax[1].set_ylim(ymax=np.min(MCMC_energies) + np.median(MCMC_energies-np.min(MCMC_energies))*10, ymin=np.min(MCMC_energies))
+ax[1].set_yscale('log')
+ax[1].axvline(num_warmup, c='k', ls='--', label = "Burn-In ends")
+
+#ax[0].set_xscale('log')
+ax[0].set_xlim(xmin=0)
+
+ax[0].set_ylabel("Loss Distribution at Stochastic End State")
+ax[1].set_ylabel("MCMC Potential Energy")
+
+ax[0].legend()
+ax[1].legend()
+plt.show()
+```
+
+
+    
+![png](output_66_0.png)
+    
+
+
+
+```python
+mcmc_res = {}
+diag_res = {}
+multi_res = {}
+
+print("Pulling results for...")
+MCMCsamples = MCMC_hierarchy.get_samples()
+diagpred = numpyro.infer.Predictive(autoguide_diag, params = SVI_diagonal_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+multipred = numpyro.infer.Predictive(autoguide_multi, params = SVI_multivariate_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+
+for key in ['m_mu', 'm_sig', 'c_mu', 'c_sig', ]:
+    print("\t",key)
+    mcmc_res |= {key: MCMCsamples[key]}
+    diag_res |= {key: diagpred[key]}
+    multi_res|= {key: multipred[key]}
+
+C_hierarchy = ChainConsumer()
+
+C_hierarchy.add_chain(mcmc_res, name="MCMC")
+C_hierarchy.add_chain(diag_res, name="Diag")
+C_hierarchy.add_chain(multi_res, name="Multi")
+
+C_hierarchy.plotter.plot(truth=truth)
+
+plt.show()
+
+```
+
+    Pulling results for...
+    	 m_mu
+    	 m_sig
+    	 c_mu
+    	 c_sig
+
+
+
+    
+![png](output_67_1.png)
+    
+
+
+Now, plot the population level distributions:
+
+
+```python
+A = numpyro.infer.Predictive(autoguide_diag, params = SVI_diagonal_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+B = numpyro.infer.Predictive(autoguide_multi, params = SVI_multivariate_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+
+fig, axis = plt.subplots(2,1, sharex = True)
+
+for i, key in enumerate(['m','c']):
+    axis[i].errorbar(range(N_data), MCMC_hierarchy.get_samples()[key].mean(axis=0), MCMC_hierarchy.get_samples()[key].std(axis=0), fmt='none', capsize=5, alpha=.5, label = "MCMC")
+    
+    axis[i].errorbar(range(N_data), A[key].mean(axis=0), A[key].std(axis=0), fmt='none', capsize=5, c='g', label = "Diag")
+    axis[i].errorbar(range(N_data), B[key].mean(axis=0), B[key].std(axis=0), fmt='none', capsize=5, c='r', label = "Multi")
+
+    axis[i].axhline(truth[key+"_mu"], c='k', ls="--", alpha=0.5, zorder=-10, label = "True Population Spread")
+    axis[i].axhline(truth[key+"_mu"] + truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)
+    axis[i].axhline(truth[key+"_mu"] - truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)
+
+axis[0].scatter(range(N_data), Mtrue, c='k', s=10, label = "True")
+axis[1].scatter(range(N_data), Ctrue, c='k', s=10)
+axis[0].set_xticks([])
+axis[0].set_title("Gradients")
+axis[1].set_title("Offsets")
+
+plt.tight_layout()
+
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
+plt.show()
+```
+
+
+    
+![png](output_69_0.png)
+    
+
+
+### Non-Gaussian Autoguides
+
+- Autoguides work decently well, but fail on non-gaussian distributions
+- Can take a swing at using some other _non_-gaussian methods that NumPyro has to offer
+  
+
+**DAIS (Differential Annealed Importance Sampling)**  
+"Simulated Annealing" is a stochastic optimization method in which which a walker navigates around around the likleihood landscape $P(z)$, prefferentially moving up-hill, but with some chance to accept a jump to a "worse" position. The walker starts at a "high" temperature, where it readily accepts "downhill" steps, but progresses through 'k' stages of "cooling", becoming more dedicated to optimization instead of exploration. 
+
+$$
+\mathcal{L_k(z)}=\mathcal{L^{\beta_k}(z)}, \;\; \beta_{k+1}<\beta_k, \;\; \beta_k\in[0,1]
+$$
+
+**BNAF (Block Nueral Autoregressive Flow)**
+
+**IAF (Inverse Autoregressive Flows)**
+
+- Work wel
+
+
+```python
+# SVI
+print("Doing AutoDAIS SVI")
+
+autoguide_dais = numpyro.infer.autoguide.AutoDAIS(model_hierarchy, K=16, eta_max = 0.12, eta_init = 0.1, gamma_init=0.9)
+SVI_dais = numpyro.infer.SVI(model_hierarchy, 
+                                 autoguide_dais,
+                                 optim = optimizer_hierarchy, 
+                                 loss=numpyro.infer.Trace_ELBO(num_particles=num_particles))
+%time SVI_dais_results = SVI_dais.run(jax.random.PRNGKey(1), svi_samples * 10, I, X_concat, Y_concat, E_concat)
+print("-"*76)
+
+# BNAF
+print("Doing BNAF SVI")
+autoguide_bnaf = numpyro.infer.autoguide.AutoBNAFNormal(model_hierarchy)
+SVI_bnaf = numpyro.infer.SVI(model_hierarchy, 
+                                 autoguide_bnaf,
+                                 optim = optimizer_hierarchy, 
+                                 loss=numpyro.infer.Trace_ELBO(num_particles=num_particles))
+%time SVI_bnaf_results = SVI_bnaf.run(jax.random.PRNGKey(1), svi_samples, I, X_concat, Y_concat, E_concat,)
+print("-"*76)
+
+# IAF
+print("Doing IAF SVI")
+autoguide_iaf = numpyro.infer.autoguide.AutoIAFNormal(model_hierarchy)
+SVI_iaf = numpyro.infer.SVI(model_hierarchy, 
+                                 autoguide_iaf,
+                                 optim = optimizer_hierarchy, 
+                                 loss=numpyro.infer.Trace_ELBO(num_particles=num_particles))
+%time SVI_iaf_results = SVI_iaf.run(jax.random.PRNGKey(1), svi_samples, I, X_concat, Y_concat, E_concat,)
+print("-"*76)
+```
+
+    Doing AutoDAIS SVI
+
+
+    100%|███████████████████████████████████████████████████████| 50000/50000 [04:51<00:00, 171.36it/s, init loss: 1030.5693, avg. loss [47501-50000]: 238.3802]
+
+
+    CPU times: user 4min 48s, sys: 1min 49s, total: 6min 38s
+    Wall time: 4min 57s
+    ----------------------------------------------------------------------------
+    Doing BNAF SVI
+
+
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:18<00:00, 273.68it/s, init loss: 1180.0085, avg. loss [4751-5000]: 237.4999]
+
+
+    CPU times: user 28.5 s, sys: 4.45 s, total: 33 s
+    Wall time: 29.8 s
+    ----------------------------------------------------------------------------
+    Doing IAF SVI
+
+
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:09<00:00, 524.96it/s, init loss: 1611.8170, avg. loss [4751-5000]: 237.5567]
+
+
+    CPU times: user 10.3 s, sys: 2.31 s, total: 12.6 s
+    Wall time: 11.2 s
+    ----------------------------------------------------------------------------
+
+
+
+```python
+# Collect all results
+SVItypes = {}
+SVItypes |= {"Diag": [SVI_diagonal_results, 'tab:blue']}
+SVItypes |= {"Multi": [SVI_multivariate_results, 'tab:orange']}
+SVItypes |= {"DAIS": [SVI_dais_results, 'tab:green']}
+SVItypes |= {"BNAF": [SVI_bnaf_results, 'tab:red']}
+SVItypes |= {"IAF": [SVI_iaf_results, 'tab:purple']}
+
+#-------------------------
+# Loss Convergence Plot
+plt.figure()
+for name, item in zip(SVItypes.keys(), SVItypes.values()):
+    results, color = item[0], item[1]
+    plt.plot(results.losses, label = name, c=color)
+plt.ylim(0,2000)
+
+plt.legend()
+plt.grid()
+
+plt.axhline(SVI_multivariate_results.losses[-num_samples//10:].mean(), c='k', ls='--', zorder=-1)
+
+
+plt.ylim(ymax=np.min(SVI_multivariate_results.losses)+ np.median(SVI_multivariate_results.losses-np.min(SVI_multivariate_results.losses))*20, ymin=np.min(SVI_multivariate_results.losses))
+plt.ylabel("Loss Distribution at Stochastic End State")
+plt.xlabel("Itteration No.")
+
+plt.show()
+
+#-------------------------
+# Histogram of Final Loss Distributions
+plt.figure()
+for name, item in zip(SVItypes.keys(), SVItypes.values()):
+    results, color = item[0], item[1]
+    plt.hist(results.losses[-num_samples//10:], label = name, bins = 24, alpha = 0.5, histtype='stepfilled', density=True)
+    print("%s av loss: \t %.2f" %(name,results.losses[-num_samples//10:].mean()))
+plt.xlabel("Loss Distribution at Stochastic End State")
+plt.yticks([])
+plt.legend()
+plt.grid()
+plt.show()
+
+```
+
+
+    
+![png](output_72_0.png)
+    
+
+
+    Diag av loss: 	 238.69
+    Multi av loss: 	 237.89
+    DAIS av loss: 	 238.36
+    BNAF av loss: 	 237.52
+    IAF av loss: 	 237.60
+
+
+
+    
+![png](output_72_2.png)
+    
+
+
+Generate MCMC contours for population level results
+
+
+```python
+dais_res = {}
+bnaf_res = {}
+iaf_res = {}
+
+print("Pulling results for...")
+daispred = numpyro.infer.Predictive(autoguide_dais, params = SVI_dais_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+bnafpred = numpyro.infer.Predictive(autoguide_bnaf, params = SVI_bnaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+iafpred = numpyro.infer.Predictive(autoguide_iaf, params = SVI_iaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+
+for key in ['m_mu', 'm_sig', 'c_mu', 'c_sig', ]:
+    print("\t",key)
+    dais_res |= {key: daispred[key]}
+    bnaf_res |= {key: bnafpred[key]}
+    iaf_res|= {key: iafpred[key]}
+
+C_hierarchy = ChainConsumer()
+
+C_hierarchy.add_chain(mcmc_res, name="MCMC")
+C_hierarchy.add_chain(dais_res, name="DAIS")
+C_hierarchy.add_chain(bnaf_res, name="BNAF")
+C_hierarchy.add_chain(iaf_res, name="AIF")
+
+C_hierarchy.plotter.plot(truth=truth,)
+
+plt.show()
+
+```
+
+    Pulling results for...
+    	 m_mu
+    	 m_sig
+    	 c_mu
+    	 c_sig
+
+
+
+    
+![png](output_74_1.png)
+    
+
+
+Confirm group level params
+
+
+```python
+A = numpyro.infer.Predictive(autoguide_dais, params = SVI_dais_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+B = numpyro.infer.Predictive(autoguide_bnaf, params = SVI_bnaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+C = numpyro.infer.Predictive(autoguide_aif, params = SVI_aif_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+
+fig, axis = plt.subplots(2,1, sharex = True)
+
+for i, key in enumerate(['m','c']):
+    axis[i].errorbar(range(N_data), MCMC_hierarchy.get_samples()[key].mean(axis=0), MCMC_hierarchy.get_samples()[key].std(axis=0), c='k', fmt='none', capsize=5, alpha=.5, label = "MCMC")
+    
+    axis[i].errorbar(np.arange(N_data)+.03, A[key].mean(axis=0), A[key].std(axis=0), fmt='none', capsize=5, c='green', label = "DAIS")
+    axis[i].errorbar(np.arange(N_data)+.03, B[key].mean(axis=0), B[key].std(axis=0), fmt='none', capsize=5, c='red', label = "BNAF")
+    axis[i].errorbar(np.arange(N_data)+.03, C[key].mean(axis=0), C[key].std(axis=0), fmt='none', capsize=5, c='purple', label = "AIF")
+
+    axis[i].axhline(truth[key+"_mu"], c='k', ls="--", alpha=0.5, zorder=-10, label = "True Population Spread")
+    axis[i].axhline(truth[key+"_mu"] + truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)
+    axis[i].axhline(truth[key+"_mu"] - truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)
+
+axis[0].scatter(range(N_data), Mtrue, c='k', s=10, label = "True")
+axis[1].scatter(range(N_data), Ctrue, c='k', s=10)
+axis[0].set_xticks([])
+axis[0].set_title("Gradients")
+axis[1].set_title("Offsets")
+
+plt.tight_layout()
+
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)
+plt.show()
+```
+
+
+    ---------------------------------------------------------------------------
+
+    NameError                                 Traceback (most recent call last)
+
+    Cell In[37], line 3
+          1 A = numpyro.infer.Predictive(autoguide_dais, params = SVI_dais_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+          2 B = numpyro.infer.Predictive(autoguide_bnaf, params = SVI_bnaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+    ----> 3 C = numpyro.infer.Predictive(autoguide_aif, params = SVI_aif_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)
+          5 fig, axis = plt.subplots(2,1, sharex = True)
+          7 for i, key in enumerate(['m','c']):
+
+
+    NameError: name 'autoguide_aif' is not defined
 
 
 
