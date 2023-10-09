@@ -24,8 +24,12 @@ The core benfit of SVI is that we turn the _integration_ problem of grid-search 
     - [Getting MCMC-Like Chains out of SVI](#predictive_MCMClike)  
 	- [Generating Mock Observations](#mock_observations)  
 	- [Checking for Covergence](#convergence)  
-- [Building Non-Trivial SVI Guides](#mixtures)  
-- [Automatic Guide Generation](#autoguides)  
+- [Some Small Examples](#small_examples)   
+    - [Building Non-Trivial SVI Guides](#mixtures)  
+    - [Automatic Guide Generation](#autoguides)  
+- [A Practical Example - Linear Regression with Outliers](#Example_1)  
+- [Another Practical Example - SVI in Higher Dimensions](#Example_2)  
+    - [Non-Gaussian Autoguide](#Example_2_non_gaussian)   
   
 ## How it Works <a id='theory'></a>  
   
@@ -68,6 +72,7 @@ The broad overview of SVI is then:
   
   
 ![image](EXAMPLEGRAPH.png)  
+  
 -----  
   
 ## Doing SVI in NumPyro <a id='numpyro'></a>  
@@ -208,7 +213,7 @@ svi_beta = SVI(model_headstails, guide_beta, optimizer, loss=Trace_ELBO())
 svi_beta_result = svi_beta.run(random.PRNGKey(1), num_steps = 10000, data = data_headstails)  
 ```  
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3741.04it/s, init loss: 18.0005, avg. loss [9501-10000]: 14.7887]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4593.88it/s, init loss: 18.0005, avg. loss [9501-10000]: 14.7887]  
   
   
 The optimal `param` values are stored as a keyed dictionary in the `svi_beta_result` object, and we can extract these to see our best fit surrogate model. In this instance, we know both the ground truth for the parameters _and_ an analytical solution for the pdf of $f$, and so we can see how well SVI has done at recovering the true distribution. We can see that SVI has, in short order, recovered the parameters to within $\approx 10 \%$, and has similarly recovered import summary statistics like the mean and variance of the pdf:  
@@ -285,7 +290,7 @@ svi_norm = SVI(model_headstails , guide_normal, optimizer, loss=Trace_ELBO())
 svi_result_norm = svi_norm.run(random.PRNGKey(2), 50000, data_headstails)  
 ```  
   
-    100%|█████████████████████████████████████████████████████████| 50000/50000 [00:05<00:00, 9231.93it/s, init loss: 15.5589, avg. loss [47501-50000]: 14.7973]  
+    100%|████████████████████████████████████████████████████████| 50000/50000 [00:04<00:00, 11607.55it/s, init loss: 15.5589, avg. loss [47501-50000]: 14.7973]  
   
   
 Running this, we acquire the gaussian that is of closest fit to the $\beta$ distribution. As $\beta$ is non-gaussian, there is an unavoidable discrepency between the two, but we still recover important summary statistics like the mean and variance of the distribution. This is one of SVI's key utilities: as long as your surrogate model can be tuned to _roughly_ match the true posterior, it can produce useful results.  
@@ -451,7 +456,7 @@ plt.grid()
 plt.show()  
 ```  
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2507.13it/s, init loss: 15.1206, avg. loss [9501-10000]: 14.7885]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2879.38it/s, init loss: 15.1206, avg. loss [9501-10000]: 14.7885]  
   
   
   
@@ -461,6 +466,8 @@ plt.show()
   
   
 The gradient of this ELBO estimate is what guides the SVI optimization, and so increasing `num_particles` should may improved performance if you're having issues with convergence.  
+  
+## Some Small Examples <a id="small_examples"></a>  
   
 ### Building a Complicated Models From Mixtures <a id='mixtures'></a>  
   
@@ -524,7 +531,7 @@ plt.show()
   
   
       
-![png](output_32_0.png)  
+![png](output_33_0.png)  
       
   
   
@@ -603,7 +610,7 @@ plt.ylabel("Loss (ELBO)")
 plt.show()  
 ```  
   
-    100%|███████████████████████████████████████████████████████████| 10000/10000 [00:04<00:00, 2357.18it/s, init loss: 40.1734, avg. loss [9501-10000]: 4.4520]  
+    100%|███████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 3181.75it/s, init loss: 40.1734, avg. loss [9501-10000]: 4.4520]  
   
   
     Optimal Guide Params  
@@ -617,7 +624,7 @@ plt.show()
   
   
       
-![png](output_36_2.png)  
+![png](output_37_2.png)  
       
   
   
@@ -651,31 +658,37 @@ plt.show()
   
   
       
-![png](output_38_0.png)  
+![png](output_39_0.png)  
       
   
   
 ### Autoguides: Simpler & Faster <a id='autoguides'></a>  
-- missing  
+So far we've only looked at guides that we've explicitly constructed ourselves using NumPyro primitives. This approach gives us a lot of control and flexibility, but can get overly tedious if we're working with many parameters. NumPyro presentes an alternative in [autoguides](https://num.pyro.ai/en/latest/_modules/numpyro/infer/autoguide.html), handy utilities that _automatically_ construct guides for a single NumPyro model in a single line of code.  
+  
+Autoguides are limited in that they only give a small family of guides to fit, namely variations on gaussian distributions (uncorrelated, correlated, the Laplace approximation etc), but have the advantage of being blindingly easy to use and scaling much more easily into high dimensions. In this quick example I'll show how we can use an autoguide to construct a 2D multivariate distribution. I'll start by defining a toy model in NumPyro, specifically a 2D gaussian with $\sigma_1=1, \sigma_2 =3$ and angled at $45\degree$.   
+  
+Notice that I've used an _improper_ prior in this model, letting $x$ and $y$ be fully unconstrained. I could have just as easily used vague normal distributions to the same end, but I've opted to use these unbounded uniform distributions for neatness.  
   
   
 ```python  
-sig1, sig2, theta = 1.0, 3.0, 45*np.pi/180  
-  
-exmin, exmax = -12, 12  
+sig1, sig2, theta = 1.0, 3.0, 45*np.pi/180 # Variances and angle of gaussian  
   
 def factor(x,y):  
+    # The PDF to feed into NumPyro  
     c,s = jnp.cos(theta), jnp.sin(theta)  
     log_fac = -1.0 / 2.0 * ( ( (c*x- s*y) / sig1 )**2 + ( (s*x + c*y) / sig2)**2 )  
     return(jnp.exp(log_fac))  
   
 def model_forauto():  
+    # NumPyro model using factor()  
     x = numpyro.sample('x', numpyro.distributions.ImproperUniform(constraints.real, (), () ) )  
     y = numpyro.sample('y', numpyro.distributions.ImproperUniform(constraints.real, (), () ) )  
   
     log_fac = jnp.log(factor(x,y))  
     numpyro.factor('logfac', log_fac)  
 ```  
+  
+Now, we have numpyro generate a guide for us by feeding the model into an `infer.autofuide.AutoMultivariateNormal` object. In one line, this generates a guide that will fit a multivariate normal distribution, fully parameterized and ready to roll in an SVI optimization:  
   
   
 ```python  
@@ -687,8 +700,10 @@ autosvi = SVI(model_forauto, autoguide, optim = optimizer_forauto, loss=Trace_EL
 autosvi_result = autosvi.run(random.PRNGKey(2), 50000)  
 ```  
   
-    100%|██████████████████████████████████████████████████████████| 50000/50000 [00:05<00:00, 8676.16it/s, init loss: 3.3177, avg. loss [47501-50000]: -2.9368]  
+    100%|█████████████████████████████████████████████████████████| 50000/50000 [00:04<00:00, 11756.12it/s, init loss: 3.3177, avg. loss [47501-50000]: -2.9368]  
   
+  
+Plotting the output of this autoguide, we see that it's recovered the gaussian distribution without any hiccups:  
   
   
 ```python  
@@ -708,7 +723,6 @@ predictive_MCMClike = Predictive(autoguide, params=autosvi_result.params, num_sa
 posterior_samples = predictive_MCMClike(random.PRNGKey(1))  
 Xsample, Ysample = posterior_samples['x'], posterior_samples['y']  
   
-  
 ax[1].scatter(Xsample,Ysample, s=3, c='k', alpha=0.1)  
 ax[1].grid()  
 ax[1].axis('square')  
@@ -721,24 +735,20 @@ plt.show()
   
   
       
-![png](output_42_0.png)  
+![png](output_45_0.png)  
       
   
   
 **Recovering Covariance Matrix**  
-- AutoguideMultivariate stores the results in the lower triangular [Cholesky Matrix](https://en.wikipedia.org/wiki/Cholesky_decomposition), a sort of "square root" of the matrix  
+We could estimate the mean and covariance matrix of the posterior from these samples alone, but we can also extract them directly from the SVI run. `AutoguideMultivariate` stores its covariance results in the lower triangular [Cholesky Matrix](https://en.wikipedia.org/wiki/Cholesky_decomposition), a sort of "square root" of the covariance matrix:  
   
-$$\begin{equation}  
+$$  
     C^{-1} = L L^T  
-\end{equation}$$  
+$$  
   
-- Can access this from the svi results with `.params['auto_scale_tril']`  
-- Then use this to reconstruct the covariance matrix  
-- Can determine its principle axis and variances along these axis from the eigenvalues / vectors  
+We can access this from the SVI results with `.params['auto_scale_tril']`, and use then use this to reconstruct the covariance matrix. For the sake of comparison, we can then determine its principle axis and variances along these axis from the eigenvalues / vectors.   
   
-- Only one hitch: the normal distribution and resulting $L$ matrix are defined in terms of unconstrained parameter space values, and so the $C$ recovered above can be in the wrong coordinate system depending on your priors  
-- The result is a covariance matrix with the right shape but the wrong 'scale', and needs to be transformed  
-- In this example, we've side-stepped this by using the unconstrained improper prior `ImproperUniform`  
+There's only one hitch: the normal distribution and resulting $L$ matrix are defined in terms of _unconstrained_ parameter space values, and so the $C$ recovered above can be in the wrong coordinate system depending on your priors. This results in a covariance matrix that can be hard to interpret, as the constrained / unconstrained transformations aren't straightforward and change across parameter space. In this example, we've side-stepped this by using the unconstrained improper prior `ImproperUniform`.  
   
   
 ```python  
@@ -747,31 +757,31 @@ L = autosvi_result.params['auto_scale_tril']
 COVAR_REC = jnp.dot(L,L.T)  
   
 print("Recovered covariance matrix:")  
-print(COVAR_REC)  
+print(COVAR_REC.round(3))  
   
+# Get eigenvalues / vectors  
 sigs, us = jnp.linalg.eig(COVAR_REC)  
   
-print("Recovered sigmas:")  
+print("Recovered Variances:")  
 sig1_rec, sig2_rec  = jnp.real(sigs)**(1.0/2.0)  
-print(sig1_rec, sig2_rec)  
+print("σ1 = %0.2f, σ2 = %0.2f" %(sig1_rec, sig2_rec))  
   
-print("Recovered angle:")  
+print("Recovered Contour Angle:")  
 u1, u2 = jnp.real(us)  
 thet_rec = np.arctan(u1[1] / u1[0])  
-# print(thet_rec , "rad")  
-print(thet_rec * 180/ np.pi, "deg")  
+print("θ = %0.2f°" %(thet_rec * 180/ np.pi))  
 ```  
   
     Recovered covariance matrix:  
-    [[4.9180284 4.0303664]  
-     [4.0303664 5.176754 ]]  
-    Recovered sigmas:  
-    1.0074466 3.013276  
-    Recovered angle:  
-    44.080801223927935 deg  
+    [[4.918 4.03 ]  
+     [4.03  5.177]]  
+    Recovered Variances:  
+    σ1 = 1.01, σ2 = 3.01  
+    Recovered Contour Angle:  
+    θ = 44.08°  
   
   
-# A Practical Example: Linear Regression With Outliers  
+# A Practical Example: Linear Regression With Outliers <a id='Example_1'></a>  
   
 I've kept things in the previous sections to small toy examplesto outline the basics of SVI, but full full worked examples can help paint a clearer picture of how to actually apply it as practical tool. In this section, I use SVI to tackle a linear regression with outliers, the same problem worked through using MCMC-like tools in the first example of Dan Foreman Mackey's excellent [astronomer's introduction to numpyro](https://dfm.io/posts/intro-to-numpyro/).  
   
@@ -860,11 +870,11 @@ print("Doing MCMC")
     Doing MCMC  
   
   
-    sample: 100%|█████████████████████████████████████████████████████████████| 21000/21000 [00:08<00:00, 2342.58it/s, 7 steps of size 4.31e-01. acc. prob=0.95]  
+    sample: 100%|█████████████████████████████████████████████████████████████| 21000/21000 [00:06<00:00, 3143.07it/s, 7 steps of size 4.31e-01. acc. prob=0.95]  
   
   
-    CPU times: user 10.4 s, sys: 112 ms, total: 10.5 s  
-    Wall time: 11.3 s  
+    CPU times: user 7.96 s, sys: 83.2 ms, total: 8.05 s  
+    Wall time: 8.67 s  
   
   
 **Constructing a Guide Manually**    
@@ -874,9 +884,12 @@ Now we can get onto attacking this problem with SVI as a comparison. First up, I
     Q_mu  = numpyro.param('Q_mu',  0.5, constraint =constraints.real)  
     Q_sig = numpyro.param('Q_sig', 0.1, constraint =constraints.positive)  
   
-    dist =   
-  
-    transformed_dist  
+    transformed_dist = dist.TransformedDistribution(  
+                dist.Normal(Q_mu, Q_sig),  
+                dist.transforms.UnitInterval(),  
+            )  
+      
+    Q = numpyro.sample('Q', transformed_dist)  
 '''  
   
 But I've instead gone for the much simpler option of using a beta distribution instead. This is a motivated choice: not only do beta distributions already have the current "support" (domain) but it is also a natural fit for estimating the "weighting" of a binary choice, which $Q$ represents:  
@@ -914,12 +927,7 @@ def manual_guide(x, yerr, y):
   
 ```  
   
-Trigger optimizers  
-  
-- Runtimes are betteer than MCMC by a factor of 2-3 even in a cheap case where fixed costs like compilation are a major fraction  
-- Could achieve even better time of we were to fiddle with the number of particles or optimizer tuning parameters  
-- In this low dimensional case, diagonal and multivariate have similar costs and perform about as well as eachother  
--   
+We can also create automatic guides with uncorrelated (`AutoDiagonalNormal`) and correlated (`AutoMultivariateNormal`) gaussian distributions and run those for comparison. Firing these off, we find that their physical running times are betteer than MCMC by a factor of 2-3, even in a cheap case where fixed costs like compilation are a major factor, and we could achieve even better times if we were to fiddle with the number of particles or optimizer tuning parameters.  
   
   
 ```python  
@@ -938,31 +946,28 @@ svi_linreg_manual = SVI(linear_mixture_model, manual_guide, optim = optimizer_fo
 %time result_linreg_manual = svi_linreg_manual.run(random.PRNGKey(1), svi_samples, x, yerr, y=y)  
 ```  
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2863.11it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.8551]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3594.92it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.8551]  
   
   
-    CPU times: user 5.19 s, sys: 76.4 ms, total: 5.27 s  
-    Wall time: 5.67 s  
+    CPU times: user 4.13 s, sys: 179 ms, total: 4.31 s  
+    Wall time: 4.52 s  
   
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3519.17it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.9921]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4720.04it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.9921]  
   
   
-    CPU times: user 3.61 s, sys: 92.5 ms, total: 3.7 s  
-    Wall time: 3.98 s  
+    CPU times: user 2.81 s, sys: 19.9 ms, total: 2.83 s  
+    Wall time: 3.04 s  
   
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:06<00:00, 1464.35it/s, init loss: 59.7463, avg. loss [9501-10000]: 20.1456]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:05<00:00, 1949.37it/s, init loss: 59.7463, avg. loss [9501-10000]: 20.1456]  
   
   
-    CPU times: user 7.94 s, sys: 138 ms, total: 8.08 s  
-    Wall time: 8.66 s  
+    CPU times: user 5.91 s, sys: 74.6 ms, total: 5.99 s  
+    Wall time: 6.39 s  
   
   
-Plot loss to ensure convergences  
-  
-- Working with uncorrelated distribution, so all converge to mostly the same goodness of fit (ELBO),  
-- though taking different times to meander down  
+The resulting distributions are relatively uncorrelated in the problem we're working with, and so all three guides meander down to similar 'goodness of fit', though taking different times. Note again that the $10,000$ samples is overly conservative, even without tuning of the optimizer. One core advantage of SVI is that it can, in some cases, draw in close to a good for _much_ faster than an exhuastive MCMC run:   
   
   
 ```python  
@@ -982,14 +987,13 @@ plt.show()
   
   
       
-![png](output_52_0.png)  
+![png](output_55_0.png)  
       
   
   
-Compare and contrast different results  
-- Good agreement between all approaches  
-- Squishing of contours against prior boundaries due to constrained / unconstrained  
-- Only discrepency is the diagional autoguide and manual guide, both of which assume independent parameters, miss the slight correlation between $\theta$ & $b_{perp}$  
+Knowing that our SVI runs are fully converged, we can use them to generate as many samples as we want from the (approximate) posterior. For fairness of comparison, I've kept the number of samples the same as the MCMC run. We can see that, despite the much lower runtime, all three SVI runs do a decent job of matching with the (mostly true) MCMC results, though in places under-representing the non-gaussian tails.   
+  
+Notice that the autoguides go a good job of capturing the asymmetry of $Q$ _despite_ being 'normal' distributions. This is because autoguides fit normal distributions in the _unconstrained_ domain, which are then "squished" back into the $Q\in[0,1]$ domain. This distortion allows normal autoguides to be more flexible than they might first appear, though not infinitely so as we see in example 2. By contrast, the manual guide has no distortion at all, the source of its failure to capture the assymetry in $bg_\sigma$.  
   
   
 ```python  
@@ -1017,7 +1021,7 @@ plt.show()
   
   
       
-![png](output_54_0.png)  
+![png](output_57_0.png)  
       
   
   
@@ -1053,18 +1057,18 @@ plt.legend()
 plt.show()  
 ```  
   
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 3193.49it/s, init loss: 19.0800, avg. loss [9501-10000]: 14.3933]  
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3590.46it/s, init loss: 18.2585, avg. loss [9501-10000]: 14.4270]  
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:06<00:00, 1447.93it/s, init loss: 18.1025, avg. loss [9501-10000]: 13.7206]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3681.13it/s, init loss: 19.0800, avg. loss [9501-10000]: 14.3933]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4647.74it/s, init loss: 18.2585, avg. loss [9501-10000]: 14.4270]  
+    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:05<00:00, 1882.15it/s, init loss: 18.1025, avg. loss [9501-10000]: 13.7206]  
   
   
   
       
-![png](output_56_1.png)  
+![png](output_59_1.png)  
       
   
   
-### SVI Vs MCMC In High Dimensions  
+### Another Practical Example: SVI Vs MCMC In Higher Dimensions For Hierarchial models <a id='Example_2'></a>  
 In the previous example, we see that SVI competes with or outperforms MCMC in low dimensions ($D<10$), but how does this scale as we climb into the dozens or hundreds of parameters?  
   
 As an example, let's consider a _hierarchical_ model of linear regressions, where the measurements of series '$j$' follow a simple linear relationship with linear uncertainty:  
@@ -1166,11 +1170,11 @@ plt.show()
   
   
       
-![png](output_60_0.png)  
+![png](output_63_0.png)  
       
   
   
-**Define Hierarchical NumPyro Model**  
+**Define Hierarchical NumPyro Model**    
 First, we need to actually define a NumPyro model than can do this hierarchical linear regression. Hierarchical models like this compose easily: the population-level distributions act a bit like priors on each source:  
   
 $$  
@@ -1218,12 +1222,12 @@ numpyro.render_model( model_hierarchy, model_args = ( I, X_concat, Y_concat, E_c
   
   
       
-![svg](output_62_0.svg)  
+![svg](output_65_0.svg)  
       
   
   
   
-- Run SVI  
+Now we can set about running the MCMC and SVI. Later in this example, it's going to become relevant to compare the convergent states of a few different SVI approaches, and I've increased `num_particles` to an absurdly impractical value of $100$, so that we can better compare their "best fit". Because this over-tuning of the samplers throws out the running time, I'm only going to compare the methods in terms of the _number_ of evaluations, a better test of the real-world applications where each sample is costly.  
   
   
 ```python  
@@ -1270,94 +1274,106 @@ SVI_multivariate = numpyro.infer.SVI(model_hierarchy,
     Doing MCMC Warmup  
   
   
-    warmup: 100%|███████████████████████████████████████████████████████████████| 2000/2000 [00:03<00:00, 651.54it/s, 15 steps of size 2.70e-01. acc. prob=0.79]  
+    warmup: 100%|███████████████████████████████████████████████████████████████| 2000/2000 [00:02<00:00, 824.36it/s, 15 steps of size 2.70e-01. acc. prob=0.79]  
   
   
-    CPU times: user 4.09 s, sys: 81.4 ms, total: 4.17 s  
-    Wall time: 4.47 s  
+    CPU times: user 2.36 s, sys: 63.3 ms, total: 2.42 s  
+    Wall time: 2.59 s  
     Doing MCMC Sampling  
   
   
-    sample: 100%|████████████████████████████████████████████████████████████| 20000/20000 [00:12<00:00, 1625.77it/s, 15 steps of size 2.70e-01. acc. prob=0.88]  
+    sample: 100%|████████████████████████████████████████████████████████████| 20000/20000 [00:09<00:00, 2100.01it/s, 15 steps of size 2.70e-01. acc. prob=0.88]  
   
   
-    CPU times: user 11.6 s, sys: 97.1 ms, total: 11.7 s  
-    Wall time: 12.6 s  
+    CPU times: user 8.75 s, sys: 167 ms, total: 8.92 s  
+    Wall time: 9.61 s  
     Doing Diagonal SVI  
   
   
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:07<00:00, 656.36it/s, init loss: 1566.4958, avg. loss [4751-5000]: 238.6858]  
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:05<00:00, 978.46it/s, init loss: 1566.4958, avg. loss [4751-5000]: 238.6858]  
   
   
-    CPU times: user 8.79 s, sys: 3.77 s, total: 12.6 s  
-    Wall time: 8.49 s  
+    CPU times: user 5.32 s, sys: 2.83 s, total: 8.14 s  
+    Wall time: 5.53 s  
     Doing Multivariate SVI  
   
   
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:06<00:00, 783.45it/s, init loss: 1566.4958, avg. loss [4751-5000]: 237.8878]  
+    100%|██████████████████████████████████████████████████████████| 5000/5000 [00:04<00:00, 1136.21it/s, init loss: 1566.4958, avg. loss [4751-5000]: 237.8878]  
   
   
-    CPU times: user 13.5 s, sys: 22 s, total: 35.5 s  
-    Wall time: 8.1 s  
+    CPU times: user 7.87 s, sys: 15.6 s, total: 23.5 s  
+    Wall time: 4.88 s  
   
   
-Per usual, plot the losses to ensure everything has meaningfully converged.  
-- SVI converges _extremely_ fast, in far less itterations and, even with my absurd particle count, in a markedly shorter run-time than MCMC  
+Per usual, plot the losses to ensure everything has meaningfully converged. Keep in mind that higher dimensions means more chances for getting pinned in local optima, and so this isn't the _only_ test of convergence, but it still gives us a good view at the optimization speed. As a rough comparison, I've also plotted the 'potential energy' of the MCMC chain, _including_ the burn-in phase. This isn't a perfect one to one comparison, but still helps visualize the comparative timescales of the methods.  
+  
+The first thing we notice is that, like with a lower dimensional example, SVI converges _extremely_ fast in terms of itterations, and performs decently well in terms of run time even with my absurd particle count. Unsurpringly, the more expressive `AutoguideMultivariateNormal` settles out to a slightly better fit / lower ELBO, but both methods are well and truly converged at only a few thousand samples, while MCMC still has an order of magnitude more evaluations left to go in its sampling phase.  
   
   
 ```python  
 fig, ax = plt.subplots(2,1, sharex=True)  
   
+#--------------------------  
+# SVI plots  
 ax[0].plot(SVI_diagonal_results.losses, lw=1, label = "Diagonal")  
 ax[0].plot(SVI_multivariate_results.losses, lw=1, label = "Multivariate")  
   
+ax[0].axhline(SVI_diagonal_results.losses[-svi_samples // 10:].mean(), c='b', ls='--', zorder = -2)  
+ax[0].axhline(SVI_multivariate_results.losses[-svi_samples // 10:].mean(), c='r', ls='--', zorder = -2)  
+  
 ax[0].set_ylim(ymax=np.min(SVI_multivariate_results.losses)+ np.median(SVI_multivariate_results.losses-np.min(SVI_multivariate_results.losses))*20, ymin=np.min(SVI_multivariate_results.losses))  
+ax[0].set_ylabel("Loss Distribution at Stochastic End State")  
+  
 ax[0].grid()  
+ax[0].legend()  
   
-ax[0].axhline(SVI_diagonal_results.losses[-svi_samples // 10:].mean(), c='r', ls='--', zorder = -2)  
-ax[0].axhline(SVI_multivariate_results.losses[-svi_samples // 10:].mean(), c='b', ls='--', zorder = -2)  
-  
+#--------------------------  
+# MCMC plots  
 MCMC_energies = np.concatenate([MCMC_energies_warmup, MCMC_hierarchy.get_extra_fields()["potential_energy"]])  
   
 ax[1].plot(MCMC_energies - MCMC_energies.min())  
-ax[1].grid()  
-#ax[1].set_ylim(ymax=np.min(MCMC_energies) + np.median(MCMC_energies-np.min(MCMC_energies))*10, ymin=np.min(MCMC_energies))  
-ax[1].set_yscale('log')  
 ax[1].axvline(num_warmup, c='k', ls='--', label = "Burn-In ends")  
   
-#ax[0].set_xscale('log')  
-ax[0].set_xlim(xmin=0)  
-  
-ax[0].set_ylabel("Loss Distribution at Stochastic End State")  
+ax[1].set_yscale('log')  
 ax[1].set_ylabel("MCMC Potential Energy")  
+ax[1].set_xlim(xmin=0)  
   
-ax[0].legend()  
+ax[1].grid()  
 ax[1].legend()  
+#--------------------------  
+  
 plt.show()  
 ```  
   
   
       
-![png](output_66_0.png)  
+![png](output_69_0.png)  
       
   
   
+Becaus this model has dozens of samples, I'll restrict my corner plot to only the population-wide hierarchical values. Like before, SVI's gaussian assumption under-samples the long tails of the distribution, but broadly does a good job of emulating the underlying posterior. There is one marked caveat to this: the contours for the spread in linear offsets, $\sigma_c$. This distribution is _highly_ non-gaussian, not only in its assymetry but also in its limiting behaviour at $\lim_{\sigma_c \rightarrow 0}$. The autoguides are using a reparameterization trick to "squash" their gaussians into the postive domain, but this still means that they need $\lim_{\sigma_c \rightarrow 0} P(\sigma_c)=0$, while the _actual_ distribution (as recovered by MCMC) presses up against that boundary due to the poor constraints on this parameter.  
+  
   
 ```python  
-mcmc_res = {}  
-diag_res = {}  
-multi_res = {}  
-  
-print("Pulling results for...")  
+# Acquire Samples  
 MCMCsamples = MCMC_hierarchy.get_samples()  
 diagpred = numpyro.infer.Predictive(autoguide_diag, params = SVI_diagonal_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
 multipred = numpyro.infer.Predictive(autoguide_multi, params = SVI_multivariate_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
   
+#------------------------------------------  
+# Extract to Chain Consumer friendly dictionary  
+mcmc_res = {}  
+diag_res = {}  
+multi_res = {}  
+print("Pulling results for...")  
 for key in ['m_mu', 'm_sig', 'c_mu', 'c_sig', ]:  
     print("\t",key)  
     mcmc_res |= {key: MCMCsamples[key]}  
     diag_res |= {key: diagpred[key]}  
     multi_res|= {key: multipred[key]}  
+  
+#------------------------------------------  
+# Plot in ChainConsumer  
   
 C_hierarchy = ChainConsumer()  
   
@@ -1366,7 +1382,6 @@ C_hierarchy.add_chain(diag_res, name="Diag")
 C_hierarchy.add_chain(multi_res, name="Multi")  
   
 C_hierarchy.plotter.plot(truth=truth)  
-  
 plt.show()  
   
 ```  
@@ -1380,19 +1395,20 @@ plt.show()
   
   
       
-![png](output_67_1.png)  
+![png](output_71_1.png)  
       
   
   
-Now, plot the population level distributions:  
+It's worth noting that this poor recovery on $P(\sigma_c)$ isn't the end of the world, as it's only a measure of the width of a prior. Plotting a summary of the slopes and offsets recovered for each source, SVI is only very slightly over-constrained as compared to MCMC / truth:  
   
   
 ```python  
+# Acquire SVI samples  
 A = numpyro.infer.Predictive(autoguide_diag, params = SVI_diagonal_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
 B = numpyro.infer.Predictive(autoguide_multi, params = SVI_multivariate_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
   
+# Plotting recovered means / variances  
 fig, axis = plt.subplots(2,1, sharex = True)  
-  
 for i, key in enumerate(['m','c']):  
     axis[i].errorbar(range(N_data), MCMC_hierarchy.get_samples()[key].mean(axis=0), MCMC_hierarchy.get_samples()[key].std(axis=0), fmt='none', capsize=5, alpha=.5, label = "MCMC")  
       
@@ -1403,42 +1419,47 @@ for i, key in enumerate(['m','c']):
     axis[i].axhline(truth[key+"_mu"] + truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)  
     axis[i].axhline(truth[key+"_mu"] - truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)  
   
+# Plot True values  
 axis[0].scatter(range(N_data), Mtrue, c='k', s=10, label = "True")  
 axis[1].scatter(range(N_data), Ctrue, c='k', s=10)  
+  
+#--------------------------  
 axis[0].set_xticks([])  
 axis[0].set_title("Gradients")  
 axis[1].set_title("Offsets")  
-  
+#--------------------------  
 plt.tight_layout()  
-  
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)  
 plt.show()  
 ```  
   
   
       
-![png](output_69_0.png)  
+![png](output_73_0.png)  
       
   
   
-### Non-Gaussian Autoguides  
+### Non-Gaussian Autoguides <a id='Example_2_non_gaussian'></a>  
   
-- Autoguides work decently well, but fail on non-gaussian distributions  
-- Can take a swing at using some other _non_-gaussian methods that NumPyro has to offer  
-    
+So far, we've found that SVI is a good alternative to MCMC in fitting our hierarchical model, needing only a fraction of the evaluations to emulate the posterior. However, SVI has fallen short in capturing non-gaussian behaviour of the posterior, specifically in the highly assymetric and non-gaussian distribution for $\sigma_c$. Fortunately, all is not lost: a quick look at NumPyro's [SVI autoguide documentaion](https://num.pyro.ai/en/latest/autoguide.html) reveals that, while `AutoDiagonalNormal` and `AutoMutlivariateNormal` are the _first_ tools we might reach for, they are for from the most powerful. Here, we'll take a swing at fitting our hierarchical model using some other _non_-gaussian methods that NumPyro has to offer, namely:  
   
 **DAIS (Differential Annealed Importance Sampling)**    
-"Simulated Annealing" is a stochastic optimization method in which which a walker navigates around around the likleihood landscape $P(z)$, prefferentially moving up-hill, but with some chance to accept a jump to a "worse" position. The walker starts at a "high" temperature, where it readily accepts "downhill" steps, but progresses through 'k' stages of "cooling", becoming more dedicated to optimization instead of exploration.   
+"_Simulated Annealing_" is a stochastic optimization method in which which a walker navigates around around the likleihood landscape $P(z)$, prefferentially moving up-hill, but with some chance to accept a jump to a "worse" position. The walker starts at a "high" temperature where it readily accepts "downhill" steps, but progresses through 'k' stages of "cooling" where becoming more dedicated to optimization instead of exploration. "_Annealed Importance Sampling_" is a variation on simulated annealing that re-weights the samples from these exploratory chains to get a more an MCMC-like output. Instead of changing the particle "temperature", the cooling process can be described as the probability landscape transitioning from a smooth, easy to navigate function (e.g. the prior) into the final objective function, i.e.:  
   
 $$  
-\mathcal{L_k(z)}=\mathcal{L^{\beta_k}(z)}, \;\; \beta_{k+1}<\beta_k, \;\; \beta_k\in[0,1]  
+P_k(z) \propto \pi(z)^{\beta_k}\cdot \left(\pi(z) \mathcal{L}(z) \right)^{1-\beta_k}, \;\; \beta_{k+1}>\beta_k, \;\; \beta_k\in[0,1]  
 $$  
   
-**BNAF (Block Nueral Autoregressive Flow)**  
+While "_Differential Annealed Importance Sampling_" is a variation that uses HMC-like steps in the random movement of the chain so that we can leverage autograd. The trick for using this in conjunction with SVI is that, rather than starting with the _prior_ as our smooth and easy-to-navigate function, we can use instead use a surrogate model from SVI, e.g. a gaussian.   
   
-**IAF (Inverse Autoregressive Flows)**  
+$$  
+P_k(z) \propto q_\phi(z)^{\beta_k}\cdot \left(\pi(z) \mathcal{L}(z) \right)^{1-\beta_k}, \;\; \beta_{k+1}>\beta_k, \;\; \beta_k\in[0,1]  
+$$  
   
-- Work wel  
+The idea here is that we can get an _approximate_ version of the posterior via standard SVI, and then allow this to diffuse into a non-gaussian shape though the annealing process. NumPyro parameterizes the cooling scale, ${\beta_k}$, as SVI tuning parameters and attempts to optimize over them along with the initial distribution's $\phi$.  
+  
+**BNAF (Block Nueral Autoregressive Flow)**  & **IAF (Inverse Autoregressive Flows)**    
+Normalizing flows are a category of coordinate transformation for probabalistic distributions in which we transform a simple (e.g. gaussian) distribution through some re-parameterization that matches a more complicated posterior. We can perform this transformation using neural networks, parameterizing an optimizing by the weights and offsets in this network to perform SVI just as we would for a more explicit guide. Different implementations of these normalizing flows rely on different neural architecture, all usually relying on some form that gives an easy to calculate determinant, e.g. by having the neural layers be lower triangular. The specifics of how these work isn't too important here, but we should keep in mind that neural networks like this are _highly parameterized_ and _highly expressive_.  
   
   
 ```python  
@@ -1477,31 +1498,33 @@ print("-"*76)
     Doing AutoDAIS SVI  
   
   
-    100%|███████████████████████████████████████████████████████| 50000/50000 [04:51<00:00, 171.36it/s, init loss: 1030.5693, avg. loss [47501-50000]: 238.3802]  
+    100%|███████████████████████████████████████████████████████| 50000/50000 [03:54<00:00, 213.30it/s, init loss: 1030.5693, avg. loss [47501-50000]: 238.3802]  
   
   
-    CPU times: user 4min 48s, sys: 1min 49s, total: 6min 38s  
-    Wall time: 4min 57s  
+    CPU times: user 3min 47s, sys: 1min 29s, total: 5min 17s  
+    Wall time: 3min 59s  
     ----------------------------------------------------------------------------  
     Doing BNAF SVI  
   
   
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:18<00:00, 273.68it/s, init loss: 1180.0085, avg. loss [4751-5000]: 237.4999]  
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:15<00:00, 319.00it/s, init loss: 1180.0085, avg. loss [4751-5000]: 237.4999]  
   
   
-    CPU times: user 28.5 s, sys: 4.45 s, total: 33 s  
-    Wall time: 29.8 s  
+    CPU times: user 22 s, sys: 3.86 s, total: 25.9 s  
+    Wall time: 24.8 s  
     ----------------------------------------------------------------------------  
     Doing IAF SVI  
   
   
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:09<00:00, 524.96it/s, init loss: 1611.8170, avg. loss [4751-5000]: 237.5567]  
+    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:07<00:00, 700.97it/s, init loss: 1611.8170, avg. loss [4751-5000]: 237.5567]  
   
   
-    CPU times: user 10.3 s, sys: 2.31 s, total: 12.6 s  
-    Wall time: 11.2 s  
+    CPU times: user 7.92 s, sys: 1.73 s, total: 9.66 s  
+    Wall time: 8.59 s  
     ----------------------------------------------------------------------------  
   
+  
+After optimizing, we can see that these less traditional SVI guides have managed to capture the non-gaussianity of $\sigma_c$ quite well, in the case of SVI doing so at _very_ good speed. I've gone with the default parameters and the same optimization time for both the normalizing flow guides, `AutoBNAFNormal` and `AutoIAFNormal`, but _not_ for `AutoDAIS`. In this particular example, DAIS happens to be an extremely inefficient and fragile option, only improving on standard `AutoNormalMultivariate` results with many layers of cooling and a _long_ optimization time. By contrast, the two neural net options converge with good speed and little manual tuning, despite having significantly more parameters (in the low hundreds) to tune.  
   
   
 ```python  
@@ -1550,7 +1573,7 @@ plt.show()
   
   
       
-![png](output_72_0.png)  
+![png](output_77_0.png)  
       
   
   
@@ -1563,11 +1586,11 @@ plt.show()
   
   
       
-![png](output_72_2.png)  
+![png](output_77_2.png)  
       
   
   
-Generate MCMC contours for population level results  
+Now looking at a posterior corner plot for the different methods, we can see how they've managed to adapt much closer to the non-gaussian shapes markedly better than Normal autoguides. Again, DAIS underperforms in this example and hasn't _fully_ converged, but even so it still outperforms the diagonal basis normal guide that it uses as its "base" distribution that it diffuses from.  
   
   
 ```python  
@@ -1608,63 +1631,9 @@ plt.show()
   
   
       
-![png](output_74_1.png)  
+![png](output_79_1.png)  
       
   
-  
-Confirm group level params  
-  
-  
-```python  
-A = numpyro.infer.Predictive(autoguide_dais, params = SVI_dais_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-B = numpyro.infer.Predictive(autoguide_bnaf, params = SVI_bnaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-C = numpyro.infer.Predictive(autoguide_aif, params = SVI_aif_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-  
-fig, axis = plt.subplots(2,1, sharex = True)  
-  
-for i, key in enumerate(['m','c']):  
-    axis[i].errorbar(range(N_data), MCMC_hierarchy.get_samples()[key].mean(axis=0), MCMC_hierarchy.get_samples()[key].std(axis=0), c='k', fmt='none', capsize=5, alpha=.5, label = "MCMC")  
-      
-    axis[i].errorbar(np.arange(N_data)+.03, A[key].mean(axis=0), A[key].std(axis=0), fmt='none', capsize=5, c='green', label = "DAIS")  
-    axis[i].errorbar(np.arange(N_data)+.03, B[key].mean(axis=0), B[key].std(axis=0), fmt='none', capsize=5, c='red', label = "BNAF")  
-    axis[i].errorbar(np.arange(N_data)+.03, C[key].mean(axis=0), C[key].std(axis=0), fmt='none', capsize=5, c='purple', label = "AIF")  
-  
-    axis[i].axhline(truth[key+"_mu"], c='k', ls="--", alpha=0.5, zorder=-10, label = "True Population Spread")  
-    axis[i].axhline(truth[key+"_mu"] + truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)  
-    axis[i].axhline(truth[key+"_mu"] - truth[key+"_sig"], c='k', ls=":", alpha=0.5, zorder=-10)  
-  
-axis[0].scatter(range(N_data), Mtrue, c='k', s=10, label = "True")  
-axis[1].scatter(range(N_data), Ctrue, c='k', s=10)  
-axis[0].set_xticks([])  
-axis[0].set_title("Gradients")  
-axis[1].set_title("Offsets")  
-  
-plt.tight_layout()  
-  
-plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4)  
-plt.show()  
-```  
-  
-  
-    ---------------------------------------------------------------------------  
-  
-    NameError                                 Traceback (most recent call last)  
-  
-    Cell In[37], line 3  
-          1 A = numpyro.infer.Predictive(autoguide_dais, params = SVI_dais_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-          2 B = numpyro.infer.Predictive(autoguide_bnaf, params = SVI_bnaf_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-    ----> 3 C = numpyro.infer.Predictive(autoguide_aif, params = SVI_aif_results.params, num_samples = num_samples*num_chains)(jax.random.PRNGKey(1), I=None, X=None)  
-          5 fig, axis = plt.subplots(2,1, sharex = True)  
-          7 for i, key in enumerate(['m','c']):  
-  
-  
-    NameError: name 'autoguide_aif' is not defined  
-  
-  
-  
-```python  
-  
-```  
   
   
 ---------  
