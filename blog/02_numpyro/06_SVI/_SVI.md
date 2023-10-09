@@ -91,10 +91,6 @@ import matplotlib.pyplot as plt
 from chainconsumer import ChainConsumer
 ```
 
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
-
-
 ### Heads or Tails: A Simple Model
 As a first example, we'll go over a variation of the the heads / tails example from the [old pyro documentation](http://pyro.ai/examples/svi_part_i.html) and the modern (but incomplete) equivalent from the [NumPyro documentation](https://num.pyro.ai/en/stable/svi.html). The basic setup is simple: we have a coin being tossed a certain number of times, landing heads $A$ times and tails $B$ times in no particular order. We're seeking to constrain the "fairness" of the coin, '$f$', the probability of it landing heads on any given flip.
 
@@ -139,9 +135,6 @@ data_headstails = jnp.concatenate([jnp.ones(A_true), jnp.zeros(B_true)])
 # Mean & Var
 mean_true, var_true = A_true/(A_true + B_true), (A_true*B_true / (A_true + B_true)**2 / (A_true + B_true+1))**0.5
 ```
-
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
-
 
 For a given fairness, the probability of any coin toss landing heads or tails follows a [bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution), such that the entire run of heads and tails follows a binomial distribution:
 
@@ -202,8 +195,6 @@ optimizer = numpyro.optim.Adam(step_size=0.0005)
 svi_beta = SVI(model_headstails, guide_beta, optimizer, loss=Trace_ELBO())
 svi_beta_result = svi_beta.run(random.PRNGKey(1), num_steps = 10000, data = data_headstails)
 ```
-
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4593.88it/s, init loss: 18.0005, avg. loss [9501-10000]: 14.7887]
 
 
 The optimal `param` values are stored as a keyed dictionary in the `svi_beta_result` object, and we can extract these to see our best fit surrogate model. In this instance, we know both the ground truth for the parameters _and_ an analytical solution for the pdf of $f$, and so we can see how well SVI has done at recovering the true distribution. We can see that SVI has, in short order, recovered the parameters to within $\approx 10 \%$, and has similarly recovered import summary statistics like the mean and variance of the pdf:
@@ -280,8 +271,6 @@ svi_norm = SVI(model_headstails , guide_normal, optimizer, loss=Trace_ELBO())
 svi_result_norm = svi_norm.run(random.PRNGKey(2), 50000, data_headstails)
 ```
 
-    100%|████████████████████████████████████████████████████████| 50000/50000 [00:04<00:00, 11607.55it/s, init loss: 15.5589, avg. loss [47501-50000]: 14.7973]
-
 
 Running this, we acquire the gaussian that is of closest fit to the $\beta$ distribution. As $\beta$ is non-gaussian, there is an unavoidable discrepency between the two, but we still recover important summary statistics like the mean and variance of the distribution. This is one of SVI's key utilities: as long as your surrogate model can be tuned to _roughly_ match the true posterior, it can produce useful results.
 
@@ -332,7 +321,6 @@ Once an SVI optimization has run, the most general way to convert the optimal re
 2. [Two](#predictive_MCMClike): Feeding _just the guide_ and its optimal tuning gives us samples in parameter space
 3. [Three](#): We can feed parameters from (2) and a model to get fake observations
 
-- Todo: Halting Condition / convergence intro
 
 ### Getting MCMC-Like Posterior Samples <a id='predictive_MCMClike'></a>
 
@@ -445,9 +433,6 @@ plt.xlabel("Optimization Step"), plt.ylabel("Loss (ELBO)")
 plt.grid()
 plt.show()
 ```
-
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 2879.38it/s, init loss: 15.1206, avg. loss [9501-10000]: 14.7885]
-
 
 
     
@@ -600,8 +585,6 @@ plt.ylabel("Loss (ELBO)")
 plt.show()
 ```
 
-    100%|███████████████████████████████████████████████████████████| 10000/10000 [00:03<00:00, 3181.75it/s, init loss: 40.1734, avg. loss [9501-10000]: 4.4520]
-
 
     Optimal Guide Params
     ----------------------------------------------------------------------------
@@ -690,7 +673,6 @@ autosvi = SVI(model_forauto, autoguide, optim = optimizer_forauto, loss=Trace_EL
 autosvi_result = autosvi.run(random.PRNGKey(2), 50000)
 ```
 
-    100%|█████████████████████████████████████████████████████████| 50000/50000 [00:04<00:00, 11756.12it/s, init loss: 3.3177, avg. loss [47501-50000]: -2.9368]
 
 
 Plotting the output of this autoguide, we see that it's recovered the gaussian distribution without any hiccups:
@@ -860,9 +842,6 @@ print("Doing MCMC")
     Doing MCMC
 
 
-    sample: 100%|█████████████████████████████████████████████████████████████| 21000/21000 [00:06<00:00, 3143.07it/s, 7 steps of size 4.31e-01. acc. prob=0.95]
-
-
     CPU times: user 7.96 s, sys: 83.2 ms, total: 8.05 s
     Wall time: 8.67 s
 
@@ -936,21 +915,13 @@ svi_linreg_manual = SVI(linear_mixture_model, manual_guide, optim = optimizer_fo
 %time result_linreg_manual = svi_linreg_manual.run(random.PRNGKey(1), svi_samples, x, yerr, y=y)
 ```
 
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3594.92it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.8551]
-
 
     CPU times: user 4.13 s, sys: 179 ms, total: 4.31 s
     Wall time: 4.52 s
 
 
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4720.04it/s, init loss: 47.1368, avg. loss [9501-10000]: 19.9921]
-
-
     CPU times: user 2.81 s, sys: 19.9 ms, total: 2.83 s
     Wall time: 3.04 s
-
-
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:05<00:00, 1949.37it/s, init loss: 59.7463, avg. loss [9501-10000]: 20.1456]
 
 
     CPU times: user 5.91 s, sys: 74.6 ms, total: 5.99 s
@@ -1046,11 +1017,6 @@ plt.grid()
 plt.legend()
 plt.show()
 ```
-
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 3681.13it/s, init loss: 19.0800, avg. loss [9501-10000]: 14.3933]
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:02<00:00, 4647.74it/s, init loss: 18.2585, avg. loss [9501-10000]: 14.4270]
-    100%|██████████████████████████████████████████████████████████| 10000/10000 [00:05<00:00, 1882.15it/s, init loss: 18.1025, avg. loss [9501-10000]: 13.7206]
-
 
 
     
@@ -1261,36 +1227,20 @@ SVI_multivariate = numpyro.infer.SVI(model_hierarchy,
 %time SVI_multivariate_results = SVI_multivariate.run(jax.random.PRNGKey(1), svi_samples, I, X_concat, Y_concat, E_concat,)
 ```
 
+
     Doing MCMC Warmup
-
-
-    warmup: 100%|███████████████████████████████████████████████████████████████| 2000/2000 [00:02<00:00, 824.36it/s, 15 steps of size 2.70e-01. acc. prob=0.79]
-
-
     CPU times: user 2.36 s, sys: 63.3 ms, total: 2.42 s
     Wall time: 2.59 s
+
     Doing MCMC Sampling
-
-
-    sample: 100%|████████████████████████████████████████████████████████████| 20000/20000 [00:09<00:00, 2100.01it/s, 15 steps of size 2.70e-01. acc. prob=0.88]
-
-
     CPU times: user 8.75 s, sys: 167 ms, total: 8.92 s
     Wall time: 9.61 s
+
     Doing Diagonal SVI
-
-
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:05<00:00, 978.46it/s, init loss: 1566.4958, avg. loss [4751-5000]: 238.6858]
-
-
     CPU times: user 5.32 s, sys: 2.83 s, total: 8.14 s
     Wall time: 5.53 s
+
     Doing Multivariate SVI
-
-
-    100%|██████████████████████████████████████████████████████████| 5000/5000 [00:04<00:00, 1136.21it/s, init loss: 1566.4958, avg. loss [4751-5000]: 237.8878]
-
-
     CPU times: user 7.87 s, sys: 15.6 s, total: 23.5 s
     Wall time: 4.88 s
 
@@ -1376,17 +1326,7 @@ plt.show()
 
 ```
 
-    Pulling results for...
-    	 m_mu
-    	 m_sig
-    	 c_mu
-    	 c_sig
-
-
-
-    
 ![png](output_71_1.png)
-    
 
 
 It's worth noting that this poor recovery on $P(\sigma_c)$ isn't the end of the world, as it's only a measure of the width of a prior. Plotting a summary of the slopes and offsets recovered for each source, SVI is only very slightly over-constrained as compared to MCMC / truth:
@@ -1486,29 +1426,14 @@ print("-"*76)
 ```
 
     Doing AutoDAIS SVI
-
-
-    100%|███████████████████████████████████████████████████████| 50000/50000 [03:54<00:00, 213.30it/s, init loss: 1030.5693, avg. loss [47501-50000]: 238.3802]
-
-
     CPU times: user 3min 47s, sys: 1min 29s, total: 5min 17s
     Wall time: 3min 59s
     ----------------------------------------------------------------------------
     Doing BNAF SVI
-
-
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:15<00:00, 319.00it/s, init loss: 1180.0085, avg. loss [4751-5000]: 237.4999]
-
-
     CPU times: user 22 s, sys: 3.86 s, total: 25.9 s
     Wall time: 24.8 s
     ----------------------------------------------------------------------------
     Doing IAF SVI
-
-
-    100%|███████████████████████████████████████████████████████████| 5000/5000 [00:07<00:00, 700.97it/s, init loss: 1611.8170, avg. loss [4751-5000]: 237.5567]
-
-
     CPU times: user 7.92 s, sys: 1.73 s, total: 9.66 s
     Wall time: 8.59 s
     ----------------------------------------------------------------------------
@@ -1611,14 +1536,6 @@ C_hierarchy.plotter.plot(truth=truth,)
 plt.show()
 
 ```
-
-    Pulling results for...
-    	 m_mu
-    	 m_sig
-    	 c_mu
-    	 c_sig
-
-
 
     
 ![png](output_79_1.png)
