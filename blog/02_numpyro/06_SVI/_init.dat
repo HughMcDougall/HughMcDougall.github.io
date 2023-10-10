@@ -5,3 +5,4 @@ date:	12/9/23
 desc:	Stochastic variational inference
 nav:	TRUE
 tree:	TRUE
+notebook: _SVI.ipynb
