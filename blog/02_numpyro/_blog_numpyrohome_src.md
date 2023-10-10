@@ -8,4 +8,4 @@ It is a generally accepted fact amongst most reasonable people that Bayesian ana
 
 For the experienced user, the interaction cost hurdle between having an idea and getting a nice ChainConsumer corner plot has never been shorter. The only issue is that some corners of NumPyro can be opaque to the unfamilar user. In this blog, I provide a handful of short and to-the-point tutorials that walk the new user through their first steps into the world of NumPyro, and guide the "almost new" user through the less-obvious features that might otherwise cost hours of scanning documentation.
 
-If you're already confident, you might also consider Dan Foreman Mackey's [Astronomer's Guide to NumPyro](https://dfm.io/posts/intro-to-numpyro/), dive right into the [extensive exampeles](https://num.pyro.ai/en/stable/) provided by NumPyro's documentation itself.
+If you're already confident, you might also consider Dan Foreman Mackey's [Astronomer's Guide to NumPyro](https://dfm.io/posts/intro-to-numpyro/), dive right into the [extensive examples](https://num.pyro.ai/en/stable/) provided by NumPyro's documentation itself.
