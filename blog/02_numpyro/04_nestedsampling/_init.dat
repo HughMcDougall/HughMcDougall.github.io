@@ -1,7 +1,7 @@
 doc:	./page.md
-source:	./_page.md
+source:	./_nestedsampling.md
 title:	Nested Sampling
-date:	21/8/23
-desc:	How to use this blog homepage
+date:	10/10/23
+desc:	An exploration of nested sampling in NumPyro
 nav:	TRUE
 tree:	TRUE
