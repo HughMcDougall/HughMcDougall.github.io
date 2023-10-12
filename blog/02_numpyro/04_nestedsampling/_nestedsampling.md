@@ -1,20 +1,556 @@
-# Nested Sampling Interface Example
+# Nested Sampling In NumPyro
 In this document, we use JAXNS to get evidence from a simple NumPyro model, investigating the effects of tuning parameters and making use of the utility functions provided in JAXNS' NumPyro implementation.
 
 First up, we import all the relevant packages:
 
-## How it Works
-<span style="color: red; text-align: center; width: 50%;">
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam suscipit metus ut odio porttitor consequat. Morbi euismod, neque at egestas porttitor, dolor leo venenatis tellus, nec convallis erat ligula ac ante. Nullam nibh est, lacinia vitae blandit id, ullamcorper accumsan turpis. Sed nec mauris arcu. Integer rutrum convallis lectus. Donec augue enim, laoreet eu lectus et, hendrerit cursus felis. Mauris id imperdiet erat. Vestibulum eleifend sapien magna, nec aliquet nisi porttitor at. Maecenas pretium augue efficitur hendrerit cursus. Nulla interdum nisl a massa efficitur rutrum. Mauris aliquam eu eros sit amet congue. Maecenas iaculis rhoncus ultrices. Nulla dapibus nec orci nec viverra. Nunc vitae ultricies dui, ac sagittis sapien. Donec ultrices lorem dolor, eget gravida leo efficitur in.
+**todo**
 
-Duis iaculis eros lectus. Maecenas in arcu eu metus semper tristique. Suspendisse fringilla, enim vel posuere finibus, eros ligula luctus nulla, quis iaculis erat enim a metus. Vivamus pretium elementum hendrerit. Pellentesque facilisis ornare nulla, eu sagittis ante molestie a. Vestibulum ultricies, ipsum molestie luctus molestie, magna purus accumsan ex, rhoncus sagittis magna diam hendrerit odio. Sed iaculis efficitur arcu a vehicula. Nunc sagittis, velit in ornare lacinia, purus dui elementum ipsum, eget volutpat tellus massa in massa.
+## How Nested Sampling Works
 
-Nunc sit amet commodo libero. Nullam dapibus nisl ante, sit amet placerat metus tempor eu. Nullam consectetur efficitur ex, eu viverra dui tempus eu. Aenean mi libero, faucibus quis nibh non, vulputate vehicula tellus. Phasellus ullamcorper odio nisi, id egestas leo aliquam luctus. Donec eget luctus libero. Phasellus justo nulla, tincidunt sit amet tristique eu, luctus ac velit. Interdum et malesuada fames ac ante ipsum primis in faucibus. Phasellus ac arcu pretium, blandit magna et, sodales sem. Aliquam in tempor lectus. Sed a malesuada dui. Mauris dictum eleifend ex nec rhoncus. Mauris aliquet egestas tellus eget eleifend.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus massa leo, condimentum eget vehicula id, mollis et diam. Proin sodales tortor at sollicitudin convallis. Aenean malesuada commodo metus, eget vehicula erat ultrices a. In fermentum bibendum sagittis. Pellentesque sit amet erat quis nisi pharetra lacinia. Duis sagittis sapien id purus condimentum tristique. Nam sit amet elit non nisl placerat rhoncus eu non justo. Quisque ut aliquet orci. Maecenas viverra pharetra nisl, et tempus nisi convallis feugiat. Etiam eros felis, feugiat et cursus a, ornare eget sem. Quisque a condimentum orci. Morbi massa enim, aliquet id est ac, tincidunt ullamcorper urna.
 
-Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nullam et orci rhoncus, sagittis ipsum sed, rhoncus tellus. Cras fringilla metus mi, non luctus purus fringilla vitae. Nulla vitae ligula justo. Phasellus quis felis at arcu placerat blandit ut quis felis. Aliquam odio nulla, eleifend et iaculis nec, mattis sit amet velit. Sed pretium scelerisque tempor. Aenean placerat eleifend metus euismod lacinia. Curabitur ut orci ut nibh gravida cursus ac in risus. Duis eu hendrerit massa, a accumsan purus. Integer blandit diam id libero rhoncus, vel aliquam libero vehicula. Suspendisse dictum nulla eu velit placerat, eu suscipit magna tincidunt. Mauris vitae auctor libero, et tempus magna. Sed blandit elementum justo, ut commodo odio accumsan ac. Nulla a sodales lectus. Aliquam erat justo, blandit ac euismod a, mattis vel dolor. 
-</span>
+- Put walkthrough here
+
+**Building a Toy Problem**
+- First going to make a simple toy problem to see how this works
 
 
+```python
+import numpy as np
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+from chainconsumer import ChainConsumer
+```
+
+- Look at a simple toy problem of a bimodal gaussian in 2D
+- For the sake of comparison, round this to have a _known_ integral of $Z_{true} = 3.0$
+
+
+```python
+Ztrue = 3.0
+
+def prob_func(x,y):
+    # Two gaussian modes
+    out=0
+    out+=jnp.exp(-(x - 2)**2-y**2) 
+    out+=jnp.exp(-(x + 2)**2-y**2)
+
+    # Normalizing
+    out/=2*np.pi
+    out*=Ztrue
+    return(out)
+    
+def log_prob_func(x,y):
+    return(jnp.log(prob_func(x,y)))
+```
+
+- In a toy case like this, integration is obviously tractable through simple brute force, but keep in mind that integration scales exponentially with dimension, and often involves expensive evaluations
+
+
+```python
+#---------------------
+# Set prior boundary
+xmin,xmax = -5.5, 5.5
+ymin,ymax = -2.5,2.5
+V0 = (xmax-xmin) * (ymax-ymin)
+
+#---------------------
+# Generate Heatmap
+Ngrid = 128
+dx, dy = (xmax-xmin)/(Ngrid-1), (ymax-ymin)/(Ngrid-1)
+Xgrid, Ygrid = np.meshgrid(np.linspace(xmin,xmax,Ngrid), np.linspace(ymin,ymax,Ngrid))
+heatmap_grid =prob_func(Xgrid,Ygrid)
+
+#---------------------
+# Plot heatmap
+def do_heatmap(cmap = 'viridis', contrast = 1, clipping=[0,1], interpolation = 'antialiased'):
+    fig, ax = plt.subplots(1,1)
+    ax.imshow(heatmap_grid**contrast, extent=[xmin,xmax,ymin,ymax], 
+              cmap = cmap, 
+              vmin = heatmap_grid.max()*clipping[0], 
+              vmax = heatmap_grid.max()*clipping[1], 
+              interpolation = interpolation,
+              zorder=-10)
+    ax.set_title("Heatmap of Posterior Likelihood")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    return(fig, ax)
+fig, ax = do_heatmap()
+plt.show()
+
+#---------------------
+Zgrid = np.sum(Lgrid) / np.sum(Lgrid>0) * V0
+print("Evidence from grid integration is %0.4f, an error of %0.2f%% with %i evaluations" %(Zgrid,abs(Zgrid/Ztrue-1)*100, Ngrid**2) )
+```
+
+
+    
+![png](output_6_0.png)
+    
+
+
+    Evidence from grid integration is 0.8122, an error of 72.93% with 16384 evaluations
+
+
+**A (Very Rough) Nested Sampling Implementation**
+
+- [MISSINGNO]
+- Start by making a list of "live points", randomly distributed across the prior, sorting them in order of likelihood
+
+
+```python
+Nlive = 24
+Nevals = Nlive*4
+plot_sparse = 6
+
+np.random.seed(3)
+# Draw random samples from the prior
+print("Drawing random Samples")
+Xlive = np.random.rand(Nlive)*(xmax-xmin) + xmin
+Ylive = np.random.rand(Nlive)*(ymax-ymin) + ymin
+Llive = prob_func(Xlive, Ylive)
+
+def sort_livepoints(X,Y,L):
+    Isort=np.argsort(L)
+    return(X[Isort], Y[Isort], L[Isort])
+Xlive,Ylive,Llive = sort_livepoints(Xlive, Ylive, Llive)
+
+Ihilight = np.percentile(np.arange(Llive.size), [25, 80, 90], method='nearest')
+Lhilight = Llive[Ihilight]
+Xhilight = Xlive[Ihilight]
+Yhilight = Ylive[Ihilight]
+
+#-------------------------------------------------
+fig, ax = do_heatmap('Greys', contrast = 0.5, clipping = [-0.25, 1.25])
+ax.contour(Xgrid, Ygrid, np.log(heatmap_grid), levels = np.log(Lhilight), cmap='autumn', zorder=-1, alpha=0.5)
+ax.scatter(Xlive, Ylive,c='b', s=15, marker = 'x')
+ax.scatter(Xhilight, Yhilight, c='r', s=40, marker = 'x')
+
+for i in range(Nlive):
+    if i in Ihilight:
+        c = 'r' 
+    else:
+        c = 'b'
+    ax.annotate(i, (Xlive[i]+dx, Ylive[i]), color=c)
+
+    
+plt.show()
+```
+
+    Drawing random Samples
+
+
+
+    
+![png](output_8_1.png)
+    
+
+
+
+```python
+{
+    "tags": [
+        "hide-input",
+    ]
+}
+def make_steps(X, L):
+    lprev = 0
+    out = np.zeros_like(X)
+    i=0
+    for l in L:
+        i+=1
+        I = (X>=l)
+        out[np.where(X>=l)] = l
+        print(i, np.sum(I) / X.size)
+        lprev = l
+    return(out)
+print("Generatting stepped potential")
+_levels = np.percentile(Llive, [50, 80, 90])
+heatmap_stepped = make_steps(heatmap_grid, _levels )
+
+print("Plotting heatmap")
+plt.imshow(heatmap_stepped, extent = [xmin,xmax,ymin,ymax], interpolation = 'none')
+plt.scatter(Xlive, Ylive, c='red', s = 20, zorder=1, marker='x')
+
+print("Doing 3D plot")
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(5,5))
+surf = ax.plot_surface(Xgrid, Ygrid, heatmap_stepped, cmap='viridis',
+                       linewidth=0, antialiased=True, zorder=-1)
+
+#ax.set_zlim(0, heatmap_stepped.max()*1.5)
+ax.set_aspect('equalxy')
+fig.tight_layout()
+
+plt.show()
+```
+
+    Generatting stepped potential
+    1 0.28198242
+    2 0.15722656
+    3 0.061279297
+    Plotting heatmap
+    Doing 3D plot
+
+
+
+    
+![png](output_9_1.png)
+    
+
+
+
+    
+![png](output_9_2.png)
+    
+
+
+
+```python
+_Z.argsort()
+```
+
+
+
+
+    array([11153, 11138, 11139, ...,  7459,  7460,  7461])
+
+
+
+
+```python
+_Z = heatmap_stepped.ravel()
+_x = Xgrid.ravel()
+_y = Ygrid.ravel()
+
+
+print("Doing 3D plot")
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"}, figsize=(5,5))
+ax.bar3d(_x, _y, np.zeros_like(_Z), dx*5, dy*5, _Z, shade=True, color = plt.cm.coolwarm(_Z/_Z.max())[::-1])
+plt.show()
+print("Done")
+
+```
+
+    Doing 3D plot
+
+
+
+    
+![png](output_11_1.png)
+    
+
+
+    Done
+
+
+
+```python
+
+# Plot
+# Plot heatmap
+fig1,ax1 = plt.subplots(1,1)
+ax1.imshow(Lgrid, extent=[xmin,xmax,ymin,ymax])
+ax1.set_title("Heatmap of Posterior Likelihood")
+ax1.set_xlabel("X")
+ax1.set_ylabel("Y")
+
+ax[1].scatter(Xlive,Ylive, c='r', marker='x')
+
+Xchain = np.zeros(Nevals)
+Ychain = np.zeros(Nevals)
+Lchain = np.zeros(Nevals)
+
+total_evals = Nlive
+
+#Perform loop
+propmethod = 'stretchmove'
+for k in range(Nevals):
+    lmin = Llive[0]
+    l = lmin-1
+
+    #--------------------
+    # PROPOSAL GENERATION
+    #Draw new random samples until we get one with L>Lmin
+
+    if propmethod == 'unitcube':
+        xmin_live, xmax_live =xmin, xmax
+        ymin_live, ymax_live =ymin, ymax
+    elif propmethod == 'boundedcube':
+        xmin_live, xmax_live =min(Xlive), max(Xlive)
+        ymin_live, ymax_live =min(Ylive), max(Ylive)
+
+    while l<=lmin:
+        if 'cube' in propmethod:
+            x, y = np.random.rand()*(xmax_live-xmin_live) + xmin_live, np.random.rand()*(ymax_live-ymin_live) + ymin_live
+        else:
+                
+            i1, i2 = np.random.randint(Nlive), np.random.randint(Nlive)
+            x1, y1 = Xlive[i1], Ylive[i1]
+            x2, y2 = Xlive[i2], Ylive[i2]
+
+            if propmethod == 'stretchmove':
+                r = np.random.rand() * (8**0.5-8**-0.5) + 8**-0.5
+                z = r**(2/3)
+
+                x, y = x1 + (x2-x1) * z, y1 + (y2-y1) * z
+            
+        l = prob_func(x,y)
+        total_evals+=1
+
+    #--------------------
+
+    Xchain[k] = Xlive[0]
+    Ychain[k] = Ylive[0]
+    Lchain[k] = Llive[0]
+
+    #Pop Lmin from our live points and add the new good one
+    Xlive[0], Ylive[0], Llive[0] = x, y, l
+
+
+
+    if Llive[0]>Llive[1]:
+        Isort=np.argsort(Llive)
+        Xlive, Ylive, Llive = Xlive[Isort], Ylive[Isort], Llive[Isort]
+
+    #Store the new probability in the chain
+
+    if k%(Nevals//20) == 0: print('\t Itteration %i/%i done, new highest prob: %f' %(k,Nevals,Lchain[k]))
+
+#Add remaining chain points
+Isort=np.argsort(Llive)
+Xlive, Ylive, Llive = Xlive[Isort], Ylive[Isort], Llive[Isort]
+
+Xchain = np.concatenate([Xchain,Xlive])
+Ychain = np.concatenate([Ychain, Ylive])
+Lchain = np.concatenate([Lchain, Llive])
+
+print("NS chain complete.")
+print("Total number of evaluations: %i" %total_evals)
+print("Compared to: %i" %Nplot**2)
+print("Ratio of: %0.4f %%" %(total_evals/Nplot**2 * 100))
+print("Acceptance Ratio of Samples: %0.4f %%" %(len(Lchain)/total_evals*100))
+
+ax[1].scatter(Xchain, Ychain, c='grey', marker='.', alpha = 0.15, s=5)
+ax[1].scatter(Xlive, Ylive, c='limegreen', marker='o', alpha = 0.25)
+
+ax[1].set_xlim(xmin,xmax)
+ax[1].set_ylim(ymin,ymax)
+
+#--------------------------
+# Calculate & compare evidence integrals
+V0 = (xmax-xmin) * (ymax-ymin)
+V = V0 * (1-1/Nlive) ** np.arange(0,len(Lchain))
+dV = np.abs(V[1:]-V[:-1])
+
+# Newtonian integration from grid
+dx      = (xmax-xmin) / (Nplot-1)
+dy      = (ymax-ymin) / (Nplot-1)
+Z_grid  = np.sum(Lplot)*dx*dy
+
+# Estimate from nested sampling
+Z_nest_1 = 0
+Z_nest_2 = 0
+
+Z_nest_1 = np.sum(np.abs(Lchain[1:]-Lchain[:-1]) * V[1:])
+Z_nest_2 = np.sum(Lchain[1:]*dV)
+
+#--------------------------
+
+print("\n")
+print("Evidence From")
+print("Direct grid integral:\t%f" %Z_grid)
+print("Nested Sampling, First Integral:\t%f" %Z_nest_1)
+print("Nested Sampling, Second Integral:\t%f" %Z_nest_2)
+
+print("\n")
+truth = 3.0
+print("Relative Errors")
+print("Direct grid integral:\t%f" %abs(Z_grid/truth-1))
+print("Nested Sampling, First Integral:\t%f" %abs(Z_nest_1/truth-1))
+print("Nested Sampling, Second Integral:\t%f" %abs(Z_nest_2/truth-1))
+
+fig2, ax2 = plt.subplots(4,1)
+
+ax2[0].plot(dV,          Lchain[1:]          )
+ax2[0].set_title("True Integral Function")
+
+ax2[1].plot(np.log(dV),  Lchain[1:]  )
+ax2[1].set_title("Likelihood vs Itteration No / Log Shell Volume")
+
+ax2[2].plot(dV,  dV * Lchain[1:]      )
+ax2[2].set_title("Shell Size vs Shell Mass")
+
+ax2[3].plot(np.log(dV),  dV * Lchain[1:]      )
+ax2[3].set_title("Shell Size (log) vs Shell Mass")
+
+fig2.tight_layout()
+
+#--------------------------
+# Attempt at importance sampling
+Lnorm = (Lchain[1:] + Lchain[:-1])/2 
+W = dV*Lnorm
+W/=np.max(W)
+
+Nsample = 10000
+
+Xsample = np.zeros(Nsample)
+Ysample = np.zeros(Nsample)
+
+Isample = np.zeros(Nsample,dtype='int32')-1
+
+for i in range(Nsample):
+    while Isample[i]==-1:
+        #choose a random unweighted point
+        j = np.random.randint(len(W))
+        w = W[j]
+        r = np.random.rand()
+
+        if w>=r:
+            Isample[i]=j
+
+Xsample = Xchain[1:][Isample]
+Ysample = Ychain[1:][Isample]
+
+ax[2].scatter(Xsample, Ysample, alpha=W*0.5*(max(Nsample/len(Lchain),1))**-1, s=5, c='r')
+
+ax[2].axhline(np.mean(Ysample), ls='-', c='k')
+ax[2].axvline(np.mean(Xsample), ls='-', c='k')
+
+ax[2].axhline(np.mean(Ysample)+np.std(Ysample), ls='--', c='k')
+ax[2].axhline(np.mean(Ysample)-np.std(Ysample), ls='--', c='k')
+
+ax[2].axvline(np.mean(Xsample)+np.std(Xsample), ls='--', c='k')
+ax[2].axvline(np.mean(Xsample)-np.std(Xsample), ls='--', c='k')
+
+Ntruth=10000
+Xtruth = np.zeros(Ntruth)
+Ytruth = np.zeros(Ntruth)
+
+print("Brute forcing sampling of the posterior")
+for i in range(Ntruth):
+    if i%(Ntruth//20) == 0:
+        print("\t Sample %i of %i" %(i, Ntruth))
+    use = False
+
+    while use==False:
+            x, y = np.random.rand()*(xmax-xmin) + xmin, np.random.rand()*(ymax-ymin) + ymin
+            l = prob_func(x,y)
+            r = np.random.rand()
+            if l/np.max(Lplot) > r:
+                use=True
+                Xtruth[i], Ytruth[i] = x, y
+
+c = ChainConsumer()
+c.add_chain(chain = {'X':Xsample,'Y':Ysample}, name='Weighted Samples')
+c.add_chain(chain = {'X':Xtruth, 'Y':Ytruth}, name='True Dist')
+c.plotter.plot()
+
+#--------------------------
+# Remaining Evidence Estimations
+Vnorm = (V[1:] + V[:-1])/2 
+Z_running = np.array([np.sum((Lnorm*dV)[:i]) for i in range(len(Lnorm))])
+Z_rem = Z_running/ (Z_running + Lnorm*Vnorm)
+
+figrem, axrem = plt.subplots(1,1)
+axrem.plot(Z_running/truth, label = 'True Remaining', c='k')
+axrem.plot(Z_rem, label = 'Est Remaining')
+axrem.legend()
+axrem.set_xlabel("Itt. No")
+axrem.set_ylabel("Z/Z_tot")
+
+plt.show()
+
+```
+
+    Drawing random Samples
+    	 Itteration 0/4000 done, new highest prob: 0.000000
+    	 Itteration 200/4000 done, new highest prob: 0.000000
+    	 Itteration 400/4000 done, new highest prob: 0.000012
+    	 Itteration 600/4000 done, new highest prob: 0.001138
+    	 Itteration 800/4000 done, new highest prob: 0.020894
+    	 Itteration 1000/4000 done, new highest prob: 0.090270
+    	 Itteration 1200/4000 done, new highest prob: 0.185161
+    	 Itteration 1400/4000 done, new highest prob: 0.278618
+    	 Itteration 1600/4000 done, new highest prob: 0.359123
+    	 Itteration 1800/4000 done, new highest prob: 0.417867
+    	 Itteration 2000/4000 done, new highest prob: 0.443127
+    	 Itteration 2200/4000 done, new highest prob: 0.458515
+    	 Itteration 2400/4000 done, new highest prob: 0.467934
+    	 Itteration 2600/4000 done, new highest prob: 0.472579
+    	 Itteration 2800/4000 done, new highest prob: 0.474889
+    	 Itteration 3000/4000 done, new highest prob: 0.476094
+    	 Itteration 3200/4000 done, new highest prob: 0.476759
+    	 Itteration 3400/4000 done, new highest prob: 0.477079
+    	 Itteration 3600/4000 done, new highest prob: 0.477270
+    	 Itteration 3800/4000 done, new highest prob: 0.477360
+    NS chain complete.
+    Total number of evaluations: 7574
+    Compared to: 16384
+    Ratio of: 46.2280 %
+    Acceptance Ratio of Samples: 58.0935 %
+    
+    
+    Evidence From
+    Direct grid integral:	0.093750
+    Nested Sampling, First Integral:	4.673324
+    Nested Sampling, Second Integral:	4.683460
+    
+    
+    Relative Errors
+    Direct grid integral:	0.968750
+    Nested Sampling, First Integral:	0.557775
+    Nested Sampling, Second Integral:	0.561153
+    Brute forcing sampling of the posterior
+    	 Sample 0 of 10000
+    	 Sample 500 of 10000
+    	 Sample 1000 of 10000
+    	 Sample 1500 of 10000
+    	 Sample 2000 of 10000
+    	 Sample 2500 of 10000
+    	 Sample 3000 of 10000
+    	 Sample 3500 of 10000
+    	 Sample 4000 of 10000
+    	 Sample 4500 of 10000
+    	 Sample 5000 of 10000
+    	 Sample 5500 of 10000
+    	 Sample 6000 of 10000
+    	 Sample 6500 of 10000
+    	 Sample 7000 of 10000
+    	 Sample 7500 of 10000
+    	 Sample 8000 of 10000
+    	 Sample 8500 of 10000
+    	 Sample 9000 of 10000
+    	 Sample 9500 of 10000
+
+
+    WARNING:chainconsumer:Parameter X in chain True Dist is not constrained
+
+
+
+    
+![png](output_12_2.png)
+    
+
+
+
+    
+![png](output_12_3.png)
+    
+
+
+
+    
+![png](output_12_4.png)
+    
+
+
+
+    
+![png](output_12_5.png)
+    
+
+
+## Nested Sampling In NumPyro with JAXNS
 So far, we've seen that none of NumPyro's native MCMC samplers work particularly well in multimodal distributions. Though they may locate the modes decently well, they fail to sample from them in a representative way, inflating the smaller modes by over-sampling them. 
 
 Fortunately, we have another tool at our disposal that is purpose built for multimodal distributions: [Nested Sampling](https://en.wikipedia.org/wiki/Nested_sampling_algorithm) (NS). In the strictest sense, NS is an _integrator_ rather than a true MCMC method, but its results can be easily weighted into a MCMC-like chain. However, because it takes many samples in the low probability regions of parameter space to properly map where the likelihood _isn't_
@@ -67,53 +603,24 @@ And that the evidence / area under the curve has been set to $Z=3$
 
 
 ```python
-xmin,xmax = -10, 10
-ymin,ymax = -5,5
-V0 = (xmax-xmin) * (ymax-ymin)
 
-def log_prob_func(x,y):
-    out=0
-
-    # Two gaussian modes
-    out+=jnp.exp(-(x-4)**2-y**2) 
-    out+=jnp.exp(-(x+4)**2-y**2)
-
-    # Normalizing
-    out/=2*np.pi
-    out*=3
-    
-    return(jnp.log(out))
-
-def prob_func(x,y):
-    return(np.exp(log_prob_func(x,y)))
 ```
 
 As a test, confirm this is working by plotting / integrating with a gridsearch:
 
 
 ```python
-Ngrid = 512
-Xgrid = np.linspace(xmin,xmax,Ngrid)
-Ygrid = np.linspace(ymin,ymax,Ngrid)
-Lgrid = np.array([[prob_func(x,y) for x in Xgrid] for y in Ygrid])
+
 ```
 
 
 ```python
-fig1,ax1 = plt.subplots(1,1)
-ax1.imshow(Lgrid, extent=[xmin,xmax,ymin,ymax])
-ax1.set_title("Heatmap of Posterior Likelihood")
-ax1.set_xlabel("X")
-ax1.set_ylabel("Y")
-plt.show()
 
-Zgrid = np.sum(Lgrid) / np.sum(Lgrid>0) * V0
-print("Evidence from grid integration is %0.4f" %Zgrid)
 ```
 
 
     
-![png](output_8_0.png)
+![png](output_20_0.png)
     
 
 
@@ -180,13 +687,13 @@ plt.show()
 
 
     
-![png](output_14_1.png)
+![png](output_26_1.png)
     
 
 
 
     
-![png](output_14_2.png)
+![png](output_26_2.png)
     
 
 
@@ -277,13 +784,13 @@ NS.diagnostics()
 
 
     
-![png](output_18_2.png)
+![png](output_30_2.png)
     
 
 
 
     
-![png](output_18_3.png)
+![png](output_30_3.png)
     
 
 

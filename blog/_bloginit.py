@@ -108,6 +108,7 @@ def readinit(url):
     finit = open(url)
     out   = copy(default_init)
     for line in finit:
+        line = line.replace(": ",":\t")
         line = line.replace(":\t","\t")
         while "\t\t" in line: line=line.replace("\t\t","\t")
         key, val = line.split("\t")
