@@ -1,0 +1,7 @@
+doc:	./page.md
+source:	./suspic02.md
+title:	Data Tension Examples
+date:	16/10/23
+desc:	An example of data tension
+nav:	TRUE
+tree:	TRUE

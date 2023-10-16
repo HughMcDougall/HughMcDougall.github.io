@@ -12,6 +12,7 @@ Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), a astronomer PhD student at 
 * [WebGuide](.\03_stats\./page.html)  
 	  * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html)  
 	  * [Bayesian Suspiciousness](.\03_stats\02_suspiciousness\./page.html)  
+	  * [Data Tension Examples](.\03_stats\03_suspic02\./page.html)  
   
 ---------  
   

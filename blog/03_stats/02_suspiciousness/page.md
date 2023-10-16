@@ -1,4 +1,4 @@
-Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	   
+Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	 Next Entry: [Data Tension Examples](.\..\03_suspic02\page.html)  
   
   
 Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
