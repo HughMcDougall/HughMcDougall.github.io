@@ -22,16 +22,10 @@ import numpyro
 ```  
   
 # Tension  
-  
+Do two datasets _actually_ measure the same source? Can we combine them? Not always.  
   
   
 ```python  
-{  
-    "tags": [  
-        "hide-input",  
-    ]  
-}  
-  
 def gen_data(Ndata = 10, seed = 12, true_params = {'m':1,'c':0}, escatter=1, ebar = 1, Xrange= {-10,10}):  
     np.random.seed(seed)  
     m, c = true_params['m'], true_params['c']  
@@ -52,6 +46,9 @@ ax[1].errorbar(XAB,YAB,EAB, fmt = 'none', c='k', capsize=5)
 ax[0].grid()  
 ax[1].grid()  
   
+ax[0].set_title("Individual Data Sets")  
+ax[1].set_title("Both Data Sets")  
+  
 fig.tight_layout()  
 fig.supxlabel('x')  
 fig.supylabel('y')  
@@ -63,6 +60,32 @@ plt.show()
 ![png](output_3_0.png)  
       
   
+  
+## Bayesian Evidence   
+  
+We define a bayesian model and do MCMC, where "goodness of fit" of parameters $\theta$ is proporional to how well the model fits the data:  
+  
+$$  
+P(\theta \vert y) \propto P(y \vert \theta) \cdot \pi(\theta)  
+$$  
+  
+This has a proportionality constant $Z$, which we usually handwave away as we only care about the _relative_ performance of any two points in parameter space. However, this constant has physical meaning: It's the _total_ "mass of likelihood" of the entire posterior:   
+  
+$$  
+Z = \int \mathcal{L}(\theta \vert y)\cdot \pi(\theta) d\theta  
+$$  
+  
+This is the **Bayesian Evidence**, and describes the overall ability of the model to explain / reproduce the data.  
+  
+### Evidence Ratio  
+  
+Because the evidence is a measure of how well a model performs overall, we can compare the performance of two models by looking at the ratio of these two. E.g, for models '1' and '2':  
+  
+$$  
+R_12 = \frac{Z_1}{Z_2}  
+$$  
+  
+## Failure of Evidence Ratio in   
   
   
 ```python  
@@ -81,14 +104,29 @@ def model(x,y,e, priors = default_priors):
 numpyro.render_model(model, model_args=[jnp.array([1])]*3)  
 ```  
   
+    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
+  
+  
   
   
   
       
-![svg](output_4_0.svg)  
+![svg](output_5_1.svg)  
       
   
   
+  
+  
+```python  
+def get_KL(chain, poten, prior):  
+    M, C = chain['m'], chain['c']  
+    m_mu, m_sig = prior['m']  
+    c_mu, c_sig = prior['c']  
+    priorfunc = np.exp(-1/2 * (((M-m_mu)/m_sig)**2 + ((M-c_mu)/c_sig)**2)) / (2*np.pi) / c_sig / m_sig  
+  
+    out = (np.log(priorfunc) - poten).mean()  
+    return(-out/ 2)  
+```  
   
   
 ```python  
@@ -102,16 +140,19 @@ print("Doing Set A")
 sampler.run(jax.random.PRNGKey(1), XA,YA,EA, extra_fields = ("potential_energy",))  
 res_A = sampler.get_samples()  
 poten_A = sampler.get_extra_fields()['potential_energy']  
+D_A = get_KL(res_A, poten_A, default_priors)  
   
 print("Doing Set B")  
 sampler.run(jax.random.PRNGKey(1), XB,YB,EB, extra_fields = ("potential_energy",))  
 res_B = sampler.get_samples()  
 poten_B = sampler.get_extra_fields()['potential_energy']  
+D_B = get_KL(res_B, poten_B, default_priors)  
   
 print("Doing Both Sets")  
 sampler.run(jax.random.PRNGKey(1), XAB,YAB,EAB, extra_fields = ("potential_energy",))  
 res_AB = sampler.get_samples()  
 poten_AB = sampler.get_extra_fields()['potential_energy']  
+D_AB = get_KL(res_AB, poten_AB, default_priors)  
   
 print("Done")  
 ```  
@@ -131,39 +172,50 @@ C.add_chain(res_AB, name = "Both Data Sets")
 C.plotter.plot(figsize=(5,5))  
 plt.show()  
   
+  
+rel_inf = D_A+D_B - D_AB  
+rel_inf *=-1   
+  
 Zrat = np.exp(-poten_A).mean() * np.exp(-poten_B).mean() / np.exp(-poten_AB).mean()  
+Zrat**=-1  
+  
 print("Evidence Ratio: %.4e" %Zrat)  
+print("Relative Information Gain: %.4f" %(rel_inf))  
 ```  
   
   
       
-![png](output_6_0.png)  
+![png](output_8_0.png)  
       
   
   
-    Evidence Ratio: 4.8605e+06  
+    Evidence Ratio: 2.0574e-07  
+    Relative Information Gain: 3.9661  
   
   
   
 ```python  
-constrained_priors = {'m':[0.0,1000.0],  
+expanded_priors = {'m':[0.0,1000.0],  
                       'c': [0.0,10000]   
 }  
   
 print("Doing Set A")  
-sampler.run(jax.random.PRNGKey(1), XA,YA,EA, extra_fields = ("potential_energy",), priors=constrained_priors)  
-res_A2 = sampler_two.get_samples()  
-poten_A2 = sampler_two.get_extra_fields()['potential_energy']  
+sampler.run(jax.random.PRNGKey(1), XA,YA,EA, extra_fields = ("potential_energy",), priors=expanded_priors)  
+res_A2 = sampler.get_samples()  
+poten_A2 = sampler.get_extra_fields()['potential_energy']  
+D_A2 = get_KL(res_A2, poten_A2, expanded_priors)  
   
 print("Doing Set B")  
-sampler.run(jax.random.PRNGKey(1), XB,YB,EB, extra_fields = ("potential_energy",), priors=constrained_priors)  
-res_B2 = sampler_two.get_samples()  
-poten_B2 = sampler_two.get_extra_fields()['potential_energy']  
+sampler.run(jax.random.PRNGKey(1), XB,YB,EB, extra_fields = ("potential_energy",), priors=expanded_priors)  
+res_B2 = sampler.get_samples()  
+poten_B2 = sampler.get_extra_fields()['potential_energy']  
+D_B2 = get_KL(res_B2, poten_B2, expanded_priors)  
   
 print("Doing Both Sets")  
-sampler.run(jax.random.PRNGKey(1), XAB,YAB,EAB, extra_fields = ("potential_energy",), priors=constrained_priors)  
-res_AB2 = sampler_two.get_samples()  
-poten_AB2 = sampler_two.get_extra_fields()['potential_energy']  
+sampler.run(jax.random.PRNGKey(1), XAB,YAB,EAB, extra_fields = ("potential_energy",), priors=expanded_priors)  
+res_AB2 = sampler.get_samples()  
+poten_AB2 = sampler.get_extra_fields()['potential_energy']  
+D_AB2 = get_KL(res_AB2, poten_AB2, expanded_priors)  
   
 print("Done")  
 ```  
@@ -183,26 +235,37 @@ C.add_chain(res_AB2, name = "Both Data Sets")
 C.plotter.plot(figsize=(5,5))  
 plt.show()  
   
+rel_inf2 = D_A2+D_B2 - D_AB2  
+rel_inf *=-1   
+  
 Zrat2 = np.exp(-poten_A2).mean() * np.exp(-poten_B2).mean() / np.exp(-poten_AB2).mean()  
+Zrat2**=-1  
+  
 print("Evidence Ratio: %.4e" %Zrat2)  
+  
+print("Relative Information Gain: %.4f" %(rel_inf2))  
   
 ```  
   
   
       
-![png](output_8_0.png)  
+![png](output_10_0.png)  
       
   
   
-    Evidence Ratio: 9.7857e+01  
+    Evidence Ratio: 1.0219e-02  
+    Relative Information Gain: 6.8418  
   
   
   
 ```python  
-def get_KL(chain, prior):  
-    M, C = chain['m'], chain['c']  
-    priorfunc = (-1/2 * (M-m_mu)/m_sig)  
+print("Suspiciousness for Prior 1: %.4f" %(np.log(Zrat) - rel_inf))  
+print("Suspiciousness for Prior 2: %.4f" %(np.log(Zrat2) - rel_inf2))  
 ```  
+  
+    Suspiciousness for Prior 1: -11.4305  
+    Suspiciousness for Prior 2: -11.4253  
+  
   
   
 ---------  
