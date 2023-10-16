@@ -185,7 +185,7 @@ def get_KL(chain, poten, prior):
 
 ```python
 sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
-                             num_samples = 10000,
+                             num_samples = 100000,
                              num_warmup = 500,
                              num_chains = 1,
                              progress_bar = False)
@@ -243,8 +243,8 @@ print("Relative Information Gain: %.4f" %(rel_inf))
     
 
 
-    Evidence Ratio: 2.0574e-07
-    Relative Information Gain: 3.9661
+    Evidence Ratio: 2.0564e-07
+    Relative Information Gain: 3.9688
 
 
 
@@ -307,8 +307,8 @@ print("Relative Information Gain: %.4f" %(rel_inf2))
     
 
 
-    Evidence Ratio: 1.0219e-02
-    Relative Information Gain: 6.8418
+    Evidence Ratio: 1.0214e-02
+    Relative Information Gain: 6.8395
 
 
 
@@ -317,6 +317,6 @@ print("Suspiciousness for Prior 1: %.4f" %(np.log(Zrat) - rel_inf))
 print("Suspiciousness for Prior 2: %.4f" %(np.log(Zrat2) - rel_inf2))
 ```
 
-    Suspiciousness for Prior 1: -11.4305
-    Suspiciousness for Prior 2: -11.4253
+    Suspiciousness for Prior 1: -11.4283
+    Suspiciousness for Prior 2: -11.4235
 
