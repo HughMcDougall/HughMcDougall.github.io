@@ -10,14 +10,28 @@ Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghom
   
 # Tension & Suspicion  
   
-In astrophysics and cosmology, we often bump against the limits of our understanding in the form of statistical _tensions_,  disagreements in the our results from two different data sources. There's two ways we might care about tensions:  
+In astrophysics and cosmology, we often bump against the limits of our understanding in the form of statistical _tensions_,  disagreements in the our results from two different data sources. There's two practical reasons we might care about tensions:  
 1. When asking if two measurements properly agree with one another  
-2. When considering if two data-sets are similar enough to pool them together as one big data set  
+2. When considering if two data-sets are similar enough to pool them together  
   
-In the simplest of cases, we can can use the rough yardstick of a **sigma tension**, approximating our measurement uncertainties as gaussians and just asking <span style="font-family: verdana"><i>"how many standard deviations are result $A$ and result $B$ separated by"?</i></span>.  
+In the simplest of cases, like hubble tension diagram shown below, we can can use the rough yardstick of a **sigma tension**, $T$. Assuming our measurement uncertainties are gaussian, sigma-tension asks: <span style="font-family: verdana"><i>"how many standard deviations are result $A$ and result $B$ separated by"?</i></span>. The famous frequentist approach to this simple 1D case is to assign a P value based on how likely the separation is to be a product of coincidence:  
+  
+$$  
+P = p(t > T) = \int_T^\infty \mathcal{N}(t) dt  
+$$  
+  
+This a workable approach when our are simple one dimensional gaussians, but what about complicated, high dimensional multivariate models? For a generalizeable and principled approach to the question of tensoin, we need to turn to the test-stastics of Bayesian modelling. In this post, I introduce the reader to _bayesian suspiciousness_, a little known item in the bayesian tool-belt that is well suited to the vague priors endemic to cosmology.  
   
   
  <p style="text-align: center; font-family: tahoma"><i>Are these data sets based on the same parameters</i></p>  
+   
+ <figure>  
+    <img src="./media/hubbletension.png" width="400">  
+</figure>  
+  
+<p style="text-align: center; font-family: arial;width: 600px; margin:0 auto;" ><b>Diagram showing how tension in measurements of the hubble parameter <a href="https://arxiv.org/pdf/2105.05208.pdf">Perivolaropoulos & Skara 2022</a></b></p>  
+  
+In part one of this post, I introduce the unfamiliar reader to two of the more common tools of bayesian "goodness of fit": _evidence_ and _information_ (also sometimes called entropy or the [Kullback Leiber divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)", and demonstrate the shortfalls these have in measuring statistical tension. I then introduce bayesian suspiciousness, and show how it dodges the pitfalls of its better known cousins. In part 2, I derive all three tools for a simple 1D gaussian case to help offer an intuitive "feel" for what they represent. I extend this to the general multivariate case, and offer an interpretation of suspiciousness in P-value terms as an olive branch to the frequentists of the world.  
   
   
 ```python  
@@ -30,6 +44,8 @@ import jax.numpy as jnp
 import numpyro  
 from matplotlib.patches import Ellipse  
 ```  
+  
+## Part 1: A Gentle Introduction to Suspiciousness by way of Example  
   
 Do two datasets _actually_ measure the same source? Can we combine them? Not always.  
 - Look at a simple example of a linear regression  
@@ -385,7 +401,7 @@ print("Suspiciousness for Prior 2: %.4f" %(np.log(Zrat2) - rel_inf2))
     Suspiciousness for Prior 2: -10.5596  
   
   
-## Translating to Frequentism - Interpreting Suspiciousness with P Values  
+## Part 2: Translating to Frequentism - Interpreting Suspiciousness with P Values  
   
 - Derive with a 1D gaussian  
   
@@ -457,10 +473,10 @@ $$
   
 Information for data set $A$ is:  
   
-\begin{eqnarray}  
-I_A &=& \int_x { p_A(x) \ln{ \left( \frac{p_A(x)}{\pi(x)} \right) } } dx \\  
-&=& E \left[ \ln{ (p_A(x)) } - \ln{ (\pi(x)) } \right]_{p_A}  
-\end{eqnarray}  
+$$  
+I_A = \int_x { p_A(x) \ln{ \left( \frac{p_A(x)}{\pi(x)} \right) } } dx  
+= E \left[ \ln{ (p_A(x)) } - \ln{ (\pi(x)) } \right]_{p_A}  
+$$  
   
 Thanks to our simple example, the probabily normalized posterior for $A$ comes out to be a simple normal distribution:  
   
@@ -495,10 +511,10 @@ $$
   
 Yielding  
   
-\begin{eqnarray}  
-\Delta I &=& I_{AB} - I_A - I_B \\  
-&=& \frac{1}{2} (\ln(2\pi) +1) + \ln \left( \frac{\sigma_A \sigma_B}{\sigma_{AB}^2} \right) + \ln \left( \frac{\sigma_{AB}}{w} \right)  
-\end{eqnarray}  
+$$  
+\Delta I = I_{AB} - I_A - I_B  
+= \frac{1}{2} (\ln(2\pi) +1) + \ln \left( \frac{\sigma_A \sigma_B}{\sigma_{AB}^2} \right) + \ln \left( \frac{\sigma_{AB}}{w} \right)  
+$$  
   
 ### Suspiciousness &  P-Value  
   
@@ -506,10 +522,10 @@ $$
 \Delta S = \ln ( \mathcal{R}) + \Delta I  
 $$  
   
-\begin{eqnarray}  
-\Delta S &=& \frac{1}{2}-\frac{1}{2} \frac{(\mu_A-\mu_B)^2}{\sigma_A^2 + \sigma_B^2} \\  
-&=& \frac{1}{2}-\frac{T}{2}  
-\end{eqnarray}  
+$$  
+\Delta S = \frac{1}{2}-\frac{1}{2} \frac{(\mu_A-\mu_B)^2}{\sigma_A^2 + \sigma_B^2}   
+= \frac{1}{2}-\frac{T}{2}  
+$$  
   
 - Suspciciousness recovers the sigma tension independent of the prior!  
 - Natural step to interpret this as a gaussian test statistic  
@@ -524,7 +540,8 @@ $$
 P = p(t > T) = \int_T^\infty \mathcal{N}(t) dt  
 $$  
   
-<table>  
+<p style="text-align: center">  
+<table style="text-align: center; font-family: courier; font-size: 11pt">  
     <tr>  
         <th> P-Value </th> <th>$\sigma$-Tension</th> <th>Suspiciousness</th>  
     </tr>  
@@ -538,9 +555,33 @@ $$
         <th> 0.01 </th> <td>-3.090</td> <td>-4.275</td>  
     </tr>  
 </table>  
-  
+</p>  
   
 ### Extending To Non-Guassian & Multiple Dimensions  
+A one dimensional gaussian may seem like an overly restrictive case, but consider:    
+1. Any distribution can be reparametrized into a similarly dimensioned gaussian of arbitrary covariance    
+2. Evidence and information, and by extension suspiciousness, remain invariant under reparameterization    
+3. $\ln{\left|Z\right|}$, $I$ and $S$ compose linearly for uncorrelated joint distributions, such as those recovered by **(1)**   
+4. Combining **(2)** and **(3)**, we know that the relative suspiciousness of any ‘D’ dimensional distribution obeys:    
+      
+  
+$$  
+\Delta S_D=\sum_{i=1}^{D}{\Delta S_i}=\sum_{i=1}^{D}{\frac{1}{2}-\frac{1}{2}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}}  
+$$  
+  
+Or, rearranging:  
+  
+$$  
+1-2\cdot\Delta S_D=\sum_{i=1}^{D}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}  
+$$  
+  
+$$  
+1-2\cdot\Delta S_D= \sum_{i=1}^{D} (T_i^2) = \chi^2_D  
+$$  
+  
+$$  
+P\left(\Delta S_D\right)=1-\int_{1-2\cdot\Delta S_D}^{\infty}{\chi_D^2\left(\Delta s^\prime\right)}d\Delta s^\prime  
+$$  
   
   
 ---------  
