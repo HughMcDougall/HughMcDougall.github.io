@@ -87,7 +87,7 @@ diff = (x_uncon[2:]-x_uncon[:-2]) / (x_con[2:]-x_con[:-2])
 
 Now we feed our unconstrained parameters into the likelihood function, which we access from the `potential_energy` utility function that NumPyro gives us. This potential energy returns the **negative log likelihood**. For our model `model_test()`, this looks something like:
 
-$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+$PE(x_{uncon}) = -ln \vert \mathcal{L(x_{uncon})}\vert=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
 
 Even though we have no model `args` or `kwargs`, these fields still have to be explicitly given as empty tuples like above. In a more complicated case with data, e.g. `model_with_data(X,Y,E)`, these would be fed into the `model_args` field.
 
@@ -245,7 +245,7 @@ print("Sampling done")
 In HMC, potential energy is proportional to $\chi^2$:
 
 \begin{equation}
-    U_x(x) = -ln|\mathcal{L_x(x)}|=\frac{-\chi^2}{2}
+    U_x(x) = -ln \vert\mathcal{L_x(x)} \vert=\frac{-\chi^2}{2}
 \end{equation}
 
 NumPyro uses this terminology consistently across all of its samplers, e.g. the sampler adapative sampler ([SAstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.sa.SAState)) also refers to 'potential energy' despite not actually being formulated in kinetic terms. As an aside, the 'extra fields' tuple can sometimes play up if you don't have a comma after the last argument. E.g. `extra_fields=("potential_energy",)` will work, but `extra_fields=("potential_energy")` won't. 
