@@ -68,12 +68,14 @@ When asking if they agree, we're really comparing two models, one with a single 
   
 <b><u>Model 1 - Indepdenent</u></b>  
 <p style="text-align: center; font-family: verdana"><i>"$A$ and $B$ have different offsets and gradients"</i></p>  
+  
 $$  
 P(m_A,m_B,c_A,c_B|Y_A,Y_B)=P(m_A,c_A \vert Y_A)\cdot P(m_B,c_B \vert Y_B)  
 $$  
   
 <b><u>Model 2 - Simultaneous</u></b>  
 <p style="text-align: center; font-family: verdana"><i>"$A$ and $B$ <u>share</u> the same offsets and gradients"</i></p>  
+  
 $$  
 P(m,c|Y_A,Y_B)=P(m,c \vert Y_A)\cdot P(m,c \vert Y_B)  
 $$  
@@ -398,8 +400,8 @@ $$
   
 Doing this for a 1D gaussian, we can get a feel for how $\Delta S$ lines up with different P values:  
   
-<div align="center">  
-<p style="text-align: center">  
+<div style="margin-left: auto;">  
+<p style="text-align: center; margin-left: auto;" >  
 <table style="text-align: center; font-family: courier; font-size: 11pt">  
     <tr>  
         <th> P-Value </th> <th>$\sigma$-Tension</th> <th>Suspiciousness</th>  
@@ -421,7 +423,7 @@ Doing this for a 1D gaussian, we can get a feel for how $\Delta S$ lines up with
 So far we've only looked at one dimensional gaussian distributions. This may seem like an overly restrictive case, but consider:  
 1. Any probability distribution can be reparametrized into a similarly dimensioned gaussian of arbitrary covariance    
 2. Evidence and information, and by extension suspiciousness, remain invariant under reparameterization    
-3. $\ln{\lvert Z\rvert}$, $I$ and $S$ compose linearly for uncorrelated joint distributions, such as those recovered by **(1)**     
+3. $\ln{\lvert Z\rvert}$, $I$ and $S$ add linearly for uncorrelated joint distributions, such as those recovered by **(1)**     
   
 Combining **(2)** and **(3)**, we know that the relative suspiciousness of any ‘D’ dimensional gaussian distribution can be found by summing together the suspiciousness of its component distributions:  
   
