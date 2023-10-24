@@ -60,31 +60,9 @@ Consider the simple example of a linear regression shown below.  Do data sets $A
   
   
 The power of Bayesian analysis lets us dig a little deeper by plotting the probability contours for $m$ and $c$ for each model, shown below. It's pretty easy to see that the results are in tension, barely overlapping at all, but naive measurements like sigma-tension fail at the first hurdle even in his well behaves example. The discrepency along the $m$ axis is obvious, but imagine this were some larger more complicated model where we only measured $c$ and marginalized over $m$ as a nuisance parameter: the tension would go completely unnoticed. We could imagine some trick of measuring sigma-tension along principle axis' or some such, but how would this scale into high dimensions or weird non-gaussian contours? We need a _general_ test of tension that we can apply to any system of arbitrary complexity.  
-  
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
-  
-  
-    Doing Set A  
-    Doing Set B  
-    Doing Both Sets  
-    Done  
-  
-  
-    Doing Set A  
-    Doing Set B  
-    Doing Both Sets  
-    Done  
-  
-  
-  
       
 ![png](suspic02_files/suspic02_9_0.png)  
       
-  
-  
-    Evidence Ratio: 7.0440e+01  
-    Relative Information Gain: 6.3187  
-  
   
 When asking if they agree, we're really comparing two models, one with a single gradient and offset, and another with one for each source:  
   
@@ -166,23 +144,9 @@ $$
 \pi(m)=\mathcal{N}(m,0,100), \;\;\; \pi(c)=\mathcal{N}(c,0,200)  
 $$  
   
-  
-  
-    Evidence Ratio: 7.2125e-01  
-    Relative Information Gain: 10.8864  
-  
-  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-  
-  
-  
       
 ![png](suspic02_files/suspic02_14_1.png)  
       
-  
   
 Using moderately vague priors, we get $\mathcal{R}\approx 70$, indicating that the data sets are in clear tension. Using _very_ vague priors, expanding them by a factor of 10, our evidence ratio gets scaled down to $\mathcal{R}\approx 0.7$, which tells us that the data sets are _not_ in clear tension. This is the central problem with evidence ratios: our result has completely changed based on an arbitrary decision.  
   
@@ -282,16 +246,6 @@ $$
 \mathcal{L}_A(x)= \frac{S_A}{\sqrt{2 \pi \sigma_A^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_A}{\sigma_A}\right)^2 \right)}, \;\;\;  
 \mathcal{L}_B(x)= \frac{S_B}{\sqrt{2 \pi \sigma_B^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_B}{\sigma_B}\right)^2 \right)}  
 $$  
-  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-  
-  
-  
       
 ![png](suspic02_files/suspic02_20_1.png)  
       
@@ -444,6 +398,7 @@ $$
   
 Doing this for a 1D gaussian, we can get a feel for how $\Delta S$ lines up with different P values:  
   
+<div align="center">  
 <p style="text-align: center">  
 <table style="text-align: center; font-family: courier; font-size: 11pt">  
     <tr>  
@@ -460,6 +415,7 @@ Doing this for a 1D gaussian, we can get a feel for how $\Delta S$ lines up with
     </tr>  
 </table>  
 </p>  
+</div>  
   
 ### Extending To Non-Guassian & Multiple Dimensions  
 So far we've only looked at one dimensional gaussian distributions. This may seem like an overly restrictive case, but consider:  
