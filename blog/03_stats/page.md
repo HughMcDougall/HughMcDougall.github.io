@@ -6,7 +6,6 @@ Go Back: [SVI](.\..\02_numpyro\06_SVI\page.html)	&nbsp;	Return to [Blog Home](.\
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [Nested Sampling](.\01_nestedsampling\./page.html)  
-* [Bayesian Suspiciousness](.\02_suspiciousness\./page.html)  
 * [Data Tension Examples](.\03_suspic02\./page.html)  
   
 ---------  

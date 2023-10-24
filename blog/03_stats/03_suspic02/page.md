@@ -1,4 +1,4 @@
-Previous Entry: [Bayesian Suspiciousness](.\..\02_suspiciousness\page.html)	&nbsp;	   
+Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	   
   
   
 Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
