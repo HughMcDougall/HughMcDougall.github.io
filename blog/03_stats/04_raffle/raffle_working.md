@@ -71,8 +71,6 @@ r = \frac{draw- lower}{upper-lower}
 $$
 
 This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities: 
-1. We can compare how "clumpy" the draws from each night are on the same graph (Left Panel)
-2. We can lump together _all_ of the nights into a big pool to get a feel for how lumpy the results are overall (Right panel)
 
 From here on out, I've swapped the "sorted list" of draws for the *cumulative distribution function* (CDF), for all intents and purposes the same thing just rotated 90 degrees. The CDF measures what fraction of tickets are drawn _below_ a particular number, i.e. if $CDF(x)=0.5$, that means $50%$ of tickets are $x$ or lower. For a properly uniform distribution, the CDF should be a straight line: half the tickets should fall below $r=0.5$, a quarter below $r=0.25$ and so forth. 
     

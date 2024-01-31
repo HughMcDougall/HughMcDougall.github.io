@@ -81,6 +81,4 @@ r = \frac{draw- lower}{upper-lower}
 $$  
   
 This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities:   
-1. We can compare how "clumpy" the draws from each night are on the same graph (Left Panel)  
-2. We can lump together _all_ of the nights into a big pool to get a feel for how lumpy the results are overall (Right panel)  
   
