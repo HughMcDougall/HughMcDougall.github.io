@@ -12,7 +12,7 @@ Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), a astronomer PhD student at 
 * [Statistics Articles](.\03_stats\./page.html)  
 	  * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html)  
 	  * [Data Tension Examples](.\03_stats\03_suspic02\./page.html)  
-	  * [Data Tension Examples](.\03_stats\04_raffle\./page.html)  
+	  * [Is the Raffle Rigged? Practical stats for a toy problem](.\03_stats\04_raffle\./page.html)  
   
 ---------  
   

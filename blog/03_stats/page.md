@@ -7,7 +7,7 @@ Go Back: [SVI](.\..\02_numpyro\06_SVI\page.html)	&nbsp;	Return to [Blog Home](.\
 **Navigation**  
 * [Nested Sampling](.\01_nestedsampling\./page.html)  
 * [Data Tension Examples](.\03_suspic02\./page.html)  
-* [Data Tension Examples](.\04_raffle\./page.html)  
+* [Is the Raffle Rigged? Practical stats for a toy problem](.\04_raffle\./page.html)  
   
 ---------  
   

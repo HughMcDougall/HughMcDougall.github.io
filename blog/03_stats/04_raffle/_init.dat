@@ -1,6 +1,6 @@
 doc:	./page.md
 source:	./raffle_working.md
-title:	Data Tension Examples
+title:	Is the Raffle Rigged? Practical stats for a toy problem
 date:	31/1/24
 desc:	Is the Raffle Rigged? Practical stats for a toy problem
 nav:	TRUE
