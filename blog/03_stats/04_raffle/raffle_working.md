@@ -1,29 +1,3 @@
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-from copy import deepcopy as copy
-
-from scipy.stats import gaussian_kde
-
-data  = np.loadtxt("./03.csv",delimiter=',', encoding='utf-8-sig', dtype =int)
-data[:,0]-=1
-
-class night():
-    def __init__(self,i):
-        self.i=i
-        indices = np.where(data[:,0]==i)[0]
-        self.upper = np.max(data[indices,1:3])
-        self.lower = np.min(data[indices,1:3])
-        self.rolls = data[indices,3]
-
-        self.r = (self.rolls-self.lower) / (self.upper-self.lower)
-
-        self.n = len(indices)
-        self.N = np.linspace(0,self.n,self.n)
-        
-nights = [night(i) for i in range(len(np.unique(data[:,0]))) if night(i).n>10]
-all_rolls = np.concatenate([a.r for a in nights])
-```
 
 # Is the Raffle Rigged? Practical Stats for a Toy Problem
 
@@ -48,36 +22,9 @@ Consider the following: a night where $13$ numbers are drawn between $11$ and $1
 
 > _How close are the ticket draws to a uniform distribution?_
 
-
-```python
-a = nights[23]
-fig, (ax1,ax2) = plt.subplots(2,1, figsize=(8,3), sharex=True)
-
-ax1.scatter(a.rolls,np.zeros_like(a.rolls), s= 100, alpha = 0.5)
-
-ax2.plot(np.linspace(a.lower,a.upper,128),gaussian_kde(a.rolls)(np.linspace(a.lower,a.upper,128)))
-ax2.hist(a.rolls,density=True, bins=12)
-
-ax1.grid(), ax2.grid()
-ax1.set_yticklabels([]), ax2.set_yticklabels([])
-
-ax1.set_xlim(a.lower,a.upper)
-
-ax1.set_title("Drawn Numbers")
-ax2.set_title("Rough Density")
-plt.tight_layout()
-plt.show()
-
-print(a.n, a.lower, a.upper)
-```
-
-
     
 ![png](output_3_0.png)
     
-
-
-    13 11 11680
 
 
 ## Part One: Rules of Thumb and Common Sense Diagnostics
@@ -93,42 +40,6 @@ A natural next step is to instead sort the draws in order from smallest to large
 >_How much do the sorted draws differ from a straight line?_
 
 If the draws show a large deviation from a straight line, this suggests that something is going funny with the numbers.
-
-
-```python
-a = nights[5]
-
-#----------------------------------
-def BS(a,ntrials=200):
-    out = np.zeros([ntrials,a.n], dtype='int32')
-
-    for i in range(ntrials):
-        out[i,:] = np.sort(np.random.choice(a.rolls, a.n, replace=True))
-
-    norm = out.mean(axis=0)
-    std = out.std(axis=0)
-    
-    return(np.arange(a.n), norm, std, out)
-
-A, norm, std, wires= BS(a)
-
-#-------------------------------------
-fig, ax1 = plt.subplots(1,1, figsize=(4,4), sharex=True, sharey=True)
-
-ax1.set_title("Sorted Draws")
-ax1.scatter(A,np.sort(a.rolls))
-ax1.axline((0,norm.min()), (a.n-1,norm.max()), c='k', ls='--')
-
-for ax in [ax1]:
-    ax.axline((0,norm.min()), (a.n-1,norm.max()), c='k', ls='--')
-    ax.grid()
-
-fig.supylabel("Drawn Number")
-fig.supxlabel("Sorted Draw Order")
-fig.tight_layout()
-
-plt.show()
-```
 
 
     
@@ -152,60 +63,6 @@ Bootstrapping, applied properly, is a nearly universal tool for getting a rough 
 
 
 
-```python
-a = nights[5]
-
-#----------------------------------
-def BS(a,ntrials=200):
-    out = np.zeros([ntrials,a.n], dtype='int32')
-
-    for i in range(ntrials):
-        out[i,:] = np.sort(np.random.choice(a.rolls, a.n, replace=True))
-
-    norm = out.mean(axis=0)
-    std = out.std(axis=0)
-    
-    return(np.arange(a.n), norm, std, out)
-
-A, norm, std, wires= BS(a)
-
-#-------------------------------------
-fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(12,4), sharex=True, sharey=True)
-
-np.random.seed(0)
-boot = np.sort(np.random.choice(a.rolls,len(a.rolls),replace=True))
-ax1.set_title("Sorted Draws /w One Bootstrap")
-ax1.scatter(A,np.sort(a.rolls), label = "Original Draws")
-ax1.scatter(A,boot, c='tab:orange', s = 15, label = "Subsampled Draws")
-ax1.plot(A,boot, alpha=.5, c='tab:orange', lw=1, zorder=-1)
-ax1.axline((0,norm.min()), (a.n-1,norm.max()), c='k', ls='--')
-
-ax2.set_title("Sorted Draws for \n Bootstrapped Data")
-ax2.scatter(A,np.sort(a.rolls), label = "Original Draws")
-label = "Many Subsamples"
-for i in range(wires.shape[0]//4):
-    ax2.plot(A,wires.T[:,::4][:,i], alpha=.5, c='tab:orange', lw=.5, zorder=-1, label=label)
-    label=None
-ax2.axline((0,norm.min()), (a.n-1,norm.max()), c='k', ls='--')
-
-ax3.set_title("Sorted Draws /w \n Bootstrapped Errorbars")
-ax3.scatter(A,np.sort(a.rolls), label = "Original Draws")
-ax3.plot(A,norm, c='tab:grey')
-ax3.fill_between(A,norm-std,norm+std,alpha=0.25,color='grey', label = "Bootstrap Envelope")
-ax3.fill_between(A,norm-std*2,norm+std*2,alpha=0.1,color='grey')
-
-
-for ax in (ax1,ax2,ax3):
-    ax.legend(loc='lower center')
-    ax.axline((0,norm.min()), (a.n-1,norm.max()), c='k', ls='--')
-    ax.grid()
-
-fig.supylabel("Drawn Number")
-fig.supxlabel("Sorted Draw Order")
-
-plt.show()
-```
-
 
     
 ![png](output_7_0.png)
@@ -228,53 +85,6 @@ From here on out, I've swapped the "sorted list" of draws for the *cumulative di
 
 
 
-```python
-fig, (a1,a2)  = plt.subplots(1,2, figsize=(10,5))
-
-#---------------
-# Axis 1
-label="Individual Nights"
-for a in nights[::4]:
-    
-    y = np.zeros(a.upper-a.lower+2)
-    y[1:] = np.cumsum(np.histogram(a.r, density=True, bins=a.upper-a.lower+1)[0])
-    y/=y[-1]
-    a1.plot(np.linspace(0,1,a.upper-a.lower+2), y, c='tab:blue', alpha=0.5,label=label, zorder=-10)
-    label=None
-
-#---------------
-# Axis 2
-y = np.zeros(len(all_rolls)+2)
-y[1:] = np.cumsum(np.histogram(np.sort(all_rolls), density=True, bins=len(all_rolls)+1)[0])
-y/=y[-1]
-a2.plot(np.linspace(0,1,len(all_rolls)+2),y,c='r', label="All nights")
-
-# Axis 2 bootstrapping
-
-outs = np.zeros([100,len(y)])
-
-for i in range(outs.shape[0]):
-    outs[i,1:] = np.cumsum(np.histogram(np.sort(np.random.choice(all_rolls,len(all_rolls),replace=True)), density=True, bins=len(all_rolls)+1)[0])
-    outs[i,:]/=outs[i,-1]
-ax2mid = outs.mean(axis=0)
-ax2sig = outs.std(axis=0)
-
-a2.fill_between(np.linspace(0,1,len(all_rolls)+2),ax2mid-ax2sig,ax2mid+ax2sig,color='r', alpha=0.25)
-
-#---------------
-# Axis format
-
-for a in (a1,a2):
-    a.grid()
-    a.axline((0,0), slope=1, ls='--',c='k', label = "Uniform Distribution", zorder=-1, lw=4)
-    a.set_xlim(0,1)
-    a.legend(loc='best')
-
-fig.supxlabel("Normalized Draw")
-fig.supylabel("CDF")
-
-plt.show()
-```
 
 
     
@@ -297,55 +107,6 @@ With this question, we breach the threshold of actual numbers. To answer it, we 
 In basic terms, a **test statistic** is just some numerical way of quantifying "weirdness". Here, I'm going to use a natural choice: the largest distance the CDF gets from the straight line of a uniform distribution. This has a name: the [Kolmogorov-Smirnov](https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Smirnov_test) statistic, or "KS Statistic" for short.
 
 
-```python
-KS_actual = np.zeros(len(nights))
-
-for a, i in zip(nights,range(len(nights))):
-    if i//(len(nights)%10)==0:print("\t %i" %i, end="")
-    X = np.arange(a.lower,a.upper+1)
-    Ymodel = np.linspace(0,1,len(X))
-
-    y = np.sort(a.rolls)
-    y = np.array([np.where(y==x,1,0).sum() for x in X])
-    y = np.cumsum(y)
-    y= y / y[-1]
-
-    KS_actual[i] = np.max(abs(Ymodel-y))
-
-
-```
-
-    	 0	 1	 2	 3	 4	 5	 6	 7
-
-
-```python
-plt.figure()
-
-i_cannon = 23
-
-y = np.zeros(nights[i_cannon].upper-nights[i_cannon].lower+2)
-x = np.linspace(0,1,nights[i_cannon].upper-nights[i_cannon].lower+2)
-y[1:] = np.cumsum(np.histogram(nights[i_cannon].r, density=True, bins=nights[i_cannon].upper-nights[i_cannon].lower+1)[0])
-y/=y[-1]
-plt.plot(x, y, c='tab:blue', alpha=1.0,label="CDF")
-
-imax = np.argmax(abs(x-y))
-ks = abs(x-y)[imax]
-plt.plot((x[imax],x[imax]),(x[imax],y[imax]), c='r', marker = 'x', label = "Biggest Difference, KS=%.2f" %ks)
-
-plt.grid()
-plt.axline((0,0), slope=1, ls='--',c='k', label = "Uniform Distribution")
-plt.xlim(0,1)
-
-plt.xlabel("Normalized Draw")
-plt.ylabel("CDF")
-plt.legend(loc="best")
-
-
-plt.show()
-```
-
-
     
 ![png](output_13_0.png)
     
@@ -360,73 +121,6 @@ To get a P value, we use some brute-force simulation:
 4. Find whatever fraction of mock-samples have a higher KS statistic than our real data.
 
 Something easy to get mixed up is that a _small_ P value is _more unusual_. I.e. if $P=1.0$, our data is so boring that any simulation is weirder than it, and $P=0.0$ means its so unusual that $100 \%$ of the simulations fail to match is level of strangeness. You can see that the exact test statistic we use to quantify "strangeness" isn't important, what matters is how rarely the simulations manage to meet or beat that amount of strangeness. Usually, we consider anything below $P=0.05$, i.e. a one in twenty chance, to be a good cause for concern.
-
-
-```python
-def ks_sim(n, lower, upper, ntrials=None, bins = 32, debug = True):
-    # Brute force generates a set of ks test statistics for frequentist comparison
-    if ntrials==None: ntrials=(n*10)**2
-
-    if debug: print("\t doing KS sim with %i rolls" %ntrials)
-
-    X = np.arange(lower,upper+1)
-    Ymodel = np.linspace(0,1,len(X))
-
-    sims = np.zeros([ntrials,len(X)])
-
-    for i in range(ntrials):
-        if debug and i%(ntrials//10)==0: print("\t %i / %i" %(i, ntrials),end="")
-        y = np.random.choice(X, size=n, replace=False)
-        y = np.sort(y)
-
-        yout = np.zeros_like(X,dtype='int32')
-        for yi in y: yout[np.argwhere(X>=yi)[0][-1]:]+=1
-        #y = np.array([np.where(y==x,1,0).sum() for x in X])
-        #y = np.cumsum(y)
-
-        yout= yout / yout[-1]
-        sims[i,:] = yout
-
-    KS_samples = np.array([abs(a - Ymodel).max() for a in sims])
-    return(KS_samples)
-
-#nrolls = int(np.median([a.n for a in nights]))
-#nwidth = int(np.median([a.upper-a.lower for a in nights])*1.1)
-nrolls = nights[i_cannon].n
-nwidth = nights[i_cannon].upper - nights[i_cannon].lower
-KS_samples_canonical = ks_sim(nrolls, 0, nwidth , ntrials = 20_000)
-
-P_cannon = np.where(KS_samples_canonical>KS_actual[i_cannon],1,0).sum() / len(KS_samples_canonical)
-print("\n\tDone")
-print("For night %i, KS=%.2f for P=%.2f" %(i_cannon,KS_actual[i_cannon],P_cannon))
-
-```
-
-    	 doing KS sim with 20000 rolls
-    	 0 / 20000	 2000 / 20000	 4000 / 20000	 6000 / 20000	 8000 / 20000	 10000 / 20000	 12000 / 20000	 14000 / 20000	 16000 / 20000	 18000 / 20000
-    	Done
-    For night 23, KS=0.22 for P=0.48
-
-
-
-```python
-plt.figure(figsize=(8,4))
-
-plt.hist(KS_samples_canonical, density=True, bins = nwidth//3, zorder=-2, alpha=0.75, label="Simulated Samples")
-plt.plot(np.linspace(0,1,nwidth//3), gaussian_kde(KS_samples_canonical)(np.linspace(0,1,nwidth//3)), c='tab:orange', lw=2, label="Smoothed Distribution")
-plt.axvline(KS_actual[i_cannon], c='tab:red', label="Actual Data KS value for night %i" %i_cannon)
-plt.grid()
-plt.xlim(0,1)
-
-plt.ylabel("KS-Probability Density")
-plt.ylabel("KS Statistic")
-
-plt.title("Probability Density of KS statistic for %i raffle draws between 0 and %i" %(nrolls, nwidth))
-
-plt.legend()
-
-plt.show()
-```
 
 
     
@@ -446,54 +140,14 @@ I.e. one in two odds for this night, a pretty unremarkable outcome. From here, a
 
 
 
-```python
-if True:
-    Pvalue = np.load("./Pvals.npy")
-
-else:
-    Pvalue = np.zeros(len(nights))
-
-    for a, i in zip(nights,range(len(nights))):
-        print("\t trial %i: %i rolls between %i and %i" %(i,a.n,a.lower,a.upper), end='\t')
-        KS_samples = ks_sim(a.n, a.lower, a.upper, ntrials = 5_000, debug=False)
-    
-        P = np.sum(np.where(KS_samples>KS_actual[i],1,0)) / len(KS_samples)
-    
-        print("KS = %f. %i of %i more suspicious. P value = %f" %(KS_actual[i], int(len(KS_samples)*P), len(KS_samples), P))
-        
-        Pvalue[i]=P
-
-    np.save("./Pvals.npy",Pvalue)
-```
-
 Looking at the P values for all $188$ nights, we see them running the entire range from $P=99.8\%$ to $P=0.35\%$. Some of these P values are pretty severe, one or two have roughly “1 in 300” odds of occurring, but we have to be careful not to raise a false alarm when faced with these outliers. Remember that the P value is only for each _individual_ game: it asks “how unusual is this outcome for _this_ game”. An outcome with 1:100 odds might seem unusual, but not so much if we play well over 100 games.
 
-
-```python
-plt.figure(figsize = (5,5))
-heatmap = plt.pcolor(np.reshape(Pvalue,[len(Pvalue)//4,4]), cmap='inferno_r')
-plt.colorbar(heatmap,label="P Value")
-
-plt.gca().set_xticks([]), plt.gca().set_yticks([])
-plt.title("P Values For All Nights")
-plt.tight_layout()
-plt.show()
-```
 
 
     
 ![png](output_21_0.png)
     
 
-
-
-```python
-print("Strangest night has Pvalue of %.4f, or one in %.2f" %(Pvalue.min(), 1/Pvalue.min()))
-print("one in %.2f of this or weirder in %i games" %(1/(1-(1-Pvalue.min())**len(nights)), len(nights)))
-```
-
-    Strangest night has Pvalue of 0.0035, or one in 285.71
-    one in 2.07 of this or weirder in 188 games
 
 
 Fortunately, the maths to account for this is mercifully simple. Our P values already tell us how strange any given outcome is, and we can multiply them together to get an overall “strangeness” of the entire bank of results. For example, lets look at the strangest night, which has a P value / odds of:
@@ -513,120 +167,3 @@ P_{\text{No Strange Games}} = 0.9965 ^ {188} \approx 52 \% \approx \frac{1}{2}
 $$
 
 That means, thanks to the sheer number of games we played, there was a roughly 50-50 shot of playing _at least_ one game this strange or more.
-
-# REDACTED
-
-
-```python
-plt.figure(figsize=(8,4))
-
-plt.hist(KS_actual, density=True, bins = len(KS_actual)//3, zorder=-2, alpha=0.75)
-plt.plot(np.linspace(0,1,128), gaussian_kde(KS_actual)(np.linspace(0,1,128)), c='tab:orange', lw=2)
-plt.axvline(np.median(KS_actual), c='tab:red')
-plt.grid()
-
-plt.ylabel("KS-Probability Density")
-plt.ylabel("KS Statistic")
-
-plt.show()
-```
-
-
-    
-![png](output_25_0.png)
-    
-
-
-
-```python
-fig, (ax1,ax2) = plt.subplots(2,1,figsize=(8,4))
-
-ax1.hist([a.n for a in nights], bins=24)
-ax2.hist([a.upper-a.lower for a in nights], bins=24)
-
-ax1.set_yticklabels([]), ax2.set_yticklabels([])
-
-ax1.set_title("Number of Tickets Drawn")
-ax2.set_title("Number of Tickets Sold (Upper - Lower)")
-ax1.grid()
-ax2.grid()
-
-ax1.axvline(15, c='r')
-ax2.axvline(nwidth, c='r')
-
-plt.tight_layout()
-plt.show()
-```
-
-
-    
-![png](output_26_0.png)
-    
-
-
-
-```python
-[(i,Pvalue[i]) for i in np.argsort(Pvalue)[:20]]
-```
-
-
-
-
-    [(49, 0.0035),
-     (180, 0.027),
-     (136, 0.0278),
-     (120, 0.0414),
-     (97, 0.042),
-     (142, 0.0484),
-     (29, 0.0522),
-     (186, 0.0526),
-     (159, 0.0568),
-     (55, 0.0592),
-     (121, 0.0686),
-     (153, 0.0722),
-     (69, 0.077),
-     (114, 0.077),
-     (1, 0.0772),
-     (112, 0.0798),
-     (169, 0.0804),
-     (156, 0.0876),
-     (107, 0.0928),
-     (174, 0.1006)]
-
-
-
-
-```python
-nboots = 256
-nbins = 12
-binrange = (nbins, nbins+1)
-
-plt.figure(figsize=(8,5*0.75))
-
-# PDF and uniform line
-plt.hist(np.sort(all_rolls), bins = nbins, density=True, histtype='step', color='tab:red', lw=3, zorder=100)
-plt.axhline(1,c='k',ls='--', lw=2)
-
-# Bootstraps
-for i in range(nboots):
-    #Y,X = np.histogram(np.sort(np.random.choice(all_rolls,len(all_rolls),replace=True)), bins = np.random.randint(binrange[0],binrange[1]), density=True)
-    #plt.plot((X[:-1]+X[1:])/2,Y, c='grey', lw=0.5, alpha=0.1, zorder=-1)
-    plt.hist(np.sort(np.random.choice(all_rolls,len(all_rolls),replace=True)), 
-             bins = nbins, density=True, histtype='step', 
-             color='tab:grey', alpha=0.1, lw=1)
-
-plt.legend(['Density', 'Uniform Distribution', 'Bootstrapped Density'],loc='best')
-
-plt.xlabel("Normalized Draw")
-plt.ylabel("Density")
-plt.tight_layout()
-plt.xlim(0,1)
-plt.grid()
-plt.show()
-```
-
-
-    
-![png](output_28_0.png)
-    
-
