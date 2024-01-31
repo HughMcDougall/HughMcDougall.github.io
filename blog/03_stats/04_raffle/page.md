@@ -51,11 +51,9 @@ A natural next step is to instead sort the draws in order from smallest to large
   
 If the draws show a large deviation from a straight line, this suggests that something is going funny with the numbers.  
   
-  
       
 ![png](output_5_0.png)  
       
-  
   
 **Boostrapping**    
 I skipped an important detail here. I used the phrase "large deviation", but what exactly constitutes "large"? Yes, the sorted draws have some wobble, but is it a _lot_ of wobble? To answer this, we can invoke the nifty trick of [bootstrapping](https://en.wikipedia.org/wiki/Bootstrapping_(statistics)), a technique that asks "using _only_ what we know from our measurements, what sort of similar results _could_ I have gotten"? In our case, the trick goes like this:  
@@ -69,15 +67,10 @@ Doing this a few hundred times (middle panel), we build up an envelope of how th
   
 Bootstrapping, applied properly, is a nearly universal tool for getting a rough idea of how important the bumps and variations in a data set are. If they disappear entirely into the smudgy bulk of the bootstrap, they're likely just a result of coincidence. Bootstrapping comes with a weakness though: we draw our fake data from permutations of the _real_ data, a dangerously circular process. Bootstrapping is like a Swiss-Army knife: a great and versatile tool for a first pass, but rarely the _best_ tool for a given problem.  
   
----  
   
-  
-  
-  
-      
 ![png](output_7_0.png)  
       
-  
+---  
   
 ## Part 2: Normalizing  
   
@@ -88,6 +81,6 @@ r = \frac{draw- lower}{upper-lower}
 $$  
   
 This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities:   
-1. We can compare how "clumpy" the draws from each night are on the same graph (Left)  
-2. We can lump together _all_ of the nights into a big pool to get a feel for how lumpy the results are overall (Right)  
+1. We can compare how "clumpy" the draws from each night are on the same graph (Left Panel)  
+2. We can lump together _all_ of the nights into a big pool to get a feel for how lumpy the results are overall (Right panel)  
   
