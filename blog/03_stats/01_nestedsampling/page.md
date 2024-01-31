@@ -1,7 +1,7 @@
 Next Entry: [Data Tension Examples](.\..\03_suspic02\page.html)  
   
   
-Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
+Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
   

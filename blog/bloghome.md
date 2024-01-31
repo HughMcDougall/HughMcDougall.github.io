@@ -9,9 +9,10 @@ Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), a astronomer PhD student at 
 	  * [Nested Sampling](.\02_numpyro\04_nestedsampling\./page.html)  
 	  * [Parallelization](.\02_numpyro\05_parallelizing\./page.html)  
 	  * [SVI](.\02_numpyro\06_SVI\./page.html)  
-* [WebGuide](.\03_stats\./page.html)  
+* [Statistics Articles](.\03_stats\./page.html)  
 	  * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html)  
 	  * [Data Tension Examples](.\03_stats\03_suspic02\./page.html)  
+	  * [Data Tension Examples](.\03_stats\04_raffle\./page.html)  
   
 ---------  
   
