@@ -35,7 +35,7 @@ nights = [night(i) for i in range(len(np.unique(data[:,0]))) if night(i).n>10]
 all_rolls = np.concatenate([a.r for a in nights])  
 ```  
   
-# Is the Raffle Rigged? Fancy Statistical Tools for an all too Common Question  
+# Is the Raffle Rigged? Practical Stats for a Toy Problem  
   
 Over the Christmas break, I was presented with an interesting question. A family member, frequenting a local sports club raffle, had become suspicious that the ticket numbers were being drawn in unusual "lumps" instead a truly "random" uniform pattern. As the ranking statistician in the family, I was pitted against the problem of answering a simple question:   
 >_Is something funny going on?_  
