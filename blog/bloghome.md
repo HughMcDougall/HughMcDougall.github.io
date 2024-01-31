@@ -1,6 +1,6 @@
   
   
-Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), a astronomer PhD student at the University of Queensland. Here in this blog, I'll be posting little instructional guides on the tools and topics I focus on in my study, with a specific eye towards providing a clear and uncomplicated foothold on some obscure corners of data-science.  
+Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), an astronomy PhD student at the University of Queensland. Here in this blog, I'll be posting little instructional guides on the tools and topics I focus on in my study, with a specific eye towards providing a clear and uncomplicated foothold on some obscure corners of data-science.  
 **Navigation**  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html)  
 	  * [Getting Started](.\02_numpyro\01_gettingstarted\./page.html)  

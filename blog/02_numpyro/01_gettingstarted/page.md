@@ -21,7 +21,7 @@ If you're installing NumPyro for the first time with absolutely no prior knowled
 Assuming you're running with conda on linux or wsl, the first item on the to-do list is making an environment to install all of our NumPyro packages to:  
   
 ```  
-    conda create -n numpyroenv"  
+    conda create -n numpyroenv  
     conda install python  
     conda install pip  
 ```  
@@ -39,20 +39,20 @@ You now have a conda environment running which safely contains all of the packag
 First, install basic python packages that you'll need to do most anything with NumPyro. Note that many tutorials use the packages `corner` or `arviz` instead of `chainconsumer` for examining results.  
   
 ```  
-    pip install numpy, matplotlib, chainconsumer  
+    pip install numpy matplotlib chainconsumer  
 ```  
   
 Now, install JAX, numpyro and their associated packages  
   
 ```  
-    pip install jax, jaxlib, jaxopt  
+    pip install jax jaxlib jaxopt  
     pip install numpyro  
 ```  
   
 If you're planning on using nested sampling with numpyro, you'll need the following. Note that we're installing a *specific version of jaxns*. At time of writing, NumPyro is not compatible with the versions of JAXNS 2.1.0 or greater.  
   
 ```  
-    pip install etils, tensorflow_probability  
+    pip install etils tensorflow_probability  
     pip install jaxns==2.0.1  
 ```  
   
@@ -175,7 +175,7 @@ def model(X,Y,E):
        
   
   
-If you have `graphviz` installed, (e.g. via `conda install -c conda-forge pygraphviz`), NumPyro can automatically render a [graph of the model](https://en.wikipedia.org/wiki/Graphical_model#Bayesian_network) to help visualize it and confirm that everything's set up properly. This is called with:  
+If you have `graphviz` installed, (e.g. via `conda install -c conda-forge pygraphviz`), NumPyro can automatically render a [probabilistic graphical model](https://en.wikipedia.org/wiki/Graphical_model#Bayesian_network) to help visualize it and confirm that everything's set up properly. This is called with:  
   
   
 ```python  
