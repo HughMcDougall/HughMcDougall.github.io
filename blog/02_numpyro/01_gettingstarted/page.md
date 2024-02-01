@@ -79,7 +79,7 @@ import chainconsumer
   
 Now the fun part: we'll use NumPy to hack together some data akin to the real world measurments you would apply NumPyro to. We'll both generate and fit according to a simple linear model:  
   
-$$\begin{equation}  
+\begin{equation}  
     y(x) = m\cdot x + c  
 \end{equation}$$  
   
@@ -121,7 +121,7 @@ plt.show()
   
 Now we can start using NumPyro to try and recover the $m$ and $c$ from these measurements. Our measurements here are _uncorrelated_, and so our test of "goodness of fit" for some guess at the parameters is:  
   
-$$\begin{equation}  
+\begin{equation}  
     \mathcal{L}(m,c \vert y_i) = \exp \left(-\frac{\chi^2}{2} \right) =\exp \left(  -\frac{1}{2} \sum_i{\left(\frac{y_i-(m*x_i+c)}{E_i}\right)^2} \right)  
 \end{equation}$$  
   

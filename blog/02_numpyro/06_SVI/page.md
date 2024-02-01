@@ -35,7 +35,7 @@ The core benfit of SVI is that we turn the _integration_ problem of grid-search 
   
 In SVI, we seek to tweak the tuning variables $\phi$ of our surrogate model $q_{\phi}(z)$ until it is a close match to the true posterior $p(z)$, but how exactly do we define the two distributions to be 'similar'? The traditional method in SVI to use to use the **Kullback–Leibler Divergence** (KLD) between the two distributions:  
   
-$$\begin{equation}  
+\begin{equation}  
     KL_{p \rightarrow q_{\theta}}   
     = \mathbb{E_{q_{\theta}}} \left[ \ln \lvert \frac{q_{\theta}(z)}{p(z)} \rvert \right]    
     = \int{   q_{\theta}(z) \ln \lvert \frac{q_{\theta}(z)}{p(z)} \rvert } dz  
@@ -57,7 +57,7 @@ Having the evidence is basically the same as having already solved for $p(z)$, a
   
 Here we've defined the **Evidence Lower Bound** (ELBO), an evidence-free proxy for the KL-divergence. Rather than "minimzing the KL-divergence", we speak in terms of "maximizing the ELBO", to the same end. The name comes from the fact that it acts as a lower bound for the _true_ posterior's log-evidence:  
   
-$$\begin{equation}  
+\begin{equation}  
     0 \le KL_{p \rightarrow q_{\theta}}  = -\text{ELBO} + \ln \lvert Z \rvert    
     \;\; \rightarrow \;\;   
     \text{ELBO} \le \ln \lvert Z \rvert  
@@ -106,26 +106,26 @@ As a first example, we'll go over a variation of the the heads / tails example f
   
 This problem has a well known analytical solution: the PDF for $f$ is given by a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), a close cousin to the binomial distribution, but giving the probability of the fairness rather than the number of events:  
   
-$$\begin{equation}  
+\begin{equation}  
     \beta(f,A,B) = \frac{1}{C}  f^{A-1}\cdot f^{B-1}  
 \end{equation}$$  
   
 Where the normalizing constant $C$ is given in terms of Gamma Functions:  
   
-$$\begin{equation}  
+\begin{equation}  
     C = \frac{\Gamma(A+B)}{\Gamma(A) \Gamma(B)}  
 \end{equation}$$  
   
 The beta distribution has known mean and variance:  
   
-$$\begin{equation}  
+\begin{equation}  
     \text{mean}(\beta) = \frac{A}{A+B} \;\;\;\;  
     \text{var}(\beta) = \frac{AB}{(A+B)^2 (A+B+1)}  
 \end{equation}$$  
   
 And, in the limit $\lim_{A,B} \rightarrow \infty$, converges to a normal distribution with:  
   
-$$\begin{equation}  
+\begin{equation}  
     \text{mean}(N) = \frac{A}{A+B} \;\;\;\;  
     \text{var}(N) = \frac{\text{mean}(N)\cdot(1-\text{mean}(N))}{A+B}  
 \end{equation}$$  
@@ -148,7 +148,7 @@ mean_true, var_true = A_true/(A_true + B_true), (A_true*B_true / (A_true + B_tru
   
 For a given fairness, the probability of any coin toss landing heads or tails follows a [bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution), such that the entire run of heads and tails follows a binomial distribution:  
   
-$$\begin{equation}  
+\begin{equation}  
     p(f \vert A,B) \propto \prod_A \text{Bernoulli}(f) \cdot \prod_B \text{Bernoulli}(1-f)  
 \end{equation}$$  
   

@@ -194,7 +194,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         flog.write("Something went wrong loading _init file %s \n" %entry)
 
     try:
-        fout = open(entryfol + initdata["doc"], "w")            
+        fout = open(entryfol + initdata["doc"], "w", encoding="utf8")     
     except:
         flog.write("unable to open destination file in entry %s \n" %(entry))
         continue
@@ -231,7 +231,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # Attempt to locate source and dest files
     if initdata["source"]!="NONE":
         try:
-            f_source = open(entryfol+initdata["source"], "r")
+            f_source = open(entryfol+initdata["source"], "r", encoding="utf8")
             do_file = True
         except:
             flog.write("unable to find source file %s in entry %s \n" %(entryfol+initdata["source"], entry))
@@ -247,38 +247,38 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         # Check if a specific file is being nominated
         if initdata["header"] != "DEFAULT":
             try:
-                f_head = open(entryfol+initdata["header"],'r')
+                f_head = open(entryfol+initdata["header"],'r', encoding="utf8")
                 do_header = True
             except:
                 flog.write("unable to find header file %s in entry %s \n" %(entryfol+initdata["header"], entry))        
         
         # Otherwise, check if there is a _header.md file
         if do_header==False and os.path.isfile(entryfol+"_header.md"):
-            f_head = open(entryfol+"_header.md",'r')
+            f_head = open(entryfol+"_header.md",'r', encoding="utf8")
             do_header = True
         
         # Otherwise, use the default header
         elif do_header==False:
-            f_head = open(default_header,'r')
+            f_head = open(default_header,'r', encoding="utf8")
             do_header = True
 
     if initdata["footer"]!="FALSE":
         # Check if a specific file is being nominated
         if initdata["footer"] != "DEFAULT":
             try:
-                f_foot = open(entryfol+initdata["footer"],'r')
+                f_foot = open(entryfol+initdata["footer"],'r', encoding="utf8")
                 do_footer= True                
             except:
                 flog.write("unable to find footer file %s in entry %s \n" %(entry, entryfol+initdata["footer"]))
         
         # Otherwise, check if there is a _header.md file
         if do_footer==False and os.path.isfile(entryfol+"_footer.md"):
-            f_foot = open(entryfol+"_footer.md",'r')
+            f_foot = open(entryfol+"_footer.md",'r', encoding="utf8")
             do_footer = True
         
         # Otherwise, use the default header
         elif do_footer==False:
-            f_foot = open(default_footer,'r')
+            f_foot = open(default_footer,'r', encoding="utf8")
             do_footer = True
             
     #------------------------------------
@@ -354,10 +354,28 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
             
     # write doc
     if do_file:
-        for line in f_source:
-            for replacement in replacements:
-                line = line.replace(replacement[0],replacement[1])
-            fout.write(line.replace("\n","  \n")) # Convert line breaks to markdown friendly ones
+
+        lines = [line for line in f_source]
+        dont_redact = [True]*len(lines)
+
+        # Replace keywords
+        for i in range(len(lines)):
+            lines[i] = lines[i].replace(replacement[0],replacement[1])
+
+        # Find redacted python script sections
+        mode = True
+        for i in range(len(lines)):
+            if mode == True:
+                if "```python" in lines[i] and "# REDACT" in lines[i+1]:
+                    mode = False
+            elif mode == False:
+                if "```" in lines[i-1] and "```python" not in lines[i-1]:
+                    mode = True
+            dont_redact[i] = mode
+            
+
+        for i in range(len(lines)):
+            if dont_redact[i]: fout.write(lines[i].replace("\n","  \n"))
         fout.write("  \n")
 
     # write footer

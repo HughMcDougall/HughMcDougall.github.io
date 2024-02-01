@@ -78,13 +78,13 @@ plt.show()
   
 Converting the variables between the constrained and unconstrained domains is easy enough, as shown above, but feeding these directly into a likelihood function won't give us the right answer. Instead, we need to weight by the *derivative* of this transformation to recover the correct probability. If you're not familair with how probability distributions change with coordinate transformations, the key idea is that corresponding differential elements have the same amount of "power" in either coordinate system:  
   
-$$\begin{equation}  
+\begin{equation}  
     P(x_{con}) \cdot dx_{con} = P(x_{uncon}) \cdot dx_{uncon}  
 \end{equation}$$  
   
 Such that the distribution transforms like:  
   
-$$\begin{equation}  
+\begin{equation}  
     P(x_{con}) = P(x_{uncon}) \cdot \frac{dx_{uncon}}{dx_{con}}  
 \end{equation}$$  
   
@@ -254,7 +254,7 @@ print("Sampling done")
   
 In HMC, potential energy is proportional to $\chi^2$:  
   
-$$\begin{equation}  
+\begin{equation}  
     U_x(x) = -ln \vert\mathcal{L_x(x)} \vert=\frac{-\chi^2}{2}  
 \end{equation}$$  
   
@@ -310,7 +310,7 @@ plt.show()
   
 The issue here is simple: this `potential energy` is defined in terms of the **unconstrained parameter space**, and so we need to do a transformation back to real parameter space using a conversion factor $U_\theta(\theta) = U_x(x) \cdot D$:  
   
-$$\begin{equation}  
+\begin{equation}  
     D=\Pi_i \left( \frac{dx'_i}{d\theta_i} \right)  
 \end{equation}$$  
   
