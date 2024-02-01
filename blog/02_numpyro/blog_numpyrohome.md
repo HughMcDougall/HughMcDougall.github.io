@@ -5,12 +5,13 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [Blog 
   
 ---------------------------------------------------------------------------  
 **Navigation**  
-* [Getting Started](.\01_gettingstarted\./page.html)  
-* [The Constrained Domain](.\02_constraineddomain\./page.html)  
-* [Testing Different MCMC Samplers](.\03_mcmcsamplers\./page.html)  
-* [Nested Sampling](.\04_nestedsampling\./page.html)  
-* [Parallelization](.\05_parallelizing\./page.html)  
-* [SVI](.\06_SVI\./page.html)  
+* [Getting Started](.\01_gettingstarted\./page.html) - An absolute beginners guide to NumPyro  
+* [The Constrained Domain](.\02_constraineddomain\./page.html) - Explanation of constranied vs unconstrained domains in NumPyro  
+* [Testing Different MCMC Samplers](.\03_mcmcsamplers\./page.html) - A quick overview of the different samplers in numpyro and their strengths / weaknesses  
+* [Nested Sampling](.\04_nestedsampling\./page.html) - An exploration of nested sampling in NumPyro  
+* [Stochastic Variational Inference](.\06_SVI\./page.html) - Stochastic variational inference  
+	  * [SVI Part 1](.\06_SVI\01_part1\./page.html) - Introduction & Explanation  
+	  * [SVI Part 2](.\06_SVI\02_part2\./page.html) - Examples & Comparison with MCMC  
   
 ---------  
   
@@ -21,7 +22,7 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [Blog 
   <img width="370" height="217" src="../../images/thumbs/cnpy.jpg">  
 </p>  
   
-It is a generally accepted fact amongst most reasonable people that Bayesian analysis is the correct approach to most any non trivial statistical problem. In the modern world, we enjoy with a suite of tools that alleviate the tedium of constructing and running these models: Bayesian analysis lets us do things right, probabalistic programming languages (PPLs) let us do it easily, and the magical power of Just-InTime (JIT) compiled languages allows us to to it _fast_. The [JAX](https://github.com/Joshuaalbert/jaxns)-based PPL [NumPyro](num.pyro.ai/) brings all three together: a python interface that gives great speed and versatility and makes ubiquitous tasks like parameter constraint or model comparison cheap in both human-time and machine-time.  
+It is a generally accepted fact amongst most reasonable people that Bayesian analysis is the correct approach to most any non trivial statistical problem. In the modern world, we enjoy with a suite of tools that alleviate the tedium of constructing and running these models: Bayesian analysis lets us do things right, probabalistic programming languages (PPLs) let us do it easily, and the magical power of Just-In-Time (JIT) compiled languages allows us to to it _fast_. The [JAX](https://github.com/Joshuaalbert/jaxns)-based PPL [NumPyro](num.pyro.ai/) brings all three together: a python interface that gives great speed and versatility, and makes ubiquitous tasks like parameter constraint or model comparison cheap in both human-time and machine-time.  
   
 For the experienced user, the interaction cost hurdle between having an idea and getting a nice ChainConsumer corner plot has never been shorter. The only issue is that some corners of NumPyro can be opaque to the unfamilar user. In this blog, I provide a handful of short and to-the-point tutorials that walk the new user through their first steps into the world of NumPyro, and guide the "almost new" user through the less-obvious features that might otherwise cost hours of scanning documentation.  
   

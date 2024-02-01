@@ -52,7 +52,7 @@ default_init = {
                 "notebook": "NONE",
                 "navheader": "TRUE",
                 "tree": "TRUE",
-                "render": False
+                "render": "TRUE"
                 }
 
 #================================================================================================
@@ -80,13 +80,17 @@ def scanfol(url="./", recursion = 0, level = None, ):
     levels  = []
 
     #----
+    # Get all top level files
     for entry in glob.glob(url+"*_init.dat"):
-        entries.append(entry)
+        if readinit(entry)["render"]!="FALSE":
+            entries.append(entry)
     
     #----
+    # Scan all folders, run recursively if there are other folders
     for entry in glob.glob(url+"*/"):
         if os.path.isfile(entry+"_init.dat"):
-            fols.append(entry)
+            if readinit(entry+"_init.dat")['render']!="FALSE":
+                fols.append(entry)
     levels = [recursion-level]*len(entries)
     newfols = []
     for fol in fols:
@@ -328,7 +332,9 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 print("\t",tree_entry,tree_level)
 
                 treeinit = readinit(tree_entry)
+                tree_render = treeinit['title']
                 tree_title  = treeinit['title']
+                tree_desc   = treeinit['desc']
                 tree_relurl = os.path.relpath(tree_entry, entry).replace("_init.dat",treeinit['doc'])
                 tree_relurl = tree_relurl.replace(".md",".html")[1:]
 
@@ -338,7 +344,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 fout.write("\t"*(tree_level-1)) # Readable indentation
                 fout.write("  "*(tree_level-1)) # markdown indentation
                 fout.write("* ")
-                fout.write("[%s](%s)" %(tree_title, tree_relurl))
+                fout.write("[%s](%s) - %s" %(tree_title, tree_relurl, tree_desc))
 
                 # Do markdown & html friendly line breaks
                 fout.write("  ")

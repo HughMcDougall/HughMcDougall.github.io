@@ -1,8 +1,8 @@
 doc:	./page.md
-source:	./_SVI.md
-title:	SVI
+source:	./_SVIintro.md
+title:	Stochastic Variational Inference
 date:	12/9/23
 desc:	Stochastic variational inference
 nav:	TRUE
 tree:	TRUE
-notebook:	_SVI.ipynb
+notebook:	_SVIintro.ipynb

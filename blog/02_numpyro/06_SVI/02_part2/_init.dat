@@ -1,0 +1,8 @@
+doc:	./page.md
+source:	./_SVI02.md
+title:	SVI Part 2
+date:	12/9/23
+desc:	Examples & Comparison with MCMC
+nav:	TRUE
+tree:	TRUE
+notebook:	_SVI02.ipynb
