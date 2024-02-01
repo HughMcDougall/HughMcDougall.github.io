@@ -341,10 +341,10 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 print("\t\t",tree_title, tree_relurl)
 
                 # Take data from the _init.md and write as a markdown line / url
-                fout.write("\t"*(tree_level-1)) # Readable indentation
-                fout.write("  "*(tree_level-1)) # markdown indentation
+                #fout.write("\t"*(tree_level-1)) # Readable indentation
+                fout.write("    "*(tree_level-1)) # markdown indentation
                 fout.write("* ")
-                fout.write("[%s](%s) - %s" %(tree_title, tree_relurl, tree_desc))
+                fout.write("[%s](%s) - _%s_" %(tree_title, tree_relurl, tree_desc))
 
                 # Do markdown & html friendly line breaks
                 fout.write("  ")

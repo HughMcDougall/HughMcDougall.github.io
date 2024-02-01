@@ -1,4 +1,4 @@
-Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	 Next Entry: [Is the Raffle Rigged? Practical stats for a toy problem](.\..\03_raffle\page.html)  
+Next Entry: [Is the Raffle Rigged? Practical stats for a toy problem](.\..\03_raffle\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

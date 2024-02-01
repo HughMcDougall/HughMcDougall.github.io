@@ -5,15 +5,15 @@ Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return t
   
 ---------------------------------------------------------------------------  
 **Navigation**  
-* [Nested Sampling](.\01_nestedsampling\./page.html) - How to use this blog homepage  
-* [Data Tension Examples](.\02_suspiciousness\./page.html) - An example of data tension  
-* [Is the Raffle Rigged? Practical stats for a toy problem](.\03_raffle\./page.html) - Is the Raffle Rigged? Practical stats for a toy problem  
+* [Data Tension Examples](.\02_suspiciousness\./page.html) - _An example of data tension_  
+* [Is the Raffle Rigged? Practical stats for a toy problem](.\03_raffle\./page.html) - _Is the Raffle Rigged? Practical stats for a toy problem_  
   
 ---------  
   
   
-[Todo]  
-Fill this out  
+# Statistics Articles  
+  
+This part of the blog is home to miscellaneous standalone articles on statistics topics, ranging from the advanced to the If you have a suggestion of a topic you’d like me to cover, feel free to contact me by email (see my homepage for details).  
   
 ---------  
   

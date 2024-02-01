@@ -124,8 +124,6 @@ In basic terms, a **test statistic** is just some numerical way of quantifying "
   
   
   
-    	 0	 1	 2	 3	 4	 5	 6	 7  
-  
   
   
   

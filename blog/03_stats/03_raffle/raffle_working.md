@@ -316,8 +316,6 @@ for a, i in zip(nights,range(len(nights))):
 
 ```
 
-    	 0	 1	 2	 3	 4	 5	 6	 7
-
 
 ```python
 # REDACT

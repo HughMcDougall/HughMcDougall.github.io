@@ -2,7 +2,7 @@ doc:	./page.md
 source:	./_SVIintro.md
 title:	Stochastic Variational Inference
 date:	12/9/23
-desc:	Stochastic variational inference
+desc:	An intro and guide to SVI in NumPyro
 header:	./_sviheader.md
 nav:	TRUE
 tree:	TRUE

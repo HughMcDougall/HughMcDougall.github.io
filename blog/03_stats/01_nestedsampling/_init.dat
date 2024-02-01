@@ -5,3 +5,4 @@ date:	21/8/23
 desc:	How to use this blog homepage
 nav:	TRUE
 tree:	TRUE
+render: FALSE
