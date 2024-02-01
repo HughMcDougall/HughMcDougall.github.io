@@ -1,4 +1,4 @@
-Previous Entry: [Data Tension Examples](.\..\03_suspic02\page.html)	&nbsp;	   
+Previous Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)	&nbsp;	   
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
@@ -81,4 +81,6 @@ r = \frac{draw- lower}{upper-lower}
 $$  
   
 This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities:   
+  
+![png](output_9_0.png)  
   

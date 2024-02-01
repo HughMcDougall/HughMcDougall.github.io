@@ -24,12 +24,13 @@ replacements = [
 recursion = 10  # Depth of folders in tree generation
 tree_depth = 3  # Depth to display in navigation trees
 
-KEYWORDS = ["NONE", "TRUE", "FALSE"]
+KEYWORDS = ["NONE", "TRUE", "FALSE"] # Deprecated
 tab = " "
 
 destfile = "./bloghome.md"
 
 
+# Default files to use if none specified
 default_header  = "./_components/_bloghead.md"
 default_footer  = "./_components/_blogfoot.md"
 
@@ -37,6 +38,7 @@ flog = open('./_flog.dat','w')
 
 #========================
 
+# Default init file
 default_init = {
                 "doc":      "NONE",
                 "source":   "NONE",
@@ -50,6 +52,7 @@ default_init = {
                 "notebook": "NONE",
                 "navheader": "TRUE",
                 "tree": "TRUE",
+                "render": False
                 }
 
 #================================================================================================
@@ -119,6 +122,9 @@ def readinit(url):
     return(out)
 
 def flatten_list(X):
+    '''
+    Takes a list of lists and flattens to a single level
+    '''
     out=[]
     if len(X)==0:
         return([])
@@ -152,11 +158,14 @@ Run through all folders and subfolders to generate
 entries, folders, levels = scanfol("./", recursion)
 
 #================================================================================================
+# File Writing
 
-flog.write(_timef()+"\n")
+flog.write(_timef()+"\n") # Log message
+
 #Generate actual docs
 for i, entry, level in zip(range(len(entries)), entries, levels):
 
+    #=====
     # Close all open files in case there was an error on the previous entry
     try: fout.close()
     except: pass
@@ -166,6 +175,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     except: pass
     try: f_head.close()
     except: pass
+    #=====
     
     entryfol = entry.replace("_init.dat", "")
     print(entryfol)
@@ -174,8 +184,10 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
 
     #------------------------------------
     # LOAD & CHECK
-    
+
+    #=====
     # load init data
+    
     try:
         initdata = readinit(entry)
     except:
@@ -186,6 +198,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     except:
         flog.write("unable to open destination file in entry %s \n" %(entry))
         continue
+    #=====
 
     # Locate next, previous & parent files
     prevfile, nextfile, parentfile = None, None, None
@@ -344,7 +357,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
         for line in f_source:
             for replacement in replacements:
                 line = line.replace(replacement[0],replacement[1])
-            fout.write(line.replace("\n","  \n"))
+            fout.write(line.replace("\n","  \n")) # Convert line breaks to markdown friendly ones
         fout.write("  \n")
 
     # write footer

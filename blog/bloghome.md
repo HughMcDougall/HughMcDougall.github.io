@@ -11,8 +11,8 @@ Hi, I'm [Hugh McDougall](hughmcdougall.github.io/), an astronomy PhD student at 
 	  * [SVI](.\02_numpyro\06_SVI\./page.html)  
 * [Statistics Articles](.\03_stats\./page.html)  
 	  * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html)  
-	  * [Data Tension Examples](.\03_stats\03_suspic02\./page.html)  
-	  * [Is the Raffle Rigged? Practical stats for a toy problem](.\03_stats\04_raffle\./page.html)  
+	  * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html)  
+	  * [Is the Raffle Rigged? Practical stats for a toy problem](.\03_stats\03_raffle\./page.html)  
   
 ---------  
   

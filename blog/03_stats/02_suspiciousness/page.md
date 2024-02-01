@@ -1,398 +1,455 @@
-Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	 Next Entry: [Data Tension Examples](.\..\03_suspic02\page.html)  
+Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	 Next Entry: [Is the Raffle Rigged? Practical stats for a toy problem](.\..\03_raffle\page.html)  
   
   
-Go Back: [WebGuide](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
+Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
   
 ---------  
   
   
-```python  
-import numpy as np  
-import matplotlib.pylab as plt  
-```  
+# Tension & Suspicion  
   
-# Evidence, Entropy & Suspiciousness  
+In astrophysics and cosmology, we often bump against the limits of our understanding in the form of statistical _tensions_,  disagreements in the our results from two different data sources. There's two practical reasons we might care about tensions:  
+1. When asking if two measurements properly agree with one another  
+2. When considering if two data-sets are similar enough to pool them together  
   
-A common question in data-science of determining wether one model meaningfully outperforms another. A common Bayesian approach to this question is to compare the **evidence** for two models, the total "probabalistic mass" across the entire prior range:  
+In the simplest of cases, like hubble tension diagram shown below, we can can use the rough yardstick of a **sigma tension**, $T$. Assuming our measurement uncertainties are gaussian, sigma-tension asks: <span style="font-family: verdana"><i>"how many standard deviations are result $A$ and result $B$ separated by"?</i></span>. The famous frequentist approach to this simple 1D case is to assign a P value based on how likely the separation is to be a product of coincidence:  
   
-$$\begin{equation}  
-    Z_m = \int_\pi{\mathcal{L_m}(\theta)\cdot\pi(\theta)}d\theta  
-\end{equation}$$  
+$$  
+P = p(t > T) = \int_T^\infty \mathcal{N}(t) dt  
+$$  
   
-This evidence is also the normalizing factor on the likelihood $\rightarrow$ probability conversion:  
-  
-$$\begin{equation}  
-    P_m(\theta) = \frac{\mathcal{L_m}(\theta)\cdot\pi(\theta)}{Z_m}  
-\end{equation}$$  
-  
-If we want to compare models '1' and '2', we find their evidences through integration and compare the **evidence ratio** `$R$':  
-  
-$$\begin{equation}  
-    R_{12} = \frac{Z_2}{Z_1}  
-\end{equation}$$  
-  
-The idea here is straightforward: a better model will have higher overall likelihood across all possible sets of parameters. Interpreting the evidence ratio is a bit arbitrary, but a typical benchmark is for $\log_{10}(R)>0.5$ to indicate that model 2 is mildly but detectable better than model 1, while $\log_{10}(R)>1.0$ indicates a strong improvement.  
-  
-Another measure is the information (also called the entropy or Kullback-Lieber divergence, plus or minus a negative sign) wich measures how well the model constrains the parameter $\theta$ as compared to a prior:  
-  
-$$\begin{equation}  
-    D_m = \int_\pi{P_m(\theta)\cdot \ln \left|\frac{P_m(\theta)}{\pi(\theta)} \right|}d\theta  
-\end{equation}$$  
-  
-In this example, we'll look at the simple case of a vague uniform prior:  
-$$\begin{equation}  
-    \pi(\theta) = \frac{1}{a} \left(u(\theta) - u(\theta-a) \right)  
-\end{equation}$$  
-  
-Comparing model 1, in which the parameter doesn't vary and so the likelihood is fixed:  
-  
-$$\begin{equation}  
-    \mathcal{L}_1(\theta) = 1  
-\end{equation}$$  
-  
-To model 2, in which the parameter _does_ vary, with some arbitrary example distribution. The scalar $A$ here represents how well the model performs compared to the exclusion of $\theta$ as a parameter:  
-  
-$$\begin{equation}  
-    \mathcal{L}_2(\theta) = A\cdot\theta\cdot \exp(-\theta^2)  
-\end{equation}$$  
+This a workable approach when our are simple one dimensional gaussians, but what about complicated, high dimensional multivariate models? For a generalizeable and principled approach to the question of tensoin, we need to turn to the test-stastics of Bayesian modelling. In this post, I introduce the reader to _bayesian suspiciousness_, a little known item in the bayesian tool-belt that is well suited to the vague priors endemic to cosmology.  
   
   
-```python  
-# Define prior and models  
+<p style="text-align: center;">   
+<figure>  
+    <img src="./media/hubbletension.png" width="400">  
+</figure>  
   
-def prior(x, a=5):  
-    # Uniform prior, amplitude scales against with for normalization  
-    out = (x>0)*(x<a) / a  
-    return(out)  
-      
-def model_1(x):  
-    # Uniform model, likelihood doesn't change with 'x'  
-    return(x*0+1)  
-      
-def model_2(x, goodness = 10, aliasing = 0, background = 0):  
-    # Measurement model  
-    out = np.exp(-x**2)*x*goodness  
+<p style="text-align: center; font-family: arial;width: 600px; margin:0 auto;" ><b>Diagram showing how tension in measurements of the hubble parameter <a href="https://arxiv.org/pdf/2105.05208.pdf">Perivolaropoulos & Skara 2022</a></b></p></p>  
   
-    # Noise (For testing)  
-    s = np.sin(10*x)  
-    out += s*s*aliasing  
-    out += background  
-    return(out)  
-```  
+In part one of this post, I introduce the unfamiliar reader to two of the more common tools of bayesian "goodness of fit": _evidence_ and _information_ (also sometimes called entropy or the [Kullback Leiber divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)", and demonstrate the shortfalls these have in measuring statistical tension. I then introduce bayesian suspiciousness, and show how it dodges the pitfalls of its better known cousins. In part 2, I derive all three tools for a simple 1D gaussian case to help offer an intuitive "feel" for what they represent. I extend this to the general multivariate case, and offer an interpretation of suspiciousness in P-value terms as an olive branch to the frequentists of the world.  
   
-The danger is that changing the prior 'dilutes' the evidence of model 2. Model 1 is of uniform likelihood, and so encompasses more and more prior volume as the prior expands.   
-$$\begin{equation}  
-    Z_1 = \int_0^a{1\cdot\pi(\theta)} d\theta = 1  
-\end{equation}$$  
+**Index**  
+- [Part 1: A Gentle Introduction to Suspiciousness by way of Example](#part1)  
+- [Part 2: Translating to Frequentism - Interpreting Suspiciousness with P Values](#part2)  
   
-Model 2, however, only performs well over a small range of parameter space, and so performs more poorly by comparison as the prior expands:  
+---  
+## Part 1: A Gentle Introduction to Suspiciousness by way of Example  <a id='part1'></a>  
   
-$$\begin{equation}  
-    Z_2 = \int_0^a{L_2(\theta)\cdot\pi(\theta)} d\theta = \frac{1}{a}\int_0^a{L_2(\theta)} d\theta \propto \frac{1}{a}  
-\end{equation}$$  
+When we've got a nice gaussian distribution in one parameter, tension is conceptually pretty intuitive and easy to judge by eye. Things get a little messier once we extend to multiple dimensions, and in this section we'll use a simple linear regression example to show how quickly "eyeballing it" can fail us, and then venture into the more generalizeable Bayesian domain, eventually settling suspiciousness as the best tool for quantifying tension between two datasets.  
   
+Tension is usually framed in terms of the question:  
   
-```python  
-scale = 1 # Changing of units for testing invariance  
+<p style="text-align: center; font-family: verdana"><i>"Do these two measurements agree with one another?"</i></p>  
   
-# Plot models 1 and 2  
-X = np.linspace(0,20,1024*4) * scale  
-dx = X[-1]/(len(X)-1)  
+But we can wring a lot more out of this by pivoting to the subtly different question:   
   
-fig1, ax1 = plt.subplots(2,1, sharex=True, sharey=False)  
+<p style="text-align: center; font-family: verdana"><i>"Do these two datasets measure the <u>same</u> variable?"?</i></p>  
   
-for i,a in zip([0,1],[5*scale,15*scale]):  
-      
-    ax1[i].plot(X, model_1(X/scale)*prior(X, a=a), label = "Model 1, no relationship with $\\theta$")  
-    ax1[i].plot(X, model_2(X/scale)*prior(X, a=a), label = "Model 2, better best fit but narrower distribution")  
-      
-    ax1[i].axvline(a, c='k', ls=':', alpha=0.5, label = 'prior boundary')  
-      
-fig1.supylabel("$ \mathcal{L}(\\theta)\cdot\pi(\\theta)$")  
-fig1.supxlabel("$\\theta$")  
-fig1.tight_layout()  
-ax1[0].legend()  
+This may not seem like much of a change, but we're now asking a rigorously defined question. We have one model where the datasets share the same set of parameters, and another where they each have their own independent set.   
   
-plt.show()  
-```  
+Consider the simple example of a linear regression shown below.  Do data sets $A$ and $B$ actually follow the same trend? At first glance, we can give a confident "kinda", but there might still be a tension too subtle to see by eye.  
   
   
       
-![png](output_5_0.png)  
+![png](suspic02_files/suspic02_3_0.png)  
       
   
   
-We can test these for a range of prior widths to see this in action. In this cell, we also calculate the entropy of the distributions and how they vary with prior width.  
-  
-  
-```python  
-A = np.linspace(0, np.max(X), 1024+1)[1:]  
-  
-Z1 = np.zeros_like(A)  
-Z2 = np.zeros_like(A)  
-  
-D1 = np.zeros_like(A)  
-D2 = np.zeros_like(A)  
-D12 = np.zeros_like(A)  
-  
-#==========================================  
-  
-print("Doing calcs, itt no:", end="\t")  
-M1 = model_1(X / scale)  
-M2 = model_2(X / scale, goodness = 100, aliasing = 0.1, background=0.001)  
-  
-for i,a in zip(range(len(A)),A):  
-    if i %10==0: print(i,end=", ")  
+The power of Bayesian analysis lets us dig a little deeper by plotting the probability contours for $m$ and $c$ for each model, shown below. It's pretty easy to see that the results are in tension, barely overlapping at all, but naive measurements like sigma-tension fail at the first hurdle even in his well behaves example. The discrepency along the $m$ axis is obvious, but imagine this were some larger more complicated model where we only measured $c$ and marginalized over $m$ as a nuisance parameter: the tension would go completely unnoticed. We could imagine some trick of measuring sigma-tension along principle axis' or some such, but how would this scale into high dimensions or weird non-gaussian contours? We need a _general_ test of tension that we can apply to any system of arbitrary complexity.  
       
-    Pr  = prior(X, a=a)  
-  
-    #Integrate to get evidence  
-    z1 = dx * np.sum(Pr * M1)  
-    z2 = dx * np.sum(Pr * M2)  
-  
-    P1 = Pr * M1 / z1  
-    P2 = Pr * M2 / z2  
-  
-    d1 = dx * np.sum(P1 * np.nan_to_num(np.log(P1/Pr),0) )  
-    d2 = dx * np.sum(P2 * np.nan_to_num(np.log(P2/Pr),0) )  
-      
-    d12 = dx * np.sum(P1 * np.nan_to_num(np.log(P2/Pr),0) )  
-  
-    Z1[i], Z2[i], D1[i], D2[i], D12[i] = z1, z2, d1, d2, d12  
-  
-#==========================================  
-  
-# Clean up  
-Zr = Z2 / Z1  
-Zr[np.isinf(Zr)]=0  
-Z1[0], Z1[-1] = 0, 0  
-print('\n----------')  
-  
-```  
-  
-    Doing calcs, itt no:	0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350, 360, 370, 380, 390, 400, 410, 420, 430, 440, 450, 460, 470, 480, 490, 500, 510, 520, 530, 540, 550, 560, 570, 580, 590, 600, 610, 620, 630, 640, 650, 660, 670, 680, 690, 700, 710, 720, 730, 740, 750, 760, 770, 780, 790, 800, 810, 820, 830, 840, 850, 860, 870, 880, 890, 900, 910, 920, 930, 940, 950, 960, 970, 980, 990, 1000, 1010, 1020,   
-    ----------  
-  
-  
-    /tmp/ipykernel_4935/1788262276.py:28: RuntimeWarning: invalid value encountered in divide  
-      d1 = dx * np.sum(P1 * np.nan_to_num(np.log(P1/Pr),0) )  
-    /tmp/ipykernel_4935/1788262276.py:29: RuntimeWarning: invalid value encountered in divide  
-      d2 = dx * np.sum(P2 * np.nan_to_num(np.log(P2/Pr),0) )  
-    /tmp/ipykernel_4935/1788262276.py:31: RuntimeWarning: invalid value encountered in divide  
-      d12 = dx * np.sum(P1 * np.nan_to_num(np.log(P2/Pr),0) )  
-  
-  
-Plotting these, we see the issue: the expanding prior 'dilutes' the evidence of the model, making it seem like a poor fit even though nothing about the distribution has changed. Even if model 2 does a good job in some cases, it is overwhelmed by the sheer number of possibilities that it performs poorly for.  
-  
-  
-```python  
-fig2, ax2 = plt.subplots(3,1, sharex=True, sharey=False)  
-  
-#Z1[0], Z1[-1]= 0,0  
-  
-ax2[0].plot(A,Z1)  
-ax2[0].set_title("Uniform Model Evidence")  
-  
-ax2[1].plot(A,Z2)  
-ax2[1].set_title("Non-uniform Model Evidence")  
-  
-ax2[2].plot(A,Zr)  
-ax2[2].set_title(" Evidence Ratio, $Z_2/Z_1$")  
-  
-ax2[0].set_ylim(ymin=0,ymax=np.max(Z1)*1.5)  
-ax2[1].set_ylim(ymin=0)  
-ax2[1].set_ylim(ymin=0)  
-  
-fig2.supxlabel("Prior width, a")  
-  
-fig2.tight_layout()  
-plt.show()  
-```  
-  
-  
-      
-![png](output_9_0.png)  
+![png](suspic02_files/suspic02_9_0.png)  
       
   
+When asking if they agree, we're really comparing two models, one with a single gradient and offset, and another with one for each source:  
   
-The information, by contrast, increases as the prior expands. This is intuitive: information describes how much we constrain $\theta$ relative to the prior, and so the prior getting broader means that our model performs better by comparison. The uniform model is just a repeat of the prior, and so gives zero new information.  
+<b><u>Model 1 - Indepdenent</u></b>  
+<p style="text-align: center; font-family: verdana"><i>"$A$ and $B$ have different offsets and gradients"</i></p>  
   
+$$  
+P(m_A,m_B,c_A,c_B|Y_A,Y_B)=P(m_A,c_A \vert Y_A)\cdot P(m_B,c_B \vert Y_B)  
+$$  
   
-```python  
-fig2, ax2 = plt.subplots(3,1, sharex=True, sharey=False)  
+<b><u>Model 2 - Simultaneous</u></b>  
+<p style="text-align: center; font-family: verdana"><i>"$A$ and $B$ <u>share</u> the same offsets and gradients"</i></p>  
   
-ax2[0].plot(A,D1)  
-ax2[0].set_title("Uniform Model Information")  
+$$  
+P(m,c|Y_A,Y_B)=P(m,c \vert Y_A)\cdot P(m,c \vert Y_B)  
+$$  
   
-ax2[1].plot(A,D2)  
-ax2[1].set_title("Non-uniform Model Information")  
-  
-ax2[2].plot(A,D2-D1)  
-ax2[2].set_title("Relative Information, $D_2-D_1$")  
-  
-fig2.supxlabel("Prior width, $a$")  
-  
-fig2.tight_layout()  
-plt.show()  
-```  
+Posing the question in this form, we can leverage the vast toolbox of bayesian model comparison.   
   
   
-      
-![png](output_11_0.png)  
-      
+### Bayesian Evidence   
   
+Whenever we define a bayesian model for some parameters $\theta$, the model consistents of two components:  
+1. A generative model of what observations a given $\theta$ would produce, and  
+2. A _prior_ on high likely any given $\theta$ is before measurement  
+It's important to remember that the the total probablistic model is both of these together.   
   
-In some cases, the information is used as a way to get a 'first pass' at the prior. The idea being that the 'best' prior is one that is as vague as possible, and so is the one that maximizes the entropy / minimizes the information. All this really does in our case, however, is find the uniform distribution that is 'most like' the likelihood curve. Similarly, attempting to choose a prior that maximimzes the evidence only gives a region of significance, not a meaningful 'best' prior width:  
+The core idea of Bayes theorem is that the probabilty (or goodness of fit) for parameters $\theta$ is proporional to how likely they are is to exist _and_ how well it reproduces our data:  
   
+$$  
+p(\theta \vert y) \propto P(y \vert \theta) \cdot \pi(\theta)  
+$$  
   
-```python  
-a_min_ent = A[np.where(D2==np.min(D2))[0]]  
-a_max_ev = A[np.where(Z2==np.max(Z2))[0]]  
+The RHS is unnormalized, and so we scale $p(\theta \vert y)$ back to a probability density with a proportionality constant $Z$. We often handwave the constant away, as we often only care about the _relative_ performance of any two points in parameter space. However, this constant has physical meaning: It's the _total_ "likelihood mass" of the entire posterior distribution:  
   
-plt.plot(X, model_2(X/scale)*prior(X, a=10*scale), c='darkorange')  
+$$  
+Z = \int \mathcal{L}(\theta \vert y)\cdot \pi(\theta) d\theta  
+$$  
   
-plt.axvline(a_min_ent, c='b', label="$a$ for maximum entropy")  
-plt.axvline(a_max_ev, c='r', label="$a$ for maximum evidence")  
+This is the **Bayesian Evidence**, and describes the overall ability of the model to explain / reproduce the data. Because the evidence is a measure of how well a model performs overall, we can compare the performance of two models by looking at the ratio of these two. E.g, for models '1' and '2':  
   
-plt.xlim(xmax = 5*scale)  
-plt.legend()  
-plt.grid()  
+$$  
+\mathcal{R}_{12} = \frac{Z_1}{Z_2}  
+$$  
   
-plt.show()  
-```  
+This **Evidence Ratio** gives us a direct comparison of how well two models match our data. if $\mathcal{R} \gg 1$, it implies that model 1 is a significnatly better fit than model 2.  
   
+#### Failure of Evidence Ratio in Measuring Tension  
   
-      
-![png](output_13_0.png)  
-      
+We've already seen how tension can be described as a type of model comparison, and so it's a natural step to try and use evidence ratios to along that line or reasoning:  
   
+$$  
+\mathcal{R} = \frac{Z_A Z_B}{Z_{AB}}  
+$$  
   
-It can be shown that, for a well behaved likelihood distribution like ours, the information scales linearly with the log of the prior width as $a \rightarrow \infty$:  
+If $\mathcal{R} \gg 1$, it implies that combining the datasets gives worse results, i.e. that $A$ and $B$ are in tension. As long as we have well defined priors, this is a perfectly valid approach. Unfortunately, it can fail on contact reality, particularly in astrophysics where our priors are overly vague and not always rigorously defnied.  
   
-$$\begin{equation}  
-    D_2 = c+m\cdot \ln|a|  
-\end{equation}$$  
+Suppose we have a vague prior with width '$w$'. Because $\pi(x)\propto w^{-1}$, increasing the prior width has an effect of "diluting" the model evidence:  
   
-Meaning that we can combine the evidence and information to get a 'goodness of fit' value that _doesn't_ change with '$a$':  
+$$  
+p(\theta \vert y) \propto \pi(\theta) \rightarrow Z \propto \frac{1}{w}  
+$$  
   
-$$\begin{equation}  
-    Z_2\cdot \exp(D_2)  
-\end{equation}$$  
+This carries through to the evidence ratio. Because the "seperate" model has twice as many parameters, this means it gets penalized twice as much by this dilution:  
   
-Or, in log-form:  
+$$  
+R = \frac{Z_A Z_B}{Z_{AB}} \propto \frac{w^{-1}\cdot w^{-1}}{w^{-1}} \propto w^{-1}  
+$$  
   
-$$\begin{equation}  
-    \ln|Z_2| + D_2  
-\end{equation}$$  
+Again, if our priors are meaningfully defined and well constrained, this isn't an inherent problem. However, we're often faced with cases where we only have some vague constraint on a parameter, e.g. $x>0$, with limits being a bit arbitrary. The evidence ratio is completely at the mercy of this arbitrary decision.  
   
-It's apparent that this is just a measurement of the log-evidence with an extra bonus for well-constrained distributions curves to cancel out the dilution effect. Plotting these over changing prior widths, we see that our new goodness of fit score converges to a fixed value as $a\rightarrow\infty$  
+For example consider the linear regression from before. Because we had no a-piori information about $m$ or $c$, I used extremely vague normally distributed priors:  
   
+$$  
+\pi(m,c) = \pi(m) \pi(c), \;\;\; \pi(m)=\mathcal{N}(m,0,10), \;\;\; \pi(c)=\mathcal{N}(c,0,20)  
+$$  
   
-```python  
-fig, ax = plt.subplots(2,1)  
+But this prior width of $\sigma_{\pi_m}=10$ and $\sigma_{\pi_c}=20$ weren't chosen for any reason, they were just set to be wide enough to not distort my final results. I would have been just as justified picking a prior ten times wider:  
   
-ax[0].plot(A,np.log(Z2)+D2, 'k--', label="$Z\cdot\exp(H)$")  
-ax[1].plot(A,np.exp(D2)*Z2, 'k--')  
-  
-ax[0].plot(A,np.log(Z2), 'r-', label="$Z$")  
-ax[1].plot(A, Z2, 'r-')  
-  
-ax[0].set_title("Log scale")  
-ax[1].set_title("Real Scale")  
-  
-fig.supxlabel("Prior Width, $a$")  
-fig.supylabel("KL Corrected Evidence")  
-  
-ax[0].grid()  
-ax[1].grid()  
-  
-ax[0].axvline(a_max_ev, c= 'r', ls=':')  
-ax[1].axvline(a_max_ev, c= 'r', ls=':')  
-  
-ax[0].axvline(a_min_ent, c= 'b', ls=':')  
-ax[1].axvline(a_min_ent, c= 'b', ls=':')  
-  
-fig.legend()  
-fig.tight_layout()  
-plt.show()  
-```  
-  
+$$  
+\pi(m)=\mathcal{N}(m,0,100), \;\;\; \pi(c)=\mathcal{N}(c,0,200)  
+$$  
   
       
-![png](output_15_0.png)  
+![png](suspic02_files/suspic02_14_1.png)  
+      
+  
+Using moderately vague priors, we get $\mathcal{R}\approx 70$, indicating that the data sets are in clear tension. Using _very_ vague priors, expanding them by a factor of 10, our evidence ratio gets scaled down to $\mathcal{R}\approx 0.7$, which tells us that the data sets are _not_ in clear tension. This is the central problem with evidence ratios: our result has completely changed based on an arbitrary decision.  
+  
+### Information  
+  
+While evidence measures how well the model describes data data, another measure of model performance is its information (also called the entropy or [Kullback-Lieber divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)) wich measures how well the model _constrains_ its parameters.   
+  
+Information is defined as the average log difference between the posterior and prior:  
+  
+$$  
+    I_m = \int_\pi{p_m(\theta)\cdot \ln \left|\frac{p_m(\theta)}{\pi(\theta)} \right|}d\theta = E \left[ \ln \vert \mathcal{L}(\theta) \vert - \vert \pi(\theta) \vert \right]  
+$$  
+  
+If $I_m>0$, this indicates that information has been 'gained' about $\theta$, i.e. that our data is meaningfully constraining the parameter compared to our prior. This information can be applied to cases of model selection in the case of two models that are the same but for the inclusion of some extra parameter. If the parameter is poorly constrained, i.e. the relative gain in information between the models is low, it indicates that the more complex model with the parameter included can be rejected.  
+  
+#### The Problem With Information  
+  
+Information might seem to be a promising lead, but it doesn't actually tells us much about how well the model performs. It only tells us how well it _constrains_ parameters. It has another shortfall: just like evidence, varies with our prior width. Information is _gained_ when our results are better constrained than the prior. A wider prior means _more_ information is gained.  
+  
+$$  
+\exp(I) \propto w  
+$$  
+  
+This propogates through to the _relative_ information gain:  
+  
+$$  
+\Delta I = I_A + I_B - I_{AB}  
+$$  
+  
+This has the opposite problem to the evidence ratio: it gets arbitrarily better as the prior becomes more vague:  
+  
+$$  
+\exp(\Delta I) \propto w  
+$$  
+  
+For example, comparing moving beween our moderate and vague priors from before, we get:  
+  
+$$  
+\Delta I_\text{moderate} = 6.32, \;\;\; \Delta I_\text{vague} = 10.89  
+$$  
+  
+The prior has increased in volume by a factor of 100, corresponding to an increase in $\Delta I$ of $\ln \vert 100 \vert\approx 4.6$.  
+  
+### Suspiciousness  
+  
+Individually, evidence and information fail to give us what we want: a measure of model "goodness" that is immune to changes in prior width. Our "model" consist of both a likelihood and a prior, and we want to "remove" the effect of the prior on our answers, as the prior is somewhat arbitrary. Fortunately, all is not lost. Noting that:  
+1. Evidence decreases with prior width  
+2. Information increases in the same way  
+  
+We can combine evidence and information to get a new measurement, **suspiciousness**  
+  
+$$  
+S = ln \vert Z \vert + D  
+$$  
+  
+This new measurement is **invariant with prior width**:  
+  
+$$  
+\Delta S = S_A + S_B - S_{AB} \propto w^0  
+$$  
+  
+Comparing our three tools, we can see that the change in $\mathcal{R}$ gets cancled out by the change in $\Delta I$, leaving $\Delta S$ invariant to within calculation error:  
+  
+<p style="text-align: center;">   
+<table>  
+    <tr>  
+        <th>Statistic</th>  
+        <th>Moderate <br> Priors</th>  
+        <th>Vague <br> Priors</th>  
+    </tr>  
+    <tr>  
+        <th>Log-Evidence</th>  
+        <td>4.254</td>  
+        <td>-0.327</td>  
+    </tr>  
+    <tr>  
+        <th>Information</th>  
+        <td>6.32</td>  
+        <td>10.89</td>  
+    </tr>  
+    <tr>  
+        <th>Suspiciousness</th>  
+        <td>10.57</td>  
+        <td>10.56</td>  
+    </tr>  
+</table>  
+</p>  
+  
+----  
+  
+## Part 2: Translating to Frequentism - Interpreting Suspiciousness with P Values <a id='part2'></a>  
+In part 1 I've covered an example application of evidence, information & suspiciousness, but only touched on the underlying maths with a loose hand-wave. In this section, I'll work out these model comparison tools by-hand for the simplest possible case of 1D gaussians to provide more intuitive feel for what they represent and how they can be interpreted in a more frequentist mindset of P-values and sigma tensions.  
+  
+Suppose our two datasets $A$ and $B$ produce clean gaussian likelihoods with scaling factors / integrals $S_A$ and $S_B$:  
+  
+$$  
+\mathcal{L}_A(x)= \frac{S_A}{\sqrt{2 \pi \sigma_A^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_A}{\sigma_A}\right)^2 \right)}, \;\;\;  
+\mathcal{L}_B(x)= \frac{S_B}{\sqrt{2 \pi \sigma_B^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_B}{\sigma_B}\right)^2 \right)}  
+$$  
+      
+![png](suspic02_files/suspic02_20_1.png)  
       
   
   
+The likelihood for the two combined data set is just the product of these, another gaussian of the form:  
   
-```python  
-plt.plot(A,Zr*A)  
-plt.plot(A,Z2*np.exp(D2))  
-plt.yscale('log')  
-plt.xscale('log')  
-plt.axhline(3, c='k')  
-plt.axhline(10, c='k')  
-plt.show()  
+$$  
+\mathcal{L}_{AB}(x)= \frac{S_{AB}}{\sqrt{2 \pi \sigma_{AB}^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_{AB}}{\sigma_{AB}}\right)^2 \right)}  
+$$  
   
-print(" Convergent evidence is %0.2f \n Convergent Corrected Evidence is %0.2f" %(np.max(Zr*A), (Z2*np.exp(D2))[-1]))  
-```  
+With the mean '$\mu_{AB}$' and standard deviation '$\sigma_{AB}$' based on the inverse-variance weighted average of the two:  
   
+$$  
+\mu_{AB} = \left(\frac{\mu_A}{\sigma_A^2} + \frac{\mu_B}{\sigma_B^2}\right)\cdot \sigma_{AB}^2, \;\;\;   
+\sigma_{AB} = \left(\frac{1}{\sigma_A^2} + \frac{1}{\sigma_B^2}\right)^{-\frac{1}{2}}  
+$$  
   
-      
-![png](output_16_0.png)  
-      
+But with a scaling factor / integral that depends on the separation of $\mathcal{L}_A(x)$ and $\mathcal{L}_B(x)$:  
   
+$$  
+S_{AB} = S_A S_B \sqrt{2 \pi} \frac{\sigma_{AB}}{\sigma_A \sigma_B}  
+$$  
   
-     Convergent evidence is 51.03   
-     Convergent Corrected Evidence is 24.85  
+By itself this isn't too illuminating, but can be rearranged into a more intuitive form:  
   
+$$  
+S_{AB} =S_A S_B \cdot \frac{1}{\sqrt{2 \pi (\sigma_A^2 + \sigma_B^2)^2}} \exp{ \frac{-1}{2} \left(\frac{(\mu_A-\mu_B)^2}{\sigma_A^2 + \sigma_B^2} \right)}  
+$$  
   
-## How Significant is Significant?  
+Aside from the scaling factors we inherited $A$ and $B$, this is a normal distribution based directly on the sigma tension:  
   
-Regarding ‘goodness of fit’, the log-goodness scales against with evidence / amplitude at values, meaning the goodness scales exponentially.   
+$$  
+S_{AB} = S_A S_B \cdot \mathcal{N}(T), \;\;\;\; T = \frac{\lvert \mu_A-\mu_B \rvert }{\sqrt{\sigma_A^2 + \sigma_B^2}}  
+$$  
   
+The normal distribution here is the pdf that $\mu_A-\mu_B = 0$, the typical frequentist measure of whether $A$ and $B$ agree with eachother:  
   
-```python  
-GOODNESS = np.linspace(0,30,1024)  
-X2 = np.linspace(0,10,1024+1)  
-dx2=(X2[-1]-X2[0])/len(X2)  
+### Evidence Ratios  
   
-G = np.zeros_like(GOODNESS)  
+Equipped with expressions for our likelihoods, we can start looking at our bayesian model comparison tools. To keep the working simple, I'll work with a prior _uniform_ prior distribution that is much wider than any of the gaussians:  
   
-for goodness,i in zip(GOODNESS, range(len(GOODNESS))):  
-    P = model_2(X2, goodness = goodness, aliasing = 0.01) * prior(X2,a=np.max(X2))  
-    M = prior(X2,a=np.max(X2))  
-    z = np.sum(P) * dx2  
-    d = np.sum(np.nan_to_num(P*np.log(P/M)),0) * dx2  
+$$  
+\pi(x) =   
+    \begin{cases}  
+      \frac{1}{w} & \text{if } x\in \left[ -\frac{w}{2}, \frac{w}{2} \right]\\  
+      0 & \text{otherwise}  
+    \end{cases}         
+$$  
   
-    g = z * np.exp(d)  
+As long as this prior is wide enough ($w \gg \sigma_A,\sigma_B,\sigma_{AB}$), our evidence will be "posterior dominated", making evidence integral a lot easier to calculate. In the limit $w \rightarrow \infty$, the prior just appears a scaling factor to the distributions and their integrals:  
   
-    G[i] = g  
+$$  
+Z_A = \frac{S_A}{w}, \;\;\; Z_B = \frac{S_B}{w}, \;\;\; Z_{AB} = \frac{S_{AB}}{w}  
+$$  
   
-```  
+Giving a similarly friendly expression for the evidence ratio, $\mathcal{R}$:  
   
-    /tmp/ipykernel_4935/4055815170.py:11: RuntimeWarning: invalid value encountered in divide  
-      d = np.sum(np.nan_to_num(P*np.log(P/M)),0) * dx2  
+$$  
+\mathcal{R} = \frac{Z_{AB}}{Z_A Z_B} = \frac{S_{AB}}{S_A S_B} \cdot w  
+$$  
   
+Rembering before that the scaling factor was based on the sigma tension, $\frac{S_{AB}}{S_A S_B} = \mathcal{N}(T)$, this just gives:  
   
+$$  
+\mathcal{R} = \mathcal{N}(T) \cdot w  
+$$  
   
-```python  
-plt.plot(GOODNESS, G)  
-plt.ylabel('Goodness of Fit')  
-plt.xlabel('Max likelihood of model (arb units)')  
-ax=plt.gca()  
-ax.set_xticklabels([])  
-plt.grid()  
-#plt.yscale('log')  
-plt.show()  
-```  
+This is what we expect: because our independent model has twice as many variables, the diluting effect of the prior is twice as strong for that model. This means that $\mathcal{R} \propto w$.  
   
+### Information  
   
-      
-![png](output_19_0.png)  
-      
+The information for a gaussian is the KL-divergence between that distribution and the prior, which is the same as being the expectation value of the log-difference bewteen the two. For the gaussian likelihood of dataset $A$, the information is:  
   
+$$  
+I_A = \int_x { p_A(x) \ln{ \left( \frac{p_A(x)}{\pi(x)} \right) } } dx  
+= E \left[ \ln{ (p_A(x)) } - \ln{ (\pi(x)) } \right]_{p_A}  
+$$  
+  
+Thanks to our uniform prior and the way we defined $\mathcal{L}_A(x)$, the probability densite $p_A(x)$ unsuprisingly comes out to a normalizef gaussian:  
+  
+$$  
+p_A(x) = \frac{\mathcal{L_A(x) \pi(x)}}{Z_A} = \frac{\mathcal{L_A (x)}}{S_A} = \frac{1}{\sqrt{2 \pi \sigma_A^2}} \exp{ \left( \frac{-1}{2} \left(\frac{x-\mu_A}{\sigma_A}\right)^2 \right)}  
+$$  
+  
+Which leads us break our log terms into simpler pieces, most of which are just constants:  
+  
+$$  
+\ln{ (p_A(x)) }= -\frac{1}{2} \ln{ (2 \pi \sigma_A) }-\frac{1}{2} \left(\frac{x-\mu_A}{\sigma_A}\right)^2, \;\;\; \ln{ (\pi(x)) } = -\ln(w)  
+$$  
+  
+And a similarly friendly expression for $I_A$:  
+  
+$$  
+I_A = E \left[ \ln{ (p_A(x)) } - \ln{ (\pi(x)) } \right]_{p_A}  
+ =   
+ - E \left[\frac{1}{2} \ln{ (2 \pi \sigma_A) } \right]_{p_A}  
+ - E \left[\frac{1}{2} \left(\frac{x-\mu_A}{\sigma_A}\right)^2 \right]_{p_A}  
+ + E \left[\ln{w} \right]_{p_A}  
+$$  
+  
+Because most of these terms are constant, this expectation value is trivial to evaluate. The only exception is the square term, but we know that $E \left[ (x-\mu_A)^2 \right] = \sigma_a^2$ by definition making this term cancel out and giving an intuitive expression.  
+  
+$$  
+I_A = \ln \left( \frac{w}{\sigma_A} \right) - \frac{1}{2} (\ln(2\pi) +1)  
+$$  
+  
+Information measures how well constrained $x$ is _relative to the prior_, and so increases as the prior becomes more vague. By a similar token, know the information for $B$ and the combined dataset is:  
+  
+$$  
+I_B = \ln(w) - \ln(\sigma_B) - \frac{1}{2} (\ln(2\pi) +1), \;\;\;  
+I_{AB} = \ln(w) + \frac{1}{2} \ln \left(\frac{1}{\sigma_A^2} + \frac{1}{\sigma_B^2}\right) - \frac{1}{2} (\ln(2\pi) +1)  
+$$  
+  
+Yielding a _relative_ information gain between the models:  
+  
+$$  
+\Delta I = I_{AB} - I_A - I_B  
+= \frac{1}{2} (\ln(2\pi) +1) + \ln \left( \frac{\sigma_A \sigma_B}{\sigma_{AB}^2} \right) + \ln \left( \frac{\sigma_{AB}}{w} \right)  
+$$  
+  
+Information tells us about the constraint of parameters, i.e. the relative width of our distributions, and doesn't tell us much about how well the information actually fits the data.  
+  
+### Suspiciousness &  P-Value  
+  
+Noting that evidence ratio scales like $\mathcal{R}\propto w$, and relative information scales like $\exp(\Delta I) \propto w^{-1}$, suspiciousness is an obvious combination of these two that cancels out the prior dependence:  
+  
+$$  
+\Delta S = \ln ( \mathcal{R}) + \Delta I  
+$$  
+  
+With expressions for evidence ratio and relative information, the relative suspicousness is straightforward:  
+  
+$$  
+\Delta S = \frac{1}{2}-\frac{1}{2} \frac{(\mu_A-\mu_B)^2}{\sigma_A^2 + \sigma_B^2}   
+= \frac{1}{2}-\frac{T^2}{2}  
+$$  
+  
+Aside from a loose constant term, suspciciousness recovers an expression for the sigma tension completely independent of the prior! A natural step to interpret this as a test statistic on a normal distribution:  
+  
+$$  
+T =\sqrt{1-2 \Delta S}  
+$$  
+  
+And then define a P value in the typical frequentist way:  
+  
+$$  
+P = p(t > T) = \int_T^\infty \mathcal{N}(t) dt  
+$$  
+  
+Doing this for a 1D gaussian, we can get a feel for how $\Delta S$ lines up with different P values:  
+  
+<div style="margin-left: auto;">  
+<p style="text-align: center; margin-left: auto;" >  
+<table style="text-align: center; font-family: courier; font-size: 11pt">  
+    <tr>  
+        <th> P-Value </th> <th>$\sigma$-Tension</th> <th>Suspiciousness</th>  
+    </tr>  
+    <tr>  
+        <th> 0.05 </th> <td>-1.645</td> <td>-0.853</td>  
+    </tr>  
+    <tr>  
+        <th> 0.01 </th> <td>-2.326</td> <td>-2.206</td>  
+    </tr>  
+    <tr>  
+        <th> 0.001 </th> <td>-3.090</td> <td>-4.275</td>  
+    </tr>  
+</table>  
+</p>  
+</div>  
+  
+### Extending To Non-Guassian & Multiple Dimensions  
+So far we've only looked at one dimensional gaussian distributions. This may seem like an overly restrictive case, but consider:  
+1. Any probability distribution can be reparametrized into a similarly dimensioned gaussian of arbitrary covariance    
+2. Evidence and information, and by extension suspiciousness, remain invariant under reparameterization    
+3. $\ln{\lvert Z\rvert}$, $I$ and $S$ add linearly for uncorrelated joint distributions, such as those recovered by **(1)**     
+  
+Combining **(2)** and **(3)**, we know that the relative suspiciousness of any ‘D’ dimensional gaussian distribution can be found by summing together the suspiciousness of its component distributions:  
+  
+$$  
+\Delta S_D=\sum_{i=1}^{D}{\Delta S_i}=\sum_{i=1}^{D}{\frac{1}{2}-\frac{1}{2}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}}  
+$$  
+  
+Or, rearranging for suspiciousness:  
+  
+$$  
+1-2\cdot\Delta S_D=\sum_{i=1}^{D}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}  
+$$  
+  
+In the one dimensional case, $\Delta S$ is the square of a normally distributed random variable. In the $D$ dimensional case, it is the _sum_ of the square of many normally distributed random variables, i.e. it obeys a $D$ degree of freedom [$\chi^2$ distribution](https://en.wikipedia.org/wiki/Chi-squared_test):  
+  
+$$  
+1-2\cdot\Delta S_D= \sum_{i=1}^{D} (T_i^2) = \chi^2_D  
+$$  
+  
+This means we can interpret the suspiciousness as a P value by asking "what is the chance we would see this suspiciousness or worse" by pure chance, i.e.:  
+  
+$$  
+P\left(\Delta S_D\right)=1-\int_{1-2\cdot\Delta S_D}^{\infty}{\chi_D^2\left(\Delta s^\prime\right)}d\Delta s^\prime  
+$$  
+  
+Because of point **(1)** this intepretation applies _even when the contours are non gaussian_. This is a <u>general</u> rule for intepreting Bayesian suspiciousness in frequentist terms.    
   
   
 ---------  
