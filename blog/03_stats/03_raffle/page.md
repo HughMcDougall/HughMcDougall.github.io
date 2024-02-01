@@ -69,18 +69,13 @@ Bootstrapping, applied properly, is a nearly universal tool for getting a rough 
   
   
 ![png](output_7_0.png)  
-      
+  
 ---  
+## Part 3 - P Values & The KS Statistic  
   
-## Part 2: Normalizing  
+So far we've seen ways to properly visualize the draws for a given night, along with the "fudge factor" we have to allow for by virtue of coincidence, as well as ways we can combine the data from all nights to get a feel for large-scale patterns. This sort of visual inspection is valuable for identifying anything weird, but there's an important next question in actually interpreting this weirdness:  
   
-Bootstrapping lets us get a rough feel for how unusual our results are, but doesn't take us far down the path of understanding. Ratcheting the complexity up a tiny notch, a good next step is to _normalize_ our ticket draws. We know that each ticket is drawn between some high and low boundary, so we can replace the actual numbers with a measure of where the draws fall within that range:  
+> _What are the odds of an outcome this strange occurring?_  
   
-$$  
-r = \frac{draw- lower}{upper-lower}  
-$$  
-  
-This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities:   
-  
-![png](output_9_0.png)  
+With this question, we breach the threshold of actual numbers. To answer it, we need to make the leap to some denser statistics. Specifically, we need to introduce two new things: a **[test statistic](https://en.wikipedia.org/wiki/Test_statistic)** and the **[P value](https://en.wikipedia.org/wiki/P-value)**.  
   

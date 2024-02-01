@@ -59,24 +59,6 @@ Bootstrapping, applied properly, is a nearly universal tool for getting a rough 
 
 
 ![png](output_7_0.png)
-    
----
-
-## Part 2: Normalizing
-
-Bootstrapping lets us get a rough feel for how unusual our results are, but doesn't take us far down the path of understanding. Ratcheting the complexity up a tiny notch, a good next step is to _normalize_ our ticket draws. We know that each ticket is drawn between some high and low boundary, so we can replace the actual numbers with a measure of where the draws fall within that range:
-
-$$
-r = \frac{draw- lower}{upper-lower}
-$$
-
-This is basically squashing / stretching the draws from every night into a bracket from $0.0$ to $1.0$, allowing us to properly compare them to one another. The trick of normalizing opens up two possibilities: 
-
-![png](output_9_0.png)
-
-Each _individual_ night (blue lines, left) can look pretty far from uniform, with their CDF's spidering out all over the place. This doesn't tell us much more than our bootstrapping approach before: some nights are pretty uniform, others less so, but it does tell us that the ensemble of _all_ nights is not _biased_: The entire set of lines is centered on the straight line of the uniform distribution.
-
-We can also see that, with every draw from every night put together, things are _very_ close to uniform (Right). This tells us that the draws are (in aggregate over all 188 nights) pretty close to uniformly distributed. 
 
 ---
 ## Part 3 - P Values & The KS Statistic
