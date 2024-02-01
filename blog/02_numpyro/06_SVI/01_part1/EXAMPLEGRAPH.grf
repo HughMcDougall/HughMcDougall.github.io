@@ -1,0 +1,62 @@
+;This file was created by Graph (http://www.padowan.dk)
+;Do not change this file from other programs.
+[Graph]
+Version = 4.4.2.543
+MinVersion = 2.5
+OS = Windows NT 6.2 
+
+[Axes]
+xMin = -0.22
+xMax = 1.22
+xTickUnit = 0.1
+xGridUnit = 0.1
+xShowGrid = 1
+yMin = -0.33078449
+yMax = 3.63862935
+yTickUnit = 1
+yGridUnit = 1
+yShowGrid = 1
+yLabel = PDF
+AxesColor = clBlack
+GridColor = 0x00FF9999
+NumberFont = CMU Serif,10,clBlack,B
+LabelFont = CMU Serif,12,clBlack,B
+LegendFont = CMU Serif,8,clBlack,B
+ShowLegend = 1
+Radian = 1
+
+[Func1]
+FuncType = 0
+y = p(x)
+LegendText = True Posterior
+From = 0
+To = 1
+Color = clBlue
+Size = 4
+
+[Func2]
+FuncType = 0
+y = dnorm(x,mean,sqrt(var))
+LegendText = Approximate Gaussian
+Color = clMaroon
+Size = 4
+
+[Data]
+TextLabelCount = 0
+FuncCount = 2
+PointSeriesCount = 0
+ShadeCount = 0
+RelationCount = 0
+OleObjectCount = 0
+
+[CustomFunctions]
+f(x) = x^(A-1) * (1-x)^(B-1)
+A = 8
+B = 2
+Z = integrate(f(x),x,0,1)
+p(x) = f(x)/z
+N = A+B
+mean = A / N
+var = A*B / N^2 / (N+1)
+std = sqrt(var)
+

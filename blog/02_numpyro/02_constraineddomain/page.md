@@ -33,7 +33,7 @@ from chainconsumer import ChainConsumer
   
 ## The Constrained & Unconstrained Domain  
   
-In this section, we look at how a simple uniform distributed parameter, $x \sim U(2,2)$, is re-paramaterized by numpyro into a domain where the sharp discontinuities at the edges of this prior are removed. First, we need to make sure we have the `transform_fn` function, which is the engine for changing parameters from one domain to the other. I'll also define a numpyro model, keping the uniform distribution as its own separate python object as we need to feed it into our transformation later.  
+In this section, we look at how a simple uniform distributed parameter, $x \sim U(2,2)$, is re-parameterized by NumPyro into a domain where the sharp discontinuities at the edges of this prior are removed. First, we need to make sure we have the `transform_fn` function, which is the engine for changing parameters from one domain to the other. I'll also define a NumPyro model, keeping the uniform distribution as its own separate python object as we need to feed it into our transformation later.  
   
   
 ```python  
@@ -46,7 +46,7 @@ def model_test():
   
 Now the steps for transforming from the "constrained" domain, i.e. the "real" values of x, to the "unconstrained" domain. First, we generate a range of 'x' values that span the values allowed by the uniform distribution, $x \in [0,2]$, then we transform these in a two-step process:  
 1. First, we need to tell NumPyro what distributions we're working with in the dictionary `transforms`  
-2. Then we apply these transformations with `transform_fn`, specificying which values we're transforming with the second argument and that we're pulling from the unconstrained to the constrained domain with `invert=True`  
+2. Then we apply these transformations with `transform_fn`, specifying which values we're transforming with the second argument and that we're pulling from the unconstrained to the constrained domain with `invert=True`  
 This second step transforms the entire dictionary and returns as another dictionary with similar keys, and so we need to extract the specific key `'x'`. Notice that, if we had many variables, we could transform them all in one go by making a dictionary with all parameters / transformations at once.  
   
 By plotting the transformation, we can see that it does two things:  
@@ -76,17 +76,17 @@ plt.show()
       
   
   
-Converting the variables between the constrained and unconstrained domains is easy enough, as shown above, but feeding these directly into a likelihood function won't give us the right answer. Instead, we need to weight by the *derivative* of this transformation to recover the correct probability. If you're not familair with how probability distributions change with coordinate transformations, the key idea is that corresponding differential elements have the same amount of "power" in either coordinate system:  
+Converting the variables between the constrained and unconstrained domains is easy enough, as shown above, but feeding these directly into a likelihood function won't give us the right answer. Instead, we need to weight by the *derivative* of this transformation to recover the correct probability. If you're not familiar with how probability distributions change with coordinate transformations, the key idea is that corresponding differential elements have the same amount of "power" in either coordinate system:  
   
-\begin{equation}  
+$$  
     P(x_{con}) \cdot dx_{con} = P(x_{uncon}) \cdot dx_{uncon}  
-\end{equation}$$  
+$$  
   
 Such that the distribution transforms like:  
   
-\begin{equation}  
+$$  
     P(x_{con}) = P(x_{uncon}) \cdot \frac{dx_{uncon}}{dx_{con}}  
-\end{equation}$$  
+$$  
   
 Note that this equation is specific to the one dimensional case. In the more general sense, we multiply by the determinant of the Jacobian of the transformation. As a first pass, we'll get the derivative using crude finite differences:  
   
@@ -97,7 +97,7 @@ diff = (x_uncon[2:]-x_uncon[:-2]) / (x_con[2:]-x_con[:-2])
   
 Now we feed our unconstrained parameters into the likelihood function, which we access from the `potential_energy` utility function that NumPyro gives us. This potential energy returns the **negative log likelihood**. For our model `model_test()`, this looks something like:  
   
-$PE(x_{uncon}) = -ln \vert \mathcal{L(x_{uncon})}\vert=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`  
+$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`  
   
 Even though we have no model `args` or `kwargs`, these fields still have to be explicitly given as empty tuples like above. In a more complicated case with data, e.g. `model_with_data(X,Y,E)`, these would be fed into the `model_args` field.  
   
@@ -131,6 +131,13 @@ plt.ylabel("$\mathcal{L}(x) (Approx)$")
 plt.show()  
 ```  
   
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+  
   
   
       
@@ -138,9 +145,9 @@ plt.show()
       
   
   
-Looking above, we can see that the likelihood function plateaus at $\mathcal{L}\approx 0.5$ for most of the domain, and is constrained to $x \in [0,2]$, both of which are what we expect from our $x \sim U(0,2)$ distribution. The unusual behaviour at the edges of the domain is a result of our poor esimate of $\frac{dx_{uncon}}{dx_{con}}$ clashing with the extreme gradients of the transformation at these points.  
+Looking above, we can see that the likelihood function plateaus at $\mathcal{L}\approx 0.5$ for most of the domain, and is constrained to $x \in [0,2]$, both of which are what we expect from our $x \sim U(0,2)$ distribution. The unusual behaviour at the edges of the domain is a result of our poor estimate of $\frac{dx_{uncon}}{dx_{con}}$ clashing with the extreme gradients of the transformation at these points.  
   
-Fortunately, we can use JAX's native autodifferentiation to get an *analytically accurate* derivative function. First, re-define the transformation function to be a bit easier to read, and then apply jax's auto-diff to this, which is as easy as using `jax.grad(function)`:  
+Fortunately, we can use JAX's native auto-differentiation to get an *analytically accurate* derivative function. First, re-define the transformation function to be a bit easier to read, and then apply JAX's auto-diff to this, which is as easy as using `jax.grad(function)`:  
   
   
 ```python  
@@ -166,7 +173,7 @@ def l_uncon(x):
 l_uncon = jax.vmap(l_uncon)  
 ```  
   
-In the last line, the `l_uncon(x)` function has been `vmapped` by JAX, making it an efficienct vectorized function. Just like using JAX's `jax.jit(function)` decorator, we can only transform functions that are at the top level. Now, we can apply this function to an entire sequence of values without issue:  
+In the last line, the `l_uncon(x)` function has been `vmapped` by JAX, making it an efficient vectorized function. Just like using JAX's `jax.jit(function)` decorator, we can only transform functions that are at the top level. Now, we can apply this function to an entire sequence of values without issue:  
   
   
 ```python  
@@ -185,6 +192,9 @@ plt.ylabel("$\mathcal{L}(x)$")
 plt.show()  
 ```  
   
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
+  
   
   
       
@@ -200,7 +210,7 @@ In this section we tackle two problems:
 1. Firstly, how to get a NumPyro MCMC sampler to record information about the likelihood of the MCMC samples  
 2. Secondly, how to use the information about the constrained / unconstrained domain from the previous section to convert this information into a useful value  
   
-To keep things simple, we'll use a simple unimodal gaussian and uniform priors. In this example, we set up our NumPyro model slightly differently to normal: instead of using a the `numpyro.distributions.Normal` prior for $x$ and $y$, we'll instead use _uniform_ priors and use `numpyro.factor`, which lets as multiply our posterior distributio  by some arbitrary factor / function. Given our model is gaussian, the two approaches are equivalent (plus or minus a normalization constant) and we're only doing this here so that we have a readily evaluable probability function to test against down the track.  
+To keep things simple, we'll use a simple unimodal Gaussian and uniform priors. In this example, we set up our NumPyro model slightly differently to normal: instead of using a the `numpyro.distributions.Normal` prior for $x$ and $y$, we'll instead use _uniform_ priors and use `numpyro.factor`, which lets as multiply our posterior distribution  by some arbitrary factor / function. Given our model is Gaussian, the two approaches are equivalent (plus or minus a normalization constant) and we're only doing this here so that we have a readily evaluable probability function to test against down the track.  
   
   
 ```python  
@@ -233,7 +243,7 @@ def np_model():
   
 ### Generating MCMC-Like Chain  
   
-Now fire a standard MCMC run at this using NUTS. In a simple distribution like this, a single chain should be fine. Note that, when running the MCMC sampler, we instruct it to also log "`extra_fields`" like the potential energy etc. We can do this for **any value tracked by the sampler state**. e.g. we're using `NUTS`, a type of HMC, so we can instruct NumPyro to track any of the values listed in the [HMCstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.hmc.HMCState) class (e.g. `z_grad`: the grad vector or `i`, the itteration number)  
+Now fire a standard MCMC run at this using NUTS. In a simple distribution like this, a single chain should be fine. Note that, when running the MCMC sampler, we instruct it to also log "`extra_fields`" like the potential energy etc. We can do this for **any value tracked by the sampler state**. e.g. we're using `NUTS`, a type of HMC, so we can instruct NumPyro to track any of the values listed in the [HMCstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.hmc.HMCState) class (e.g. `z_grad`: the grad vector or `i`, the iteration number)  
   
   
 ```python  
@@ -252,15 +262,21 @@ MCMC_results = MCMC_sampler.get_samples()
 print("Sampling done")  
 ```  
   
+    sample: 100%|███████| 51000/51000 [00:11<00:00, 4402.70it/s, 3 steps of size 7.34e-01. acc. prob=0.94]  
+  
+  
+    Sampling done  
+  
+  
 In HMC, potential energy is proportional to $\chi^2$:  
   
-\begin{equation}  
-    U_x(x) = -ln \vert\mathcal{L_x(x)} \vert=\frac{-\chi^2}{2}  
-\end{equation}$$  
+$$  
+    U_x(x) = -ln\vert \mathcal{L_x(x)} \vert =\frac{-\chi^2}{2}  
+$$  
   
-NumPyro uses this terminology consistently across all of its samplers, e.g. the sampler adapative sampler ([SAstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.sa.SAState)) also refers to 'potential energy' despite not actually being formulated in kinetic terms. As an aside, the 'extra fields' tuple can sometimes play up if you don't have a comma after the last argument. E.g. `extra_fields=("potential_energy",)` will work, but `extra_fields=("potential_energy")` won't.   
+NumPyro uses this terminology consistently across all of its samplers, e.g. the sampler adaptive sampler ([SAstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.sa.SAState)) also refers to 'potential energy' despite not actually being formulated in kinetic terms. As an aside, the 'extra fields' tuple can sometimes play up if you don't have a comma after the last argument. E.g. `extra_fields=("potential_energy",)` will work, but `extra_fields=("potential_energy")` won't.   
   
-Now, plot these results in chainconsumer to confirm everything is working correctly. As expected, we see a bivariate gaussian with $\sigma_x=\sigma_y=1$  
+Now, plot these results in chainconsumer to confirm everything is working correctly. As expected, we see a bivariate Gaussian with $\sigma_x=\sigma_y=1$  
   
   
 ```python  
@@ -276,9 +292,9 @@ plt.show()
       
   
   
-Any extra info is stored in a dictionary accesible through `sampler.get_extra_fields()`. I'm also going to calculate the *true* likelihood of each point to demonstrate an issue with this approach.  
+Any extra info is stored in a dictionary accessible through `sampler.get_extra_fields()`. I'm also going to calculate the *true* likelihood of each point to demonstrate an issue with this approach.  
   
-When we plot the two against eachother, we see the proportionality is _almost_ right, but something is clearly going wrong.  
+When we plot the two against each other, we see the proportionality is _almost_ right, but something is clearly going wrong.  
   
   
 ```python  
@@ -341,7 +357,7 @@ def tform_diff_xy(x,y):
     return(out)  
 ```  
   
-Equipped with this, we can easily get the required scaling for each sample and then apply this factor to transform `potential energy` into a true `log_likelihood`.  Plotting the two against eachother, we can confirm that this new transformed value is the property that we're after:  
+Equipped with this, we can easily get the required scaling for each sample and then apply this factor to transform `potential energy` into a true `log_likelihood`.  Plotting the two against each other, we can confirm that this new transformed value is the property that we're after:  
   
   
 ```python  

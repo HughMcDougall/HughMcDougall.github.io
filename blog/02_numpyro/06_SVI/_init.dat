@@ -3,6 +3,7 @@ source:	./_SVIintro.md
 title:	Stochastic Variational Inference
 date:	12/9/23
 desc:	Stochastic variational inference
+header:	./_sviheader.md
 nav:	TRUE
 tree:	TRUE
-notebook:	_SVIintro.ipynb
+notebook:	_SVI-intro.ipynb

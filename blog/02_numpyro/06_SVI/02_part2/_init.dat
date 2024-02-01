@@ -1,5 +1,5 @@
 doc:	./page.md
-source:	./_SVI02.md
+source:	./_SVI-02.md
 title:	SVI Part 2
 date:	12/9/23
 desc:	Examples & Comparison with MCMC

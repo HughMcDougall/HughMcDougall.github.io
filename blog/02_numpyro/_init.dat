@@ -2,6 +2,7 @@ doc:	./blog_numpyrohome.md
 source:	./_blog_numpyrohome_src.md
 title:	Comfortably NumPyro
 date:	21/8/23
+header:	./_bloghome_header.md
 desc:	A guide to NumPyro to help demystify its more obscure features
 nav:	TRUE
 tree:	TRUE

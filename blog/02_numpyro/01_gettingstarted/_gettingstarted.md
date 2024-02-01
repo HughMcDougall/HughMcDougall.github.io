@@ -1,6 +1,6 @@
 # Getting Started
 
-This tutorial covers the bare minimum basics of working with NumPyro: how to install, run and how to apply use it to perform MCMC on a simple model. The central theme of this article is to keep things stripped down and simple for a user who is brand-new to NumPyro or bayesian modelling in general. If you're already a bit better equipped than this, you might consider Dan Foreman Mackey's [great tutorial](https://dfm.io/posts/intro-to-numpyro/) for applying NumPyro to astronomy, or head straight to the NumPyro documentation and its various [(broadly distributed) examples](https://num.pyro.ai/en/stable/).
+This tutorial covers the bare minimum basics of working with NumPyro: how to install, run and how to apply use it to perform MCMC on a simple model. The central theme of this article is to keep things stripped down and simple for a user who is brand-new to NumPyro or Bayesian modeling in general. If you're already a bit better equipped than this, you might consider Dan Foreman Mackey's [great tutorial](https://dfm.io/posts/intro-to-numpyro/) for applying NumPyro to astronomy, or head straight to the NumPyro documentation and its various [(broadly distributed) examples](https://num.pyro.ai/en/stable/).
 
 ## Installing NumPyro
 
@@ -11,7 +11,7 @@ If you're installing NumPyro for the first time with absolutely no prior knowled
 Assuming you're running with conda on linux or wsl, the first item on the to-do list is making an environment to install all of our NumPyro packages to:
 
 ```
-    conda create -n numpyroenv
+    conda create -n numpyroenv"
     conda install python
     conda install pip
 ```
@@ -63,15 +63,11 @@ import numpy as np
 import chainconsumer
 ```
 
-    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-      from .autonotebook import tqdm as notebook_tqdm
+Now the fun part: we'll use NumPy to hack together some data akin to the real world measurements you would apply NumPyro to. We'll both generate and fit according to a simple linear model:
 
-
-Now the fun part: we'll use NumPy to hack together some data akin to the real world measurments you would apply NumPyro to. We'll both generate and fit according to a simple linear model:
-
-\begin{equation}
+$$
     y(x) = m\cdot x + c
-\end{equation}
+$$
 
 In this example, we enjoy the luxury of already knowing the true underlying model *and* the true values its parameters (in this case, $m=2$ and $c=3.5$). We also choose a density and uncertainty of measurements to give a clear picture of the underlying model. The real world is rarely so friendly, and we have to bear in mind that any model is only an approximation of the messiness of reality. For an example on how to perform this, check the article on [Model Comparison & Tension](../tension/page.html).
 
@@ -87,7 +83,7 @@ c_true = 3.5
 # Data generation
 ebar, escatter = 1.5, 10 # Average & spread of error bar
 
-np.random.seed(123) # Fix the random seed so results are consitent across different examples
+np.random.seed(123) # Fix the random seed so results are consistent across different examples
 X = np.linspace(0,10,32)
 E = np.random.poisson(lam=escatter, size=len(X)) / escatter * ebar
 Y = m_true*X + c_true + E*np.random.normal(size=len(X)) # Linear rel /w random noise based on 'E'
@@ -140,12 +136,12 @@ Though written as a python function, `model(X,Y,E)` doesn't necessarily work lik
 *  The first two lines describe our prior knowledge about $m$ and $c$:
     *  The first argument, e.g. `"m"` is the "site name", the unique name that NumPyro will internally recognise this variable as and return its results as
     *  The python-like variable name `m` on the left hand side is only for using that variable within the function, like we do when we calculate `y_model`
-*  The 'plate' describes the way we sweep over the datapoints in $\sum_i(y_i-y_{model})$.
+*  The 'plate' describes the way we sweep over the data-points in $\sum_i(y_i-y_{model})$.
     *  Everything created or called inside the plate is implicitly vectorized where possible, e.g. calling `X` when calculating `y_model` implicitly means `X[i]`
     *  The sample `y` follows a normal distribution $y\sim~N(y_{model},E)$, representing our uncorrelated measurements, and the `obs=Y` means that this distribution is being compared to the measurement `Y[i]`
     *  The sample `y` doesn't have a name on the LHS because we don't use it to do any more calculations
 
-The `plate` object in NumPyro can be a little unintuitive because of the way it draws from vectors without stating so outright. To make things clearer, the following model would return exactly the same results, though not as cleanly:
+The `plate` object in NumPyro can be a little un-intuitive because of the way it draws from vectors without stating so outright. To make things clearer, the following model would return exactly the same results, though not as cleanly:
 
 
 ```python
@@ -165,7 +161,7 @@ def model(X,Y,E):
      
 
 
-If you have `graphviz` installed, (e.g. via `conda install -c conda-forge pygraphviz`), NumPyro can automatically render a [probabilistic graphical model](https://en.wikipedia.org/wiki/Graphical_model#Bayesian_network) to help visualize it and confirm that everything's set up properly. This is called with:
+If you have `graphviz` installed, (e.g. via `conda install -c conda-forge pygraphviz`), NumPyro can automatically render a [graph of the model](https://en.wikipedia.org/wiki/Graphical_model#Bayesian_network) to help visualize it and confirm that everything's set up properly. This is called with:
 
 
 ```python
@@ -194,10 +190,11 @@ sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
 sampler.run(jax.random.PRNGKey(1), X,Y,E)
 ```
 
-    sample: 100%|█████████| 5500/5500 [00:02<00:00, 2547.54it/s, 7 steps of size 2.95e-01. acc. prob=0.93]
+    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+    sample: 100%|█████████| 5500/5500 [00:02<00:00, 2688.19it/s, 7 steps of size 2.95e-01. acc. prob=0.93]
 
 
-When the `numpyro.infer.MCMC` object is created, we feed it a `numpyro.infer.NUTS` object, which in turn wraps around our probabalistic model. This argument determines what kind of MCMC sampler we use (in this case the No U-Turn Sampler (NUTS)). You can think of the `.infer.NUTS` sampler as being the actual machine for sampling parameter space, and the `.infer.MCMC` object as being a "handler" that controls it.  If you want to use a different sampler (e.g. the crude but less expensive [sample adaptive](https://num.pyro.ai/en/latest/mcmc.html#numpyro.infer.sa.SA) sampler), we can swap this first argument out. You can find a list of all [NumPyro's standard samplers](https://num.pyro.ai/en/latest/mcmc.html) in its documentation.
+When the `numpyro.infer.MCMC` object is created, we feed it a `numpyro.infer.NUTS` object, which in turn wraps around our probabilistic model. This argument determines what kind of MCMC sampler we use (in this case the No U-Turn Sampler (NUTS)). You can think of the `.infer.NUTS` sampler as being the actual machine for sampling parameter space, and the `.infer.MCMC` object as being a "handler" that controls it.  If you want to use a different sampler (e.g. the crude but less expensive [sample adaptive](https://num.pyro.ai/en/latest/mcmc.html#numpyro.infer.sa.SA) sampler), we can swap this first argument out. You can find a list of all [NumPyro's standard samplers](https://num.pyro.ai/en/latest/mcmc.html) in its documentation.
 
 Because MCMC is an inherently random process, we need to feed it a random seed to determine how its stochastic elements are generated. This takes the form of the `jax.random.PRNGKey(i)` argument in `sampler.run()`. You might notice that we also feed the data, `X,Y` and `E` into the sampler when running. This means that the _same MCMC object can be used for fitting multiple data sets_.
 

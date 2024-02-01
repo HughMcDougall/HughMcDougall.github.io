@@ -1,4 +1,4 @@
-Previous Entry: [The Constrained Domain](.\..\02_constraineddomain\page.html)	&nbsp;	 Next Entry: [Nested Sampling](.\..\04_nestedsampling\page.html)  
+Previous Entry: [The Constrained Domain](.\..\02_constraineddomain\page.html)	&nbsp;	 Next Entry: [Stochastic Variational Inference](.\..\06_SVI\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
@@ -9,17 +9,17 @@ Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blo
   
   
 # Multimodality & Different Samplers  
-When using NumPyro, you'll find HMC to be a great general purpose tool in most cases. It self-tunes to adapt to correlated or non-gaussian geometry, has good scaling with dimensionality and converges quickly thanks to its rapid burn-in. Aside from cost concerns, HMC falls short in one main area: it almost completely falls over when pitched against a multimodal distribution. Here, I demonstrate the sort of issues HMC faces when the posterior isn't smooth and unimodal, and use this as a lense to introduce and examine a few of NumPyro's other samplers.  
+When using NumPyro, you'll find HMC to be a great general purpose tool in most cases. It self-tunes to adapt to correlated or non-Gaussian geometry, has good scaling with dimensionality and converges quickly thanks to its rapid burn-in. Aside from cost concerns, HMC falls short in one main area: it almost completely falls over when pitched against a multimodal distribution. Here, I demonstrate the sort of issues HMC faces when the posterior isn't smooth and unimodal, and use this as a lens to introduce and examine a few of NumPyro's other samplers.  
   
 **Index**    
 - [Simple Multimodal Distributions](#simpledist)    
   - [Hamiltonian Monte Carlo](#HMC01)  
-  - [Barker Metropolist-Hastings](#BMH01)  
+  - [Barker Metropolis-Hastings](#BMH01)  
   - [Sample Adaptive](#SAC01)  
   - [Nested Sampling](#NS01)  
 - [Rough / Aliased Posteriors](#roughdist)    
   - [Hamiltonian Monte Carlo](#HMC02)  
-  - [Barker Metropolist-Hastings & Sample Adaptive](#BMH02)  
+  - [Barker Metropolis-Hastings & Sample Adaptive](#BMH02)  
   - [Nested Sampling](#NS02)  
   
 -----  
@@ -35,10 +35,13 @@ from chainconsumer import ChainConsumer
 import matplotlib.pylab as plt  
 ```  
   
+    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html  
+      from .autonotebook import tqdm as notebook_tqdm  
+  
   
 ## Simple Multimodal Distributions <a id='simpledist'></a>  
   
-In this section, we'll examine a simple case of multimodality, a 2D distribution with unequal, well-spaced modes with a posterior that is in every other way "well behaved", i.e. the modes are gaussian and the space between them smooth. Our 2D posterior consist of four gaussian 'islands' of probability, with one of them of a lower height / peak likelihood. Rather than go through the hassle of making an actual gaussian mixture model, I've just hacked this together with a JAX-friendly potential function run through `numpyro.factor`, which lets us add an arbitrary term to $ln \lvert \mathcal{L} \rvert$:  
+In this section, we'll examine a simple case of multimodality, a 2D distribution with unequal, well-spaced modes with a posterior that is in every other way "well behaved", i.e. the modes are Gaussian and the space between them smooth. Our 2D posterior consist of four Gaussian 'islands' of probability, with one of them of a lower height / peak likelihood. Rather than go through the hassle of making an actual Gaussian mixture model, I've just hacked this together with a JAX-friendly potential function run through `numpyro.factor`, which lets us add an arbitrary term to $ln \lvert \mathcal{L} \rvert$:  
   
   
 ```python  
@@ -97,6 +100,12 @@ plt.show()
 ![png](output_3_0.png)  
       
   
+  
+    WARNING:chainconsumer:Parameter x in chain Chain 0 is not constrained  
+    WARNING:chainconsumer:Parameter y in chain Chain 0 is not constrained  
+  
+  
+  
       
 ![png](output_3_2.png)  
       
@@ -104,10 +113,10 @@ plt.show()
   
 Now, we can test a few of the different samplers available in NumPyro to see how they perform against this multimodal distribution. Something we need to consider is that, unlike unimodal distributions, we need to run many MCMC chains to build up an image of the distribution, for reasons that will become clear in a moment. Every chain needs to end up in one of the modes. If there are $n_{modes}$ modes, then the chance of landing in any one island is $p=1/n_{modes}$. From this, we can estimate how many chains end up in each mode. For $N$ total chains:  
   
-\begin{equation}  
+$$  
 N_{i} = pN \pm \sqrt{Np(1-p)} \; \; \; \; \;  
 \frac{N_{i}}{N} = p \pm \frac{1}{\sqrt{N}} \frac{\sqrt{(p (1-p)}}{p}  
-\end{equation}$$  
+$$  
   
 If we have $n_{modes}=4$, i.e. $p=\frac{1}{m}$, and want to measure this smallest mode accurately to within  $\Delta \frac{N_{i}}{N} < 10 \%$, we need $\approx 300$ chains.   
   
@@ -116,13 +125,13 @@ If we have $n_{modes}=4$, i.e. $p=\frac{1}{m}$, and want to measure this smalles
 Hamiltonian Monte-Carlo (HMC) is the go-to tool for MCMC in NumPyro, an efficient sampler with good high-dimensional scaling. NumPyro works by "rolling a ball" around a landscape with potential wells at high likelihood, randomizing the direction and kinetic energy of the ball at random intervals. This makes it great in problems with high dimensions and or complicated posteriors, but means that it works poorly when there are multiple modes, as each individual chain can't transit between them and instead becomes pinned at local optima. The closest thing to a valid approach is to just throw many (hundreds) of chains at the board and hope they map the modes properly. As we'll see in a moment, even this is not a proper solution.  
   
 **How it Works**    
-Like the name suggests, "Hamiltonian" Monte-Carlo invokes Hamiltonian mechanics, modelling the path of the sampler as a kinematic object rolling about the geometry of the posterior. HMC constructs a landscape of "potential energy" $U(\vec{z})$, with high energy at low likelihood and vice versa, and defines a "momentum" $\vec{p}$ related to the speed of the sampler in $z$-space. This forms a full Hamiltonian:  
+Like the name suggests, "Hamiltonian" Monte-Carlo invokes Hamiltonian mechanics, modeling the path of the sampler as a kinematic object rolling about the geometry of the posterior. HMC constructs a landscape of "potential energy" $U(\vec{z})$, with high energy at low likelihood and vice versa, and defines a "momentum" $\vec{p}$ related to the speed of the sampler in $z$-space. This forms a full Hamiltonian:  
   
 $$  
 H(\vec{z}, \vec{p}) = KE(\vec{p}) + PE(\vec{z}) = \frac{\vec{p} M^{-1} \vec{p}}{2} -\frac{ln \lvert \pi(\vec{z}) \mathcal{L}(\vec{z}) \rvert}{2}  
 $$  
   
-Notice that the potential energy is something similar to the $\chi^2$ term. The "mass matrix" $M$ improves performance by accounting for correlation and differences in scale and between different variables, but can be removed / set to an identity matrix without fundamentally breaking the algorithm. This hamiltonian is used to evolve the  position / momentum according to hamiltonian mechanics, made possible by JAX's auto-diff functionality:  
+Notice that the potential energy is something similar to the $\chi^2$ term. The "mass matrix" $M$ improves performance by accounting for correlation and differences in scale and between different variables, but can be removed / set to an identity matrix without fundamentally breaking the algorithm. This Hamiltonian is used to evolve the  position / momentum according to Hamiltonian mechanics, made possible by JAX's auto-diff functionality:  
   
 $$  
 \frac{d z_i}{dt} = \frac{\partial H}{\partial p_i}, \;\;\;  \frac{d p_i}{dt} = - \frac{\partial H}{\partial z_i}  
@@ -151,8 +160,11 @@ print("Sampling Done")
 output_HMC=sampler.get_samples()  
 ```  
   
+    Starting Sampling...  
+    Sampling Done  
   
-Though NUTS does a good job of locating each of the modes with its efficient burn-in, it <i>doesn't</i> succesfully identify their heights. Because the modes are so fully separated, chains stick to whichever mode they first encounter and over-sampling low likelihood modes. Thanks to the symmetry of our simple posterior, chains have a roughly equal chance of ending up in each mode, and so each mode has roughly the same height / number of samples, despite one being lower than the others in the true posterior:  
+  
+Though NUTS does a good job of locating each of the modes with its efficient burn-in, it <i>doesn't</i> successfully identify their heights. Because the modes are so fully separated, chains stick to whichever mode they first encounter and over-sampling low likelihood modes. Thanks to the symmetry of our simple posterior, chains have a roughly equal chance of ending up in each mode, and so each mode has roughly the same height / number of samples, despite one being lower than the others in the true posterior:  
   
   
 ```python  
@@ -190,6 +202,11 @@ def do_plot(results, name, do_paths = True, do_contour = True, color = 'blue', s
 do_plot(output_HMC, "NUTS")  
 ```  
   
+    WARNING:chainconsumer:Parameter x in chain NUTS is not constrained  
+    WARNING:chainconsumer:Parameter y in chain NUTS is not constrained  
+  
+  
+  
       
 ![png](output_8_1.png)  
       
@@ -223,8 +240,8 @@ HMC and NUTS use of fancy gradient-based algorithms make them the best choice fo
 An alternative to HMC that still leverages JAX's autodiff is Barker Metropolis-Hastings (BMH). This method works by using a normal Metropolis Hastings-type proposal, but uses the gradient to skew and offset the distribution such that it is weighted to travel "uphill" more efficiently. BMH doesn't scale as well as HMC (its efficacy decays with $d^{-\frac{1}{3}}$ rather than HMC's $d^{-\frac{1}{4}}$), but the more stochastic nature makes it better at escaping small local optima.  
   
 **How it Works**    
-BMH follows a variant of the normal metropolis hastings algorithm, but using a correction factor $p(z)$ that skews the proposal towards higher likelihoods.  
-- When at postion $z$, calculate the value $\mathcal{L}(z)$ and gradient $\nabla \mathcal{L}(z)$ of the likelihood function  
+BMH follows a variant of the normal Metropolis Hastings algorithm, but using a correction factor $p(z)$ that skews the proposal towards higher likelihoods.  
+- When at position $z$, calculate the value $\mathcal{L}(z)$ and gradient $\nabla \mathcal{L}(z)$ of the likelihood function  
 - Generate an incremental step, $\Delta z$ from a typical MH proposal $Q(\Delta z)$, e.g. from a normal distribution  
 - Calculate the gradient correction factor $p(z,\Delta z) = (1+\text{exp}(\Delta z \cdot \nabla \mathcal{L}))^{-1}$  
 - Make the update $z \rightarrow z + \Delta z$ with probability $p(z,\Delta z)$, or $z \rightarrow z - \Delta z$ with probability $1 - p(z,\Delta z)$  
@@ -253,14 +270,22 @@ print("Sampling Done")
 output_BMH =sampler.get_samples()  
 ```  
   
+    Starting Sampling...  
+    Sampling Done  
+  
+  
 Overall, BMH has little to distinguish its results from HMC in most cases. Because it uses gradients in a more stochastic sense than HMC, its burn-in isn't quite as efficient, with our toy example here needing $\approx 300$ burn-in steps per chain to HMC's $\approx 200$. Because it shares HMC's chain-by-chain gradient based sampling, where each proposal only "knows" about its local environment, BMH falls victim to the same 'evening out' of the modes in multimodal distributions.  
   
-Note that BMH still uses a "mass mastrix" to estimate the covariance of the distribution for more efficient proposals, using the same naming convention as HMC even in the absence of the phyiscal analogue.  
+Note that BMH still uses a "mass matrix" to estimate the covariance of the distribution for more efficient proposals, using the same naming convention as HMC even in the absence of the physical analogue.  
   
   
 ```python  
 do_plot(output_BMH, "BMH", color = 'orange')  
 ```  
+  
+    WARNING:chainconsumer:Parameter x in chain BMH is not constrained  
+    WARNING:chainconsumer:Parameter y in chain BMH is not constrained  
+  
   
   
       
@@ -293,14 +318,14 @@ do_plot(output_BMH, "BMH", color = 'orange')
 Though NUTS and BMH achieve their good performance from JAX's automatic differentiation, there are cases where we might want to use a simpler 'gradient free' method. To this end, NumPyro offers the Sample Adaptive (SA) sampler, a cheaper and less complicated sampling algorithm. Though SA's simpler approach is much less efficient and scales worse in high dimensions, it is markedly cheaper in each evaluation, and has less 'moving parts' that can fail in edge cases.  
   
 **How it Works**    
-The [Sample-Adaptive Sampler](https://proceedings.neurips.cc/paper_files/paper/2019/file/2cfa8f9e50e0f510ede9d12338a5f564-Paper.pdf) operates by tracking an ensemble of points in parameter space and approximating them as following a gaussian bubble. In this way, it's similar to the classic metropolis hastings algorithm, but wih a self-tuning proposal distribution.    
+The [Sample-Adaptive Sampler](https://proceedings.neurips.cc/paper_files/paper/2019/file/2cfa8f9e50e0f510ede9d12338a5f564-Paper.pdf) operates by tracking an ensemble of points in parameter space and approximating them as following a Gaussian bubble. In this way, it's similar to the classic Metropolis Hastings algorithm, but wih a self-tuning proposal distribution.    
   
-The procedure is to, at each itteration:  
-- Define a multivariate gaussian, $g(\theta)$, based on the mean and covaraince of the current ensemble of $N$ samples  
+The procedure is to, at each iteration:  
+- Define a multivariate Gaussian, $g(\theta)$, based on the mean and covariance of the current ensemble of $N$ samples  
 - Draw a new sample from this distribution and calculate its likelihood, $\mathcal{L}(\theta_{N+1})$  
 - For each sample $\theta_{i}$ in the ensemble (including the new point, $i \in [1,N+1]$):  
   - Replace that sample $\theta_{i}$ with the new proposal sample $\theta_{N+1}$  
-    - Re-calculate a multivariate gaussian based on the mean and covariance of this ensemble, $g_{i}(\theta)$  
+    - Re-calculate a multivariate Gaussian based on the mean and covariance of this ensemble, $g_{i}(\theta)$  
     - Calculate $\lambda_i = g_{i}(\theta_i) / \mathcal{L}(\theta_i)$  
 - Randomly select one of these sub-ensembles to proceed with, using probability proportional to $\lambda_i$   
   
@@ -320,7 +345,11 @@ print("Sampling Done")
 output_SA=sampler.get_samples()  
 ```  
   
-Unlike NUTS, in which each chain sticks to the first mode it finds, SA's less sophisticated pathfinding lets is hop between islands. For the same number of chains and samples, SA does a better job of recovering the true distribution, but at the cost of being much less efficient and requiring a _significantly_ longer burn-in time. In this example I've used a burn-in of $\approx 1000$ steps, 10 times more than HMC.  
+    Starting Sampling...  
+    Sampling Done  
+  
+  
+Unlike NUTS, in which each chain sticks to the first mode it finds, SA's less sophisticated path-finding lets is hop between islands. For the same number of chains and samples, SA does a better job of recovering the true distribution, but at the cost of being much less efficient and requiring a _significantly_ longer burn-in time. In this example I've used a burn-in of $\approx 1000$ steps, 10 times more than HMC.  
   
 Even with this long burn-in time, SA has not fully converged: the contours it produces are too wide, and we can see from their paths that some of the chains need more time to close in on the 'islands'. This is on top of the proposal distribution "stretching across" multiple modes, meaning a large number of samples are proposed _between_ the modes, giving a terrible acceptance ratio in these cases.  
   
@@ -330,6 +359,10 @@ If given enough time (another order of magnitude), SA does, eventually, converge
 ```python  
 do_plot(output_SA, "SA", color='yellow', do_paths = True)  
 ```  
+  
+    WARNING:chainconsumer:Parameter x in chain SA is not constrained  
+    WARNING:chainconsumer:Parameter y in chain SA is not constrained  
+  
   
   
       
@@ -346,7 +379,7 @@ do_plot(output_SA, "SA", color='yellow', do_paths = True)
 **Pros & cons**    
   
 <ins>The Good</ins>  
-- Low cost per itteration: don't need to evaluate gradients  
+- Low cost per iteration: don't need to evaluate gradients  
 - Ensemble based sampling means that samples can jump between modes, helping to deal with multimodality  
 - Metropolis-Hastings proposals allow escape from local optima  
 - One evaluation per sample, known time-cost of running a chain  
@@ -363,15 +396,15 @@ So far, we've seen that none of NumPyro's native MCMC samplers work particularly
 Fortunately, we have another tool at our disposal that is purpose built for multimodal distributions: [Nested Sampling](https://en.wikipedia.org/wiki/Nested_sampling_algorithm) (NS). In the strictest sense, NS is an _integrator_ rather than a true MCMC method, but its results can be easily weighted into a MCMC-like chain. However, because it takes many samples in the low probability regions of parameter space to properly map where the likelihood _isn't_  
 it tends to produce "rougher" contours for the same number of samples.  
   
-I have a more detailed writeup of the interface / mechanisms of NS in NumPyro over [here](#), but the central idea behind NS is:  
+I have a more detailed write-up of the interface / mechanisms of NS in NumPyro over [here](#), but the central idea behind NS is:  
 1. Generate a set of $N$ "Live Points", distributed evenly across the prior  
 2. Remove the first point and log it as a sample  
 3. Find another point drawn _uniformly_ from the regions of parameter space at _higher likelihood_ than this dead point  
 4. Repeat the last two steps until the ensemble has converged to a small volume  
   
-The idea here is that removing the $N^{th}$ point in your "Live Points" will shrink the volume subtended by your ensembled by a factor of $\approx 1-1/N$. E.g. if we have $100$ live points and remove the worst one, the volume should contract by about $1 \%$. Because we know the likelihood of each dead point and have this estimate of the volume at at similar likelihoods, we can re-weight our chain of dead points to get an MCMC-like output.   
+The idea here is that removing the $N^{th}$ point in your "Live Points" will shrink the volume subtended by your ensemble by a factor of $\approx 1-1/N$. E.g. if we have $100$ live points and remove the worst one, the volume should contract by about $1 \%$. Because we know the likelihood of each dead point and have this estimate of the volume at at similar likelihoods, we can re-weight our chain of dead points to get an MCMC-like output.   
   
-I've emphasized some points in step $3.$ because this is a deceptively complicated thing to do efficiently: going uphill locally is easy, but going anywhere uphill with equal unbiased probability is very hard. Various NS implementations rely on mixed of slice sampling or clever clustering algorithms to acomplish this, and NumPyro has an interface to [JAXNS](https://github.com/Joshuaalbert/jaxns) in its `numpyro.contrib` module, a JAX-based nested sampling algorithm that we can use out of the box.  
+I've emphasized some points in step $3.$ because this is a deceptively complicated thing to do efficiently: going uphill locally is easy, but going anywhere uphill with equal unbiased probability is very hard. Various NS implementations rely on mixed of slice sampling or clever clustering algorithms to accomplish this, and NumPyro has an interface to [JAXNS](https://github.com/Joshuaalbert/jaxns) in its `numpyro.contrib` module, a JAX-based nested sampling algorithm that we can use out of the box.  
   
 As NS isn't an MCMC method, we can't perfectly map tuning parameters like "burn-in" or "number of chains" onto it. Instead, for the sake of fairness, we can set it to have the same number of _total_ samples across the entire run:  
   
@@ -386,14 +419,21 @@ NS.run(jax.random.PRNGKey(1))
 print("Sampling Done")  
 ```  
   
+    Starting Sampling  
+    Sampling Done  
   
-Right away, we can see that nested sampling has cleanly recovered both the multimodality and the relative heights of the modes. To be fair, JAXN's clustering algorithm is specifically built for ellipsoid contours like these gaussian modes, and so we have handed it an easy victory. To be less fair, we can acomplish similarly good results in less evalautions than we've used here by tweaking `nlive`. Nested sampling's slice sampling makes it a poor "general purpose" tool compared against NUTS or Barker-MH, but not so inefficient as to be a speciality tool for _only_ multimodal distributions.  
+  
+Right away, we can see that nested sampling has cleanly recovered both the multimodality and the relative heights of the modes. To be fair, JAXN's clustering algorithm is specifically built for ellipsoid contours like these Gaussian modes, and so we have handed it an easy victory. To be less fair, we can accomplish similarly good results in less evaluations than we've used here by tweaking `nlive`. Nested sampling's slice sampling makes it a poor "general purpose" tool compared against NUTS or Barker-MH, but not so inefficient as to be a specialty tool for _only_ multimodal distributions.  
   
   
 ```python  
 output_NS = NS.get_samples(jax.random.PRNGKey(1), num_samples = nsamples*nchains)  
 do_plot(output_NS, name = "NS", do_paths=False, color = 'purple')  
 ```  
+  
+    WARNING:chainconsumer:Parameter x in chain NS is not constrained  
+    WARNING:chainconsumer:Parameter y in chain NS is not constrained  
+  
   
   
       
@@ -489,6 +529,9 @@ print("Sampling Done")
 output_HMC_rough=sampler.get_samples()  
 ```  
   
+    Starting Sampling...  
+    Sampling Done  
+  
   
 We see that it fails to converge, especially along the $x$ axis where the "noise" is worse. The chains cannot navigate past the 'walls' of noise in any reasonable amount of burn-in time, and so we get a muddy mess contaminated by chains that are stuck in "valleys" of local optima.  
   
@@ -496,6 +539,10 @@ We see that it fails to converge, especially along the $x$ axis where the "noise
 ```python  
 do_plot(output_HMC_rough, "HMC Rough", color = 'blue')  
 ```  
+  
+    WARNING:chainconsumer:Parameter x in chain HMC Rough is not constrained  
+    WARNING:chainconsumer:Parameter y in chain HMC Rough is not constrained  
+  
   
   
       
@@ -509,12 +556,12 @@ do_plot(output_HMC_rough, "HMC Rough", color = 'blue')
       
   
   
-This "noise" might seem like a contrived problem, but it's surprisingly common in any case where a parameter lives in the same "domain" as discretely sampled data. For example, fitting a gaussian density to spatially binned data, inferring the delay between two time-series' and spectral decomposition all have similar versions of this "aliasing" problem, even (and sometimes especially) when their data is good.   
+This "noise" might seem like a contrived problem, but it's surprisingly common in any case where a parameter lives in the same "domain" as discretely sampled data. For example, fitting a Gaussian density to spatially binned data, inferring the delay between two time-series' and spectral decomposition all have similar versions of this "aliasing" problem, even (and sometimes especially) when their data is good.   
   
 ### Barker Metropolis-Hastings & Sample Adaptive  
 HMC falls flat on its face in "aliased" problems, but how do its non kinematic cousins Barker-MH and Sample Adaptive fair?  
   
-Testing BMH first, we see that it does slightly better than HMC: it's Metropolis-Hastings style "jumping" means that it can "tunnel-through" the potential walls to navigate a bit easier. The result is more chains convering on the "true" modes and less stuck in flat-space, though with the underlying issues of multimodality still rearing their head.  
+Testing BMH first, we see that it does slightly better than HMC: it's Metropolis-Hastings style "jumping" means that it can "tunnel-through" the potential walls to navigate a bit easier. The result is more chains converging on the "true" modes and less stuck in flat-space, though with the underlying issues of multimodality still rearing their head.  
   
   
 ```python  
@@ -534,6 +581,16 @@ output_BMH_rough=sampler.get_samples()
 do_plot(output_BMH_rough, "BMH Rough", color = 'orange')  
 ```  
   
+    Starting Sampling...  
+  
+  
+    WARNING:chainconsumer:Parameter x in chain BMH Rough is not constrained  
+    WARNING:chainconsumer:Parameter y in chain BMH Rough is not constrained  
+  
+  
+    Sampling Done  
+  
+  
   
       
 ![png](output_36_3.png)  
@@ -546,7 +603,7 @@ do_plot(output_BMH_rough, "BMH Rough", color = 'orange')
       
   
   
-Sample adaptive, which is _entirely_ gradient free, fairs a little better. Though it still has trouble crossing the flat regions, as evidenced by many of its samples still being far from the "islands" of likelihood, its crude covariance based gaussian sampling actually renders it far less susceptible to the noise. SA gets its strength not from cleverly navigating each individual chain, but by combining information from the entire ensemble. Even if one chain is stuck in the mud, the ensemble at large still has ways to progress.  
+Sample adaptive, which is _entirely_ gradient free, fairs a little better. Though it still has trouble crossing the flat regions, as evidenced by many of its samples still being far from the "islands" of likelihood, its crude covariance based Gaussian sampling actually renders it far less susceptible to the noise. SA gets its strength not from cleverly navigating each individual chain, but by combining information from the entire ensemble. Even if one chain is stuck in the mud, the ensemble at large still has ways to progress.  
   
 In this particular realization, SA has actually done a decent job of handling the multi-modality by sheer chance. As when the noise was absent, SA would _eventually_ converge to the true distribution by a sheer volume samples overwhelming its slow mixing, but at that point we have to ask if a crude grid-search would be better.  
   
@@ -567,6 +624,16 @@ output_SA_rough=sampler.get_samples()
 do_plot(output_SA_rough, "SA Rough", color = 'yellow')  
 ```  
   
+    Starting Sampling...  
+  
+  
+    WARNING:chainconsumer:Parameter x in chain SA Rough is not constrained  
+    WARNING:chainconsumer:Parameter y in chain SA Rough is not constrained  
+  
+  
+    Sampling Done  
+  
+  
   
       
 ![png](output_38_3.png)  
@@ -582,7 +649,7 @@ do_plot(output_SA_rough, "SA Rough", color = 'yellow')
 ### Nested Sampling  
 Fortunately, we nested sampling performs much better in  these cases. Much like SA, it navigates by combining information about the entire ensemble of samples rather than just local information; once a few live points congregate at the islands of high likelihood, NS is unaffected by the noise.  
   
-However, NS isn't completely immune to the aliasing noise: in this example I've had to _triple_ the number of live points compared to the noise-free case to get good results and run the entire chain much longer for it to converge. Even with this change, NS is still producing peaks that are aritifically broad. Speaking generally, you can handle _most_ problems by throwing enough live points at it, but you should keep in mind that NS isn't a silver bullet for all multimodal problems.  
+However, NS isn't completely immune to the aliasing noise: in this example I've had to _triple_ the number of live points compared to the noise-free case to get good results and run the entire chain much longer for it to converge. Even with this change, NS is still producing peaks that are artificially broad. Speaking generally, you can handle _most_ problems by throwing enough live points at it, but you should keep in mind that NS isn't a silver bullet for all multimodal problems.  
   
   
 ```python  
@@ -599,6 +666,19 @@ print("Sampling Done")
 output_NS_rough = NS.get_samples(jax.random.PRNGKey(1), num_samples = nsamples*nchains)  
 do_plot(output_NS_rough, name = "NS", do_paths=False, color = 'purple')  
 ```  
+  
+    Starting Sampling  
+  
+  
+    WARNING:chainconsumer:Parameter x in chain NS is not constrained  
+  
+  
+    Sampling Done  
+  
+  
+    WARNING:chainconsumer:Parameter y in chain NS is not constrained  
+  
+  
   
       
 ![png](output_40_4.png)  
