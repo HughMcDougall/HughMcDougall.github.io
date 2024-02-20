@@ -22,7 +22,10 @@ replacements = [
 ignored_lines = ["No GPU/TPU found, falling back to CPU",
                 "INFO:matplotlib.mathtext:Substituting symbol",
                  "Unable to initialize backend",
-                 "IProgress not found"]
+                 "IProgress not found",
+                 "WARNING:chainconsumer",
+                 "invalid value encountered",
+                 "is not constrained"]
                                
 #================================================================================================
 

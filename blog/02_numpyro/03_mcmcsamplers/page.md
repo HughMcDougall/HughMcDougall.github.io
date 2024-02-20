@@ -100,8 +100,6 @@ plt.show()
       
   
   
-    WARNING:chainconsumer:Parameter x in chain Chain 0 is not constrained  
-    WARNING:chainconsumer:Parameter y in chain Chain 0 is not constrained  
   
   
   
@@ -201,8 +199,6 @@ def do_plot(results, name, do_paths = True, do_contour = True, color = 'blue', s
 do_plot(output_HMC, "NUTS")  
 ```  
   
-    WARNING:chainconsumer:Parameter x in chain NUTS is not constrained  
-    WARNING:chainconsumer:Parameter y in chain NUTS is not constrained  
   
   
   
@@ -282,8 +278,6 @@ Note that BMH still uses a "mass matrix" to estimate the covariance of the distr
 do_plot(output_BMH, "BMH", color = 'orange')  
 ```  
   
-    WARNING:chainconsumer:Parameter x in chain BMH is not constrained  
-    WARNING:chainconsumer:Parameter y in chain BMH is not constrained  
   
   
   
@@ -359,8 +353,6 @@ If given enough time (another order of magnitude), SA does, eventually, converge
 do_plot(output_SA, "SA", color='yellow', do_paths = True)  
 ```  
   
-    WARNING:chainconsumer:Parameter x in chain SA is not constrained  
-    WARNING:chainconsumer:Parameter y in chain SA is not constrained  
   
   
   
@@ -430,8 +422,6 @@ output_NS = NS.get_samples(jax.random.PRNGKey(1), num_samples = nsamples*nchains
 do_plot(output_NS, name = "NS", do_paths=False, color = 'purple')  
 ```  
   
-    WARNING:chainconsumer:Parameter x in chain NS is not constrained  
-    WARNING:chainconsumer:Parameter y in chain NS is not constrained  
   
   
   
@@ -539,8 +529,6 @@ We see that it fails to converge, especially along the $x$ axis where the "noise
 do_plot(output_HMC_rough, "HMC Rough", color = 'blue')  
 ```  
   
-    WARNING:chainconsumer:Parameter x in chain HMC Rough is not constrained  
-    WARNING:chainconsumer:Parameter y in chain HMC Rough is not constrained  
   
   
   
@@ -583,8 +571,6 @@ do_plot(output_BMH_rough, "BMH Rough", color = 'orange')
     Starting Sampling...  
   
   
-    WARNING:chainconsumer:Parameter x in chain BMH Rough is not constrained  
-    WARNING:chainconsumer:Parameter y in chain BMH Rough is not constrained  
   
   
     Sampling Done  
@@ -626,8 +612,6 @@ do_plot(output_SA_rough, "SA Rough", color = 'yellow')
     Starting Sampling...  
   
   
-    WARNING:chainconsumer:Parameter x in chain SA Rough is not constrained  
-    WARNING:chainconsumer:Parameter y in chain SA Rough is not constrained  
   
   
     Sampling Done  
@@ -669,13 +653,11 @@ do_plot(output_NS_rough, name = "NS", do_paths=False, color = 'purple')
     Starting Sampling  
   
   
-    WARNING:chainconsumer:Parameter x in chain NS is not constrained  
   
   
     Sampling Done  
   
   
-    WARNING:chainconsumer:Parameter y in chain NS is not constrained  
   
   
   
