@@ -6,7 +6,7 @@ Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return t
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [Data Tension Examples](.\02_suspiciousness\./page.html) - _An example of data tension_  
-* [Is the Raffle Rigged? Practical stats for a toy problem](.\03_raffle\./page.html) - _Is the Raffle Rigged? Practical stats for a toy problem_  
+* [Is the Raffle Rigged?](.\03_raffle\./page.html) - _Practical stats for a toy problem_  
   
 ---------  
   

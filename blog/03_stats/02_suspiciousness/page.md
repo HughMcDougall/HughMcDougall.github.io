@@ -1,4 +1,4 @@
-Next Entry: [Is the Raffle Rigged? Practical stats for a toy problem](.\..\03_raffle\page.html)  
+Next Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
@@ -29,7 +29,7 @@ This a workable approach when our are simple one dimensional Gaussians, but what
   
 <p style="text-align: center; font-family: arial;width: 600px; margin:0 auto;" ><b>Diagram showing how tension in measurements of the hubble parameter <a href="https://arxiv.org/pdf/2105.05208.pdf">Perivolaropoulos & Skara 2022</a></b></p></p>  
   
-In part one of this post, I introduce the unfamiliar reader to two of the more common tools of Bayesian "goodness of fit": _evidence_ and _information_ (also sometimes called entropy or the [Kullback-Leiber divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)", and demonstrate the shortfalls these have in measuring statistical tension. I then introduce Bayesian suspiciousness, and show how it dodges the pitfalls of its better known cousins. In part 2, I derive all three tools for a simple 1D Gaussian case to help offer an intuitive "feel" for what they represent. I extend this to the general multivariate case, and offer an interpretation of suspiciousness in P-value terms as an olive branch to the frequentists of the world.  
+In part one of this post, we cover two of the more common tools of Bayesian "goodness of fit": _evidence_ and _information_ (also sometimes called entropy or the [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)", and demonstrate the shortfalls these have in measuring statistical tension. We then move on to Bayesian suspiciousness (introduced by [Lemos et al](https://arxiv.org/abs/1910.07820)), and show how it dodges the pitfalls of its better known cousins. In part 2 we cover derivations for all three tools in the case of  a simple 1D Gaussian to help offer an intuitive "feel" for what they represent. In this part, we also extend this to the general multivariate case, and offer an interpretation of suspiciousness in P-value terms as an olive branch to the frequentists of the world.  
   
 **Index**  
 - [Part 1: A Gentle Introduction to Suspiciousness by way of Example](#part1)  
@@ -70,7 +70,6 @@ The power of Bayesian analysis lets us dig a little deeper by plotting the proba
   
   
   
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
   
   
   
@@ -151,7 +150,7 @@ $$
   
 Again, if our priors are meaningfully defined and well constrained, this isn't an inherent problem. However, we're often faced with cases where we only have some vague constraint on a parameter, e.g. $x>0$, with limits being a bit arbitrary. The evidence ratio is then completely at the mercy of this arbitrary decision.  
   
-For example consider the linear regression from before. Because we had no a-piori information about $m$ or $c$, I used extremely vague normally distributed priors:  
+For example consider the linear regression from before. Because we had no a priori information about $m$ or $c$, I used extremely vague normally distributed priors:  
   
 $$  
 \pi(m,c) = \pi(m) \pi(c), \;\;\; \pi(m)=\mathcal{N}(m,0,10), \;\;\; \pi(c)=\mathcal{N}(c,0,20)  
@@ -169,10 +168,6 @@ $$
   
   
   
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol R from STIXNonUnicode  
   
   
   
@@ -185,7 +180,7 @@ Using moderately vague priors, we get $\mathcal{R}\approx 70$, indicating that t
   
 ### Information  
   
-While evidence measures how well the model describes data data, another measure of model performance is its information (also called the entropy or [Kullback-Lieber divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)) which measures how well the model _constrains_ its parameters.   
+While evidence measures how well the model describes our data, another measure of model performance is its information (also called the entropy or [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)) which measures how well the model _constrains_ its parameters relative to our prior.  
   
 Information is defined as the average log-difference between the posterior and prior:  
   
@@ -269,6 +264,8 @@ Comparing our three tools, we can see that the change in $\mathcal{R}$ gets canc
 </table>  
 </p>  
   
+We'll quantify this in part 2, but a suspiciousness of $\Delta S \approx -10$ is very high, showing that these two data sets do _not_ agree with one another. This is good: we've got a generalized test of tension that agrees with our visual intuition. Even in this simple example we can see where suspiciousness makes itself useful. Evidence and information can change based on the vagueness of our prior, but suspiciousness tells us only about the tension between the _data sets_, without muddying it together with questions about our prior bounds.   
+  
 ----  
   
 ## Part 2: Translating to Frequentism - Interpreting Suspiciousness with P Values <a id='part2'></a>  
@@ -283,12 +280,6 @@ $$
   
   
   
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
   
   
   
@@ -466,7 +457,7 @@ So far we've only looked at one dimensional Gaussian distributions. This may see
 2. Evidence and information, and by extension suspiciousness, remain invariant under reparameterization    
 3. $\ln{\lvert Z\rvert}$, $I$ and $S$ compose linearly for uncorrelated joint distributions, such as those recovered by **(1)**     
   
-Combining **(2)** and **(3)**, we know that the relative suspiciousness of any ‘D’ dimensional Gaussian distribution can be found by summing together the suspiciousness of its component distributions:  
+Combining **(2)** and **(3)**, we know that the relative suspiciousness of any ‘$D$’ dimensional Gaussian distribution can be found by summing together the suspiciousness of its component distributions:  
   
 $$  
 \Delta S_D=\sum_{i=1}^{D}{\Delta S_i}=\sum_{i=1}^{D}{\frac{1}{2}-\frac{1}{2}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}}  
@@ -475,22 +466,36 @@ $$
 Or, rearranging for suspiciousness:  
   
 $$  
-1-2\cdot\Delta S_D=\sum_{i=1}^{D}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}  
+1-2\cdot\Delta S_D=\sum_{i=1}^{D}\frac{\left(\mu_{A,i}-\mu_{B,i}\right)^2}{\sigma_{A,i}^2+\sigma_{B,i}^2}=T_i  
 $$  
   
 In the one dimensional case, $\Delta S$ is the square of a normally distributed random variable. In the $D$ dimensional case, it is the _sum_ of the square of many normally distributed random variables, i.e. it obeys a $D$ degree of freedom [$\chi^2$ distribution](https://en.wikipedia.org/wiki/Chi-squared_test):  
   
 $$  
-1-2\cdot\Delta S_D= \sum_{i=1}^{D} (T_i^2) = \chi^2_D  
+D-2\cdot\Delta S_D= \sum_{i=1}^{D} (T_i^2) \sim \chi^2_D  
 $$  
   
 This means we can interpret the suspiciousness as a P value by asking "what is the chance we would see this suspiciousness or worse" by pure chance, i.e.:  
   
 $$  
-P\left(\Delta S_D\right)=1-\int_{1-2\cdot\Delta S_D}^{\infty}{\chi_D^2\left(\Delta s^\prime\right)}d\Delta s^\prime  
+P\left(\Delta S_D\right)=\int_{D-2\cdot\Delta S_D}^{\infty}{\chi_D^2\left(\Delta s^\prime\right)}d\Delta s^\prime  
 $$  
   
-Because of point **(1)** this interpretation applies _even when the contours are non Gaussian_. This is a <u>general</u> rule for interpreting Bayesian suspiciousness in frequentist terms.    
+Because of point **(1)** this interpretation applies _even when the contours are non Gaussian_. This is a <u>general</u> rule for interpreting Bayesian suspiciousness in frequentist terms.   
+  
+As an example, let's consider our 2D example from part one. For $D=2$ dimensions, the $\chi^2$ distribution becomes $\chi^2(\Delta s^\prime)=\exp(\frac{-s^\prime}{2})$, so the p value for our suspiciousness of $\Delta S = -10.57$ is:  
+  
+$$  
+P\left(\Delta S_D\right)=\int_{D-2\cdot-10.57}^{\infty}{\exp(\frac{-s^\prime}{2})}d\Delta s^\prime = 9.4452\times 10^{-6} \approx \frac{1}{10,000}  
+$$  
+  
+This is equivalent to a $\approx 4.5\sigma$ tension in a simple 1D gaussian, i.e. an extremely noticeable tension.  
+  
+  
+  
+```python  
+  
+```  
   
   
 ---------  

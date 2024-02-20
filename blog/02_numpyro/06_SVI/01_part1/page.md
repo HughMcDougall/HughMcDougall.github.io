@@ -148,7 +148,6 @@ data_headstails = jnp.concatenate([jnp.ones(A_true), jnp.zeros(B_true)])
 mean_true, var_true = A_true/(A_true + B_true), (A_true*B_true / (A_true + B_true)**2 / (A_true + B_true+1))**0.5  
 ```  
   
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
   
   
 For a given fairness, the probability of any coin toss landing heads or tails follows a [Bernoulli distribution](https://en.wikipedia.org/wiki/Bernoulli_distribution), such that the entire run of heads and tails follows a binomial distribution:  

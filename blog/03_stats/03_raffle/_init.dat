@@ -1,7 +1,8 @@
 doc:	./page.md
 source:	./raffle_working.md
-title:	Is the Raffle Rigged? Practical stats for a toy problem
+title:	Is the Raffle Rigged?
 date:	31/1/24
-desc:	Is the Raffle Rigged? Practical stats for a toy problem
+desc:	Practical stats for a toy problem
 nav:	TRUE
 tree:	TRUE
+notebook:	./raffle_working.ipynb

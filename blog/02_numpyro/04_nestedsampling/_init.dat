@@ -6,3 +6,4 @@ desc:	An exploration of nested sampling in NumPyro
 nav:	TRUE
 tree:	TRUE
 render: FALSE
+notebook:	./_nested_sampling.ipynb

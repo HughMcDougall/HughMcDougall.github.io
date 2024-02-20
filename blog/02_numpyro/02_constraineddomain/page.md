@@ -131,12 +131,6 @@ plt.ylabel("$\mathcal{L}(x) (Approx)$")
 plt.show()  
 ```  
   
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
   
   
   
@@ -192,8 +186,6 @@ plt.ylabel("$\mathcal{L}(x)$")
 plt.show()  
 ```  
   
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
-    INFO:matplotlib.mathtext:Substituting symbol L from STIXNonUnicode  
   
   
   

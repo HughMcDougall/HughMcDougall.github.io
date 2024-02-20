@@ -6,4 +6,3 @@ desc:	An intro and guide to SVI in NumPyro
 header:	./_sviheader.md
 nav:	TRUE
 tree:	TRUE
-notebook:	_SVI-intro.ipynb

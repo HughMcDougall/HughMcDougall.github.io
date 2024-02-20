@@ -18,6 +18,11 @@ replacements = [
     (r"\begin{equation}", r"$$\begin{equation}"),
     (r"\end{equation}", r"\end{equation}$$"),
                 ]
+
+ignored_lines = ["No GPU/TPU found, falling back to CPU",
+                "INFO:matplotlib.mathtext:Substituting symbol",
+                 "Unable to initialize backend",
+                 "IProgress not found"]
                                
 #================================================================================================
 
@@ -378,6 +383,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 if "```" in lines[i-1] and "```python" not in lines[i-1]:
                     mode = True
             dont_redact[i] = mode
+
+        # Mark ignored lines for redaction
+        for text in ignored_lines:
+            for i in range(len(lines)):
+                if text in lines[i]:
+                    dont_redact[i] = False
             
 
         for i in range(len(lines)):

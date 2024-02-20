@@ -121,7 +121,6 @@ print("Doing MCMC")
   
 ```  
   
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)  
   
   
     Doing MCMC  
