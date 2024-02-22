@@ -9,6 +9,7 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
     * [Getting Started](.\02_numpyro\01_gettingstarted\./page.html) - _An absolute beginners guide to NumPyro_  
     * [The Constrained Domain](.\02_numpyro\02_constraineddomain\./page.html) - _Explanation of constranied vs unconstrained domains in NumPyro_  
     * [Testing Different MCMC Samplers](.\02_numpyro\03_mcmcsamplers\./page.html) - _A quick overview of the different samplers in numpyro and their strengths / weaknesses_  
+    * [Nested Sampling](.\02_numpyro\04_nestedsampling\./page.html) - _An exploration of nested sampling in NumPyro_  
     * [Stochastic Variational Inference](.\02_numpyro\06_SVI\./page.html) - _An intro and guide to SVI in NumPyro_  
         * [SVI Part 1](.\02_numpyro\06_SVI\01_part1\./page.html) - _Introduction & Explanation_  
         * [SVI Part 2](.\02_numpyro\06_SVI\02_part2\./page.html) - _Examples & Comparison with MCMC_  

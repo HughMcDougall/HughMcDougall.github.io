@@ -1,4 +1,4 @@
-Previous Entry: [The Constrained Domain](.\..\02_constraineddomain\page.html)	&nbsp;	 Next Entry: [Stochastic Variational Inference](.\..\06_SVI\page.html)  
+Previous Entry: [The Constrained Domain](.\..\02_constraineddomain\page.html)	&nbsp;	 Next Entry: [Nested Sampling](.\..\04_nestedsampling\page.html)  
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

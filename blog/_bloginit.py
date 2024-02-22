@@ -14,18 +14,23 @@ import pandas
 from copy import deepcopy as copy
 import time
 
+
+# Find and replace for markdown phrases that don't play nicely /w github pages
 replacements = [
     (r"\begin{equation}", r"$$\begin{equation}"),
     (r"\end{equation}", r"\end{equation}$$"),
                 ]
 
-ignored_lines = ["No GPU/TPU found, falling back to CPU",
+# Text fragments to identify and remove pesky python warnings
+ignored_lines = ["No GPU/TPU found",
                 "INFO:matplotlib.mathtext:Substituting symbol",
                  "Unable to initialize backend",
                  "IProgress not found",
                  "WARNING:chainconsumer",
                  "invalid value encountered",
-                 "is not constrained"]
+                 "is not constrained",
+                 "Attempting to register factory for plugin",
+                 "Could not find TensorRT"]
                                
 #================================================================================================
 
@@ -48,19 +53,19 @@ flog = open('./_flog.dat','w')
 
 # Default init file
 default_init = {
-                "doc":      "NONE",
-                "source":   "NONE",
-                "title":   "NONE",
-                "desc":    "NONE",
-                "date":    "NONE",
-                "series":  "NONE",
-                "header":   "DEFAULT",
-                "footer":   "DEFAULT",
-                "entry":   0,
-                "notebook": "NONE",
+                "doc":       "NONE",
+                "source":    "NONE",
+                "title":     "NONE",
+                "desc":      "NONE",
+                "date":      "NONE",
+                "series":    "NONE",
+                "header":    "DEFAULT",
+                "footer":    "DEFAULT",
+                "entry":     0,
+                "notebook":  "NONE",
                 "navheader": "TRUE",
-                "tree": "TRUE",
-                "render": "TRUE"
+                "tree":      "TRUE",
+                "render":    "TRUE"
                 }
 
 #================================================================================================

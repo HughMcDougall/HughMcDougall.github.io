@@ -1,9 +1,9 @@
 doc:	./page.md
-source:	./_nestedsampling.md
+source:	./_nestedsampling_in_numpyro.md
 title:	Nested Sampling
 date:	10/10/23
 desc:	An exploration of nested sampling in NumPyro
 nav:	TRUE
 tree:	TRUE
-render: FALSE
-notebook:	./_nested_sampling.ipynb
+render: True
+notebook:	./_nestedsampling_in_numpyro.ipynb

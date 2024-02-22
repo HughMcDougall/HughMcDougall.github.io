@@ -18,6 +18,7 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [Blog 
 * [Getting Started](.\01_gettingstarted\./page.html) - _An absolute beginners guide to NumPyro_  
 * [The Constrained Domain](.\02_constraineddomain\./page.html) - _Explanation of constranied vs unconstrained domains in NumPyro_  
 * [Testing Different MCMC Samplers](.\03_mcmcsamplers\./page.html) - _A quick overview of the different samplers in numpyro and their strengths / weaknesses_  
+* [Nested Sampling](.\04_nestedsampling\./page.html) - _An exploration of nested sampling in NumPyro_  
 * [Stochastic Variational Inference](.\06_SVI\./page.html) - _An intro and guide to SVI in NumPyro_  
     * [SVI Part 1](.\06_SVI\01_part1\./page.html) - _Introduction & Explanation_  
     * [SVI Part 2](.\06_SVI\02_part2\./page.html) - _Examples & Comparison with MCMC_  

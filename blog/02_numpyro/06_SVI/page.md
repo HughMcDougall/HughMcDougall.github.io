@@ -1,4 +1,4 @@
-Previous Entry: [Testing Different MCMC Samplers](.\..\03_mcmcsamplers\page.html)	&nbsp;	   
+Previous Entry: [Nested Sampling](.\..\04_nestedsampling\page.html)	&nbsp;	   
   
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

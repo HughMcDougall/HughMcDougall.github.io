@@ -56,6 +56,7 @@ If you're planning on using nested sampling with numpyro, you'll need the follow
     pip install jaxns==2.0.1  
 ```  
   
+_Note: Chain Consumer recently had its interface updated, making some of the corner-plot generation outdated. To match the examples in these tutorials, install with `pip install chainconsumer==0.34.0`_  
   
 ## Your First Model  
   
@@ -228,8 +229,8 @@ plt.show()
   
   
 Small adjustments to this simple case will cover most basic cases of using NumPyro, but you can still find yourself limited in two main ways:  
-1. Raw MCMC outputs are un-normalized, and so they don't tell us anything about how well the model performs, only how well it constrains parameters. For that, we need to use some kind of [model comparison](../modelcomparison/page.html) technique.  
-2. Most MCMC samplers (including NUTS) fail in multimodal distributions. NUTS fails when there is more than one 'island' of probability, and fails entirely if the likelihood function is 'bumpy' in between these island. In these cases, we need to either [post-process](../multimodality/page.html) our chains or use a more robust sampler like [nested sampling](../nestedsampling/page.html).  
+1. Raw MCMC outputs are un-normalized, and so they don't tell us anything about how well the model performs, only how well it constrains parameters. For that, we need to use some kind of [model comparison](../../03_stats/02_suspiciousness/page.html) technique.  
+2. Most MCMC samplers (including NUTS) fail in multimodal distributions. NUTS fails when there is more than one 'island' of probability, and fails entirely if the likelihood function is 'bumpy' in between these island. In these cases, we need to either [post-process](../03_mcmcsamplers/page.html) our chains or use a more robust sampler like [nested sampling](../04_nestedsampling/page.html).  
   
   
 ---------  
