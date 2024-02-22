@@ -30,7 +30,8 @@ ignored_lines = ["No GPU/TPU found",
                  "invalid value encountered",
                  "is not constrained",
                  "Attempting to register factory for plugin",
-                 "Could not find TensorRT"]
+                 "Could not find TensorRT",
+                 "No artists with labels found to put in legend"]
                                
 #================================================================================================
 

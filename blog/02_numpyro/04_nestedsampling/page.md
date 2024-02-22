@@ -231,7 +231,6 @@ NS.print_summary()
 NS.diagnostics()  
 ```  
   
-    WARNING[2024-02-22 14:31:58,002]: No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.  
   
   
   
