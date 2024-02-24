@@ -3,6 +3,11 @@
 
 This is a page to accompany a presentation to the UQ astro group on Monday 26/2, outlining some of the features of JAX and NumPyro and briefly explaining the fundamentals of using them. I've intentionally kept as much brief as I can, with more involved walk-throughs detailed in my main [NumPyro Guide](../../02_numpyro/blog_numpyrohome.html).
 
+
+**Contents**
+* [JAX Stuff](#JAX)
+* [NumPyro Stuff](#JAX)
+
 ---
 
 If you're installing NumPyro for the first time, you'll need kind of linux machine and the following packages:
@@ -14,11 +19,10 @@ If you're installing NumPyro for the first time, you'll need kind of linux machi
 
 In these examples, I'm using the pre-updated version of [ChainConsumer](https://samreay.github.io/ChainConsumer/). If you're new to this work and want to go directly from my code snippets, you'll need to install an older version with:
 
-`pip install chainconsumer==0.34.0`
+```python
+    pip install chainconsumer==0.34.0`
+```
 
-**Contents**
-* [JAX Stuff](#JAX)
-* [NumPyro Stuff](#JAX)
 
 
 ```python
@@ -105,37 +109,40 @@ So, for each temperature, need to:
 5. Get the ratio of these integrals
 6. Calculate the log
 
-Even if you do this badly, any modern computer can do this in a fraction of a second. To highlight the speed differences, I've cranked the problem up to run for $100,000$ different temperatures, blowing the cost up to a size we can meaningfully examine. 
+Even if you do this badly, any modern computer can do this in a fraction of a second. To highlight the speed differences, I've cranked the problem up to run for $100,000$ different temperatures, blowing the cost up to a size we can meaningfully examine.
 
 
 ```python
-N_temps = 100_00
+N_temps = 100_000
 betas = np.logspace(-2,0,N_temps)
 ```
 
-**Doing it with python: The bad way**
+**Doing it with python: The bad way**  
+For the sake of comparison, lets first do this with regular python, i.e. using as few packages as possible. Python has no native $\exp(x)$ function, so I've had to dip into `numpy` for that, but everything else here is in the vein of an introductory python tutorial: lots of nested loops and accumulators:
 
 
 ```python
 %%time
-if False:
-    out_normal = np.zeros(N_temps)
-    for i in range(N_temps):
-        beta = betas[i]
-        bb_spec = 1/LAM**2 * (np.exp(1/LAM/beta)-1)**-1
-        g_flux = 0
-        r_flux = 0
-        for j in range(len(LAM)):
-            g_flux+=g_fil[:,1][j] * bb_spec[j]
-            r_flux+=r_fil[:,1][j] * bb_spec[j]
-        out_normal[i] = np.log10(g_flux / r_flux)
+out_normal = np.zeros(N_temps)
+for i in range(N_temps):
+    beta = betas[i]
+    bb_spec = 1/LAM**2 * (np.exp(1/LAM/beta)-1)**-1
+    g_flux = 0
+    r_flux = 0
+    for j in range(len(LAM)):
+        g_flux+=g_fil[:,1][j] * bb_spec[j]
+        r_flux+=r_fil[:,1][j] * bb_spec[j]
+    out_normal[i] = np.log10(g_flux / r_flux)
 ```
 
-    CPU times: user 1 µs, sys: 1 µs, total: 2 µs
-    Wall time: 5.01 µs
+    CPU times: user 1min 59s, sys: 15 ms, total: 1min 59s
+    Wall time: 2min 9s
 
 
-**Doing it with numpy: the better way**
+Aside from being a little bit messier to read, raw python is also _slow_. In my benchmark, this takes over two whole minutes, practically an eternity in computer time. There isn't anything fancy in our code that should be particularly costly, this is all about how python handles its loops and calculations. Namely, it handles them poorly.
+
+**Doing it with numpy: the better way**  
+If you've spent any time with python, you've probably learned that doing as much as you can with `numpy.array`'s will earn you a much faster code. In our case, swapping the inner loop for `numpy`'s vectorized functions cuts the run-time down by a factor of _sixty_ over base python:
 
 
 ```python
@@ -150,11 +157,14 @@ for i in range(N_temps):
     out_numpy[i] = np.log10(g_flux / r_flux)
 ```
 
-    CPU times: user 191 ms, sys: 5.44 ms, total: 196 ms
-    Wall time: 212 ms
+    CPU times: user 1.76 s, sys: 8.9 ms, total: 1.77 s
+    Wall time: 1.91 s
 
 
-**Doing it with JAX, the fastest way**
+**Doing it with JAX, the fastest way**  
+Now we can take a swing at things with JAX. In the snippet below, I first do a bit of house keeping by converting my arrays to JAX-friendly ones, and then define my entire process in a function. You'll notice how similar this is to doing things with `numpy`, the only difference is that I've swapped out the `numpy` math functions (`.np`) functions with `jax.numpy` calls (`jnp.`). These are one-to-one with the familiar `numpy` math functions, but are set up to play nicely with JAX's compilation.
+
+We tell JAX to compile out function into a fast version with `jax.vmap`, specifically "vector mapping" mapping it, i.e. compiling to a form that takes in a vector, even though the function as written is for one number at a time. You can also compile _without_ vector mapping with `jax.jit`. JAX will do the compilation the first time you call the function, so I've run and timed `jax_vectorized_function` twice to show the time with and without the overhead from compiling.
 
 
 ```python
@@ -168,7 +178,7 @@ r_fil_forjax = jnp.array(r_fil[:,1])
 
 # Make a function that does all our working with jax.numpy (jnp) instead of numpy (np)
 def jax_function(beta):
-    bb_spec = 1/LAM_forjax**2 * (jnp.exp(1/LAM_forjax/beta)-1)**-1
+    bb_spec = np.power(LAM_forjax,-2) * jnp.power((jnp.exp(jnp.power(LAM_forjax*beta,-1))-1),-1)
     g_flux = jnp.sum(g_fil_forjax * bb_spec)
     r_flux = jnp.sum(r_fil_forjax * bb_spec)
     out = jnp.log10(g_flux/r_flux)
@@ -183,16 +193,14 @@ jax_vectorized_function = jax.vmap(jax_function)
 %time out_jax = jax_vectorized_function(betas_forjax)
 ```
 
-    No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
+    CPU times: user 1.51 s, sys: 1.1 s, total: 2.62 s
+    Wall time: 1 s
+    CPU times: user 1.48 s, sys: 944 ms, total: 2.43 s
+    Wall time: 916 ms
 
 
-    CPU times: user 905 ms, sys: 644 ms, total: 1.55 s
-    Wall time: 1.11 s
-    CPU times: user 106 ms, sys: 124 ms, total: 230 ms
-    Wall time: 113 ms
-
-
-**Autodiff**
+**Autodiff**  
+As well as the speed it wrings out of its compilation, JAX has a second powerful feature in the form of its auto-differentiation. For any JAX-friendly function (i.e. one we can compile), JAX can also calculate the gradient via the chain rule. In the snippet below, we take `jax_function()` from above, take the derivative with `jax.vmap`, then convert this into a vector-input function with `jax.vmap`. In two lines of code, we get a function that can calculate $df(x)/dx$ as easily as $f(x)$:
 
 
 ```python
@@ -201,56 +209,56 @@ do_grad = jax.grad(jax_function)
 
 # Do auto-vectorization
 do_grad = jax.vmap(do_grad)
-
-# Run the gradient function
-grads = do_grad(betas_forjax)
-
 ```
+
+For example, suppose we want to plot our log-colour and its gradient side-by side. Thanks to JAX, it's as easy as running our two compiled (fast) functions:
 
 
 ```python
-# REDACT
+betas_forplot = np.logspace(-2,0,1000)
+
+# Evaluate Function
+colours = jax_vectorized_function(betas_forplot)
+
+# Evaluate Gradient Function
+grads = do_grad(betas_forplot)
+
+# Plotting
 fig, (a1,a2) = plt.subplots(1,2, figsize=(8,3), sharex=True)
-
-a1.plot(betas_forjax, jax_vectorized_function(betas_forjax))
-a2.plot(betas_forjax, grads)
-
+a1.plot(betas_forplot, colours), a2.plot(betas_forplot, grads)
 a1.grid(), a2.grid()
 a1.set_xscale('log')
-
 fig.supxlabel("$\\beta$ (Log Scale)"), 
-
-a1.set_ylabel("$\log_{10} (f_r / f_g)$")
-a2.set_ylabel("$\partial \log_{10}(f_g / f_r) / \partial \\beta$")
-
-a1.set_title("Function")
-a2.set_title("Gradient")
-
+a1.set_ylabel("$\log_{10} (f_r / f_g)$"), a2.set_ylabel("$\partial \log_{10}(f_g / f_r) / \partial \\beta$")
+a1.set_title("Function"), a2.set_title("Gradient")
 fig.tight_layout()
 plt.show()
 ```
 
 
     
-![png](output_17_0.png)
+![png](output_19_0.png)
     
 
 
+We can apply `jax.grad` multiple times over to get higher order derivatives as well. The only caveat is that the way JAX calculates these derivatives means they can lose precision due to computational rounding.
+In particular, be aware that JAX's `exp` function isn't very precise when you get to big values. At anything bigger than $\approx exp(10)$, JAX's outputs will begin to get much noiser than comparable `numpy` code, and this only gets worse as you go down the differentiation chain.
+
 ## The NumPyro Part <a id='NumPyro'></a>
 
-Note: Much of the following has been lifted directly from the [NumPyro introduction](https://hughmcdougall.github.io/blog/02_numpyro/01_gettingstarted/page.html) on my main [blog](https://hughmcdougall.github.io/blog/02_numpyro/blog_numpyrohome.html).
+The following section steps through a few examples of using NumPyro for basic modeling. Firstly, for a simple linear regression, then for a few variations on that theme, and then for a more complex hierarchical model. 
+
+_Note: Much of the following has been lifted directly from the [NumPyro introduction](https://hughmcdougall.github.io/blog/02_numpyro/01_gettingstarted/page.html) on my main [blog](https://hughmcdougall.github.io/blog/02_numpyro/blog_numpyrohome.html)._
 
 ### Linear Regression
 
-Now the fun part: we’ll use NumPy to hack together some data akin to the real world measurements you would apply NumPyro to. We’ll both generate and fit according to a simple linear model:
+In this first part we'll look at fitting a simple linear regression to data with Gaussian error bars. I.e., we have a model with parameters $\theta = (m,c)$, and data $(x, y)$, that we believe follows:
+
 $$
-    y(x)=m \cdot x + c
+    y_i=m \cdot x_i + c \pm \mathcal{N}(0,E_i)
 $$
 
-In this example, we enjoy the luxury of already knowing the true underlying model and the true values its parameters (in this case, $m=2$
-and $c=3.5$). We also choose a density and uncertainty of measurements to give a clear picture of the underlying model. The real world is rarely so friendly, and we have to bear in mind that any model is only an approximation of the messiness of reality. For an example on how to perform this, check the article on Model Comparison & Tension.
-
-In the cell below, `ebar` and `scatter` determine the average and spread of the size of errorbars in our data-points using a [Poisson Distribution](https://en.wikipedia.org/wiki/Poisson_distribution). This sort of distribution is common in astronomy, as it’s associated with count-based events like measuring flux from counting of photons.
+In this example, we enjoy the luxury of already knowing the true underlying model and the true values its parameters (in this case, $m=2$ and $c=3.5$).
 
 
 ```python
@@ -282,18 +290,19 @@ plt.show()
 
 
     
-![png](output_20_0.png)
+![png](output_23_0.png)
     
 
 
 **Bayesian Analysis**
+NumPyro is an example of a Bayesian analysis tool. The old fashioned way of fitting models is to take your data and then work _backwards_ to your fundamental parameters. Bayesian analyis goes the other way: starting by drawing your parameters from a _prior_ distribution, and then working _forwards_ through a "generative model" to simulate the observations that you would see. You then weight the parameters by how well they reproduce your data (the likelihood).
 
 
 ```python
 # REDACT
 
 # Plotting  
-fig, (a1,a2) = plt.subplots(2, 1, figsize=(5,6), sharex=True, sharey=True)
+fig, (a1,a2) = plt.subplots(1, 2, figsize=(8,3), sharex=True, sharey=True)
 c_examp = np.linspace(-1,1,5)*8 + c_true
 for a in (a1,a2):
 
@@ -321,11 +330,11 @@ plt.show()
 
 
     
-![png](output_22_0.png)
+![png](output_25_0.png)
     
 
 
-**GET FROM BLOG**
+The purpose of PPL's like NumPyro is that they make the generative model up-front and easy to code / interpret, instead of being abstracted behind test-statistics. Making a NumPyro model that encodes this model is surprisingly simple, and can be done in only a few lines of code:
 
 
 ```python
@@ -339,7 +348,18 @@ def model(X,Y,E):
         numpyro.sample('y', numpyro.distributions.Normal(y_model,E), obs = Y) # Compare to observation
 ```
 
-**GET FROM BLOG**
+Though written as a python function, `model(X,Y,E)` doesn’t necessarily work like one, e.g. we don’t “return” a likelihood. Instead, each `numpyro.sample` statement implies an effect on the likelihood:
+
+* The first two lines describe our prior knowledge about m and c  
+    * The first argument, e.g. "`m`" is the “site name”, the unique name that NumPyro will internally recognize this variable as and return its results as  
+    * The python-like variable name `m` on the left hand side is only for using that variable within the function, like we do when we calculate `y_model`  
+
+* The ‘plate’ describes the way we sweep over the data-points in `X` and `Y`  
+    * Everything created or called inside the plate is implicitly vectorized where possible, e.g. calling `X` when calculating `y_model` implicitly means `X[i]`
+    * The sample `y` follows a normal distribution $y\sim \mathcal{N}(y_{model},E)$, representing our uncorrelated measurements, and the `obs=Y` means that this distribution is being compared to the measurement `Y[i]`
+    * The sample `y` doesn’t have a name on the LHS because we don’t use it to do any more calculations
+
+Our NumPyro model encodes all of our probability distributions and data, now we need to actually _do_ something with it. In 90% of cases, that "something" will be constraining parameters with some kind of [MCMC](https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo) algorithm. In NumPyro, we do this by creating an `MCMC` object and then triggering it with the `.run` method:
 
 
 ```python
@@ -358,7 +378,9 @@ sampler.run(jax.random.PRNGKey(1), X,Y,E)
     Wall time: 5.87 s
 
 
-**GET FROM BLOG**
+When the `numpyro.infer.MCMC` object is created, we feed it a `numpyro.infer.NUTS` object, which in turn wraps around our probabilistic model. This argument determines what kind of MCMC sampler we use (in this case the No U-Turn Sampler (NUTS)). If you want to use a different sampler (e.g. the [sample adaptive](https://num.pyro.ai/en/latest/mcmc.html#numpyro.infer.sa.SA) sampler), we can swap this first argument out for something else.
+
+Because MCMC is an inherently random process, we need to feed it a random seed to determine how its stochastic elements are generated. This takes the form of the `jax.random.PRNGKey(i)` argument in `sampler.run()`. We also feed in the data (function inputs), `X,Y` and `E` into the sampler when running so it knows what to actually fit the model _on_. Once the sampler has finished running, we just extract its completed MCMC chains using `.get_samples()`, which returns as a dictionary keyed by the NumPyro site names we defined in our model. We can then pass these directly to a `chainconsumer` object for plotting, confirming that our model was fit successfully:
 
 
 ```python
@@ -372,11 +394,11 @@ plt.show()
 
 
     
-![png](output_28_0.png)
+![png](output_31_0.png)
     
 
 
-**GET FROM BLOG**
+If you have `graphviz` installed, (e.g. via `conda install -c conda-forge pygraphviz`), NumPyro can automatically render a [graph of the model](https://en.wikipedia.org/wiki/Graphical_model#Bayesian_network) to help visualize it and confirm that everything's set up properly. This is called with:
 
 
 ```python
@@ -387,19 +409,21 @@ numpyro.render_model(model, model_args=(X,Y,E))
 
 
     
-![svg](output_30_0.svg)
+![svg](output_33_0.svg)
     
 
 
 
-**Reparameterization**
+**Reparameterization**  
+In the last example we defined our priors over $m$ and $c$, specifically using uniform distributions. It's easy to imagine a case where this might not be the best choice: for example, gradients "thin out" around $m=0$ and "bunch up" as $m \rightarrow \infty$. We might instead want to have a uniform prior over the slope _angle_ and the offset perpendicular to the line, i.e. $m=tan(\theta)$ and $c=b_\perp / cos(\theta)$:
 
+_Note: This example adapted from Dan Foreman Mackey's [Astronomer's Introduction to NumPyro](https://dfm.io/posts/intro-to-numpyro/)_
 
 
 ```python
 #REDACT
 # Plotting  
-fig, (a1,a2) = plt.subplots(2, 1, figsize=(4,6), sharex=True, sharey=True)
+fig, (a1,a2) = plt.subplots(1, 2, figsize=(8,3), sharex=True, sharey=True)
 ms = np.linspace(0,20,10)
 angles = np.linspace(0,np.arctan(ms.max()),len(ms))
 
@@ -426,9 +450,11 @@ plt.show()
 
 
     
-![png](output_32_0.png)
+![png](output_35_0.png)
     
 
+
+With NumPyro, we do this using the `numpyro.deterministic` primitive. This works a lot like sample: the MCMC chains will store `m` and `c` as parameters, but the priors are defined "one level up" rather than `m` and `c` being random variables themselves.
 
 
 ```python
@@ -453,10 +479,24 @@ numpyro.render_model(model_reparam, model_args=(X,Y,E))
 
 
     
-![svg](output_33_0.svg)
+![svg](output_37_0.svg)
     
 
 
+
+Even though they aren't random variables, using:
+
+```python
+    m = numpyro.deterministic("m", jnp.tan(angle))
+```
+
+Instead of just:
+
+```python
+    m = jnp.tan(angle)  
+```
+
+Means that NumPyro will keep track of `m` as though it were a parameter during the MCMC process, meaning we can pull it out for analysis, e.g. with a corner plot:
 
 
 ```python
@@ -474,7 +514,7 @@ plt.show()
 
 
     
-![png](output_34_1.png)
+![png](output_39_1.png)
     
 
 
@@ -501,7 +541,7 @@ plt.show()
 
 
     
-![png](output_36_0.png)
+![png](output_41_0.png)
     
 
 
@@ -528,15 +568,32 @@ numpyro.render_model(model_XYerr, model_args = (X,Y,E/2, E))
 
 
     
-![svg](output_38_0.svg)
+![svg](output_43_0.svg)
     
 
 
 
-### R-L Hierarchical Example
+### R-L Hierarchical Example  
+The examples so far have been intentionally simple: linear regressions are the kind of thing you could code up by hand if you knew what you were doing. Instead, lets look at a more complicated, though slightly contrived example. The set-up goes like this:
+
+<p style="text-align: center; font-family: verdana"><i>
+"Someone spilled a cup of coffee and accidentally deleted every Hertzprung-Russell Diagram on the planet. You need to re-fit it using only some particularly low quality telescope data and some old records of colour temperatures."
+</i></p>
+
+
+The data you have on hand consists of a few dozen clusters of stars with about a half dozen stars per cluster. For the nearest few clusters you have rough parallax measurements, and for every star you have photon-count measurements of brightness, which are subject to [Poisson Distribution](https://en.wikipedia.org/wiki/Poisson_distribution) shot noise.
+
+I'm going to make the grievous approximation of pretending that the HR diagram is a straight line in this example, i.e. that absolute magnitudes $M$ obey:
+
+$$
+M = \alpha \cdot \log_{10}(T) + \beta \pm \mathcal{N}(0,\sigma)
+$$
+
+Where $\alpha$, $\beta$ and $\sigma$ are the slope, offset and inherent scatter of the relation. If you plot the flux-count from each star against its log-temperature, we see that each cluster (colour coded) is roughly a straight line, like we expect, but to get a proper HR diagram we need to vertically shift each cluster until they line up. 
 
 
 ```python
+# REDACT 
 gain = 5E5
 mag0 = 2
 E_parallax = 0.025
@@ -662,9 +719,11 @@ plt.yscale('log')
 
 
     
-![png](output_42_0.png)
+![png](output_47_0.png)
     
 
+
+If we knew the distances this would be easy: we'd just turn each star's flux into an apparent brightness, get the distance modulus and correct accordingly. The issue is that we're at the mercy of our distance measurements, which fall apart rapidly as we go to bigger distances / smaller parallax angles:
 
 
 ```python
@@ -700,9 +759,11 @@ plt.show()
 
 
     
-![png](output_43_0.png)
+![png](output_49_0.png)
     
 
+
+Then, couple this with the fact that each cluster has only a few stars. If we were to do this the old fashioned way, we'd have no hope at all of properly constraining the straight line in $\log_{10}(T)$ against $M$. We're also forced to throw away all of the stars that we _don't_ have distances for, leaving us with only a tiny fraction of the data being useful.
 
 
 ```python
@@ -764,31 +825,43 @@ plt.show()
 
 
     
-![png](output_44_0.png)
+![png](output_51_0.png)
     
 
 
-**PLACEHOLDER TEXT**
+The solution is in the form of a [Bayesian Hierarchical Model](https://en.wikipedia.org/wiki/Bayesian_hierarchical_modeling). Though any one cluster / star has a tiny bit of information, the sum total of them gives us more information.
+
+Like always, we start by building a generative model. First, we say that every cluster has a distance, which gives a parallax angle, including uncertainty:
 
 $$
-\theta_p = \frac{1}{d_{pc}}
+\theta_p = \frac{1}{d_{pc}} \pm \Delta_\theta
 $$
 
+Second, that its temperature gives each star an absolute magnitude:
+
 $$
-M = \alpha \cdot (\log_{10}(T)-4)+ \beta
+M = \alpha \cdot (\log_{10}(T)-4)+ \beta \pm \mathcal{N}(0,\sigma)
 $$
+
+That this converts to an apparent magnitude based on the distance modulus:
 
 $$
 m = M + 5.0\times \log_{10} \left(\frac{d}{10 pc}\right)
 $$
 
+Which turns into a flux:
+
 $$
 f = c \cdot 10^{-(m-m_0) / 2.5}
 $$
 
+Which we observe as a photon count, obeying a photon distribution:
+
 $$
 N_{flux} \sim Poisson(f)
 $$
+
+Despite the number of plates to juggle here, this is pretty easy to code up as a NumPyro model, including all the complexity that we would need to pave-over or approximate with old fashioned "working backwards" methods, e.g. the Poisson distributions and non-gaussian distance errors.
 
 
 ```python
@@ -829,7 +902,9 @@ hierarchy_sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(HRmodel),
 hierarchy_sampler.run(rng_key = jax.random.PRNGKey(1), cluster_index = cluster_index, logtemps = logtemps, parallax = mock_data['parallax'], fluxcounts = mock_data['fluxcounts'])
 ```
 
-**PLACEHOLDER TEXT**
+_Note: I've defined the distance prior as being uniform in $d^{1/3}$. This converts to a prior on distance that goes like $P(d)\propto d^2$, which comes from basic geometry._
+
+Because of NumPyro's JAX-like speed, this whole model takes only about 10 minutes on my laptop, and recovers ground truth to within $1 \sigma$:
 
 
 ```python
@@ -844,28 +919,17 @@ plt.show()
 
 
     
-![png](output_49_0.png)
+![png](output_56_0.png)
     
 
-
-**PLACEHOLDER TEXT**
 
 
 ```python
 # REDACT
-numpyro.render_model(HRmodel, model_args=(cluster_index, logtemps, mock_data['parallax'], mock_data['fluxcounts']))
+#numpyro.render_model(HRmodel, model_args=(cluster_index, logtemps, mock_data['parallax'], mock_data['fluxcounts']))
 ```
 
-
-
-
-    
-![svg](output_51_0.svg)
-    
-
-
-
-**PLACEHOLDER TEXT**
+Because this is a mock-up example, we're free to compare our results to the ground truth. Sure enough, once fully converged the model does a remarkably close job of recovering the underlying truth, including the inherent scatter. Through hierachical modeling, we've pulled meaningful information out of patchy data.
 
 
 ```python
@@ -900,11 +964,9 @@ plt.show()
 
 
     
-![png](output_53_0.png)
+![png](output_59_0.png)
     
 
-
-**PLACEHOLDER TEXT**
 
 
 ```python
@@ -927,6 +989,6 @@ plt.grid()
 
 
     
-![png](output_55_0.png)
+![png](output_60_0.png)
     
 
