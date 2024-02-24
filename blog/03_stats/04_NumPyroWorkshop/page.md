@@ -341,33 +341,6 @@ In the last example we defined our priors over $m$ and $c$, specifically using u
 _Note: This example adapted from Dan Foreman Mackey's [Astronomer's Introduction to NumPyro](https://dfm.io/posts/intro-to-numpyro/)_  
   
   
-```python  
-#REDACT  
-# Plotting    
-fig, (a1,a2) = plt.subplots(1, 2, figsize=(8,3), sharex=True, sharey=True)  
-ms = np.linspace(0,20,10)  
-angles = np.linspace(0,np.arctan(ms.max()),len(ms))  
-  
-for a in (a1,a2):  
-              
-    a.errorbar(X,Y,E,fmt='none', capsize=3, label='Measurements',c='tab:red',lw=2)  
-  
-    a.set_ylim(0,30)  
-    a.grid()  
-  
-for m,angle in zip(ms,angles):  
-    alpha = 0.75  
-    a1.axline( [0,c_true], slope=m, c='blue', ls='-', alpha=alpha,lw=alpha)  
-    a2.axline( [0,c_true], slope=np.tan(angle), c='blue', ls='-', alpha=alpha,lw=alpha)  
-  
-a1.set_title("Uniformly distributed gradients")  
-a2.set_title("Uniformly distributed angles")  
-  
-a1.set_ylim(0,30)  
-fig.supxlabel("X"), fig.supylabel("Y")    
-fig.tight_layout()  
-plt.show()   
-```  
   
   
       

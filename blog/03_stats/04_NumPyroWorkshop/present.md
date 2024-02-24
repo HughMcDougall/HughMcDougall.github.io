@@ -421,7 +421,7 @@ _Note: This example adapted from Dan Foreman Mackey's [Astronomer's Introduction
 
 
 ```python
-#REDACT
+# REDACT
 # Plotting  
 fig, (a1,a2) = plt.subplots(1, 2, figsize=(8,3), sharex=True, sharey=True)
 ms = np.linspace(0,20,10)
