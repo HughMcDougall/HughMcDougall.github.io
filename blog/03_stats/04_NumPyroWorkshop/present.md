@@ -1,6 +1,19 @@
 # A Brief Introduction to NumPyro
 ## Presentation for Astro Group 26/2/24
 
+This is a page to accompany a presentation to the UQ astro group on Monday 26/2, outlining some of the features of JAX and NumPyro and briefly explaining the fundamentals of using them. I've intentionally kept as much brief as I can, with more involved walk-throughs detailed in my main [NumPyro Guide](../../02_numpyro/blog_numpyrohome.html).
+
+---
+
+If you're installing NumPyro for the first time, you'll need kind of linux machine and the following packages:
+
+```
+    pip install jax jaxlib jaxopt
+    pip install numpyro
+```
+
+In these examples, I'm using the pre-updated version of [ChainConsumer](https://samreay.github.io/ChainConsumer/). If you're new to this work and want to go directly from my code snippets, you'll need to install an older version with:
+
 `pip install chainconsumer==0.34.0`
 
 **Contents**
@@ -24,6 +37,8 @@ from chainconsumer import ChainConsumer
 ## The JAX Part <a id='JAX'></a>
 JAX is a [Just-In-Time Compiled](https://en.wikipedia.org/wiki/Just-in-time_compilation) (JIT) language that you can interface with using python. In short: it lets you write python code, but bake into a compiled function at runtime to get a massive speedup. It also has [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) (Autodiff) which means it can calculate _analytical_ gradients for any function you write in it.
 
+To show how JIT compilation can give serious speedup for even straightforward problems, I've put together a short example to compare JAX with raw python, as well as the extremely popular [numpy](https://numpy.org/) package. Consider the following: You have a series of optical filters (green, red and infrared bands) for some telescope, and you want to calculate what colour a black body will appear to be at various temperatures.
+
 
 ```python
 # REDACT
@@ -44,6 +59,14 @@ plt.show()
 ![png](output_4_0.png)
     
 
+
+The process for doing this is pretty straightforward. We need to integrate the black body spectrum, modulated by the filter strength, for two filters (e.g. red and green) to find the flux we capture in each colour, and then compare the two:
+
+$$
+\log_{10} \left( \frac{f_g}{f_r} \right) = \frac{ \int(\lambda f_g(\lambda) \cdot BB(\lambda,T)) d\lambda}{\int(\lambda f_r(\lambda) \cdot BB(\lambda,T)) d\lambda}
+$$
+
+Repeating at different temperatures, we can see how the redder low temperature black body spectra compare the the bluer high temperature ones. The particular units aren't too important in this example, so I've replaced "temperature" with "$\beta$", a term inclusive of all the relevant physical constants.
 
 
 ```python
@@ -70,26 +93,23 @@ plt.show()
 
 
     
-![png](output_5_0.png)
+![png](output_6_0.png)
     
 
 
-$$
-\log_{10} \left( \frac{f_g}{f_r} \right) = \frac{ \int(\lambda f_g(\lambda) \cdot BB(\lambda,T)) d\lambda}{\int(\lambda f_r(\lambda) \cdot BB(\lambda,T)) d\lambda}
-$$
+So, for each temperature, need to:
+1. Calculate a BB spectrum with $BB(\lambda,\beta) \propto \lambda^{−1} \exp{\left( \frac{1}{\beta \lambda  }−1 \right)}^{−1}$ 
+2. Multiply this by the green filter
+3. Integrate over $\lambda$
+4. Repeat for the red filter
+5. Get the ratio of these integrals
+6. Calculate the log
 
-For each temperature, need to:
-1. Calculate a BB spectrum /w 𝐵𝐵(𝜆,𝑇)∝𝜆^(−1) (exp(1/𝛽𝜆)−1)^(−1)
-2. Multiply by green filter
-3. Integrate
-4. Repeat for red filter
-5. Take ratio
-6. Take log
-
+Even if you do this badly, any modern computer can do this in a fraction of a second. To highlight the speed differences, I've cranked the problem up to run for $100,000$ different temperatures, blowing the cost up to a size we can meaningfully examine. 
 
 
 ```python
-N_temps = 100
+N_temps = 100_00
 betas = np.logspace(-2,0,N_temps)
 ```
 
@@ -112,7 +132,7 @@ if False:
 ```
 
     CPU times: user 1 µs, sys: 1 µs, total: 2 µs
-    Wall time: 4.05 µs
+    Wall time: 5.01 µs
 
 
 **Doing it with numpy: the better way**
@@ -130,8 +150,8 @@ for i in range(N_temps):
     out_numpy[i] = np.log10(g_flux / r_flux)
 ```
 
-    CPU times: user 2.88 ms, sys: 0 ns, total: 2.88 ms
-    Wall time: 2.83 ms
+    CPU times: user 191 ms, sys: 5.44 ms, total: 196 ms
+    Wall time: 212 ms
 
 
 **Doing it with JAX, the fastest way**
@@ -166,10 +186,10 @@ jax_vectorized_function = jax.vmap(jax_function)
     No GPU/TPU found, falling back to CPU. (Set TF_CPP_MIN_LOG_LEVEL=0 and rerun for more info.)
 
 
-    CPU times: user 665 ms, sys: 0 ns, total: 665 ms
-    Wall time: 717 ms
-    CPU times: user 7.93 ms, sys: 0 ns, total: 7.93 ms
-    Wall time: 8.46 ms
+    CPU times: user 905 ms, sys: 644 ms, total: 1.55 s
+    Wall time: 1.11 s
+    CPU times: user 106 ms, sys: 124 ms, total: 230 ms
+    Wall time: 113 ms
 
 
 **Autodiff**
@@ -212,13 +232,13 @@ plt.show()
 
 
     
-![png](output_16_0.png)
+![png](output_17_0.png)
     
 
 
 ## The NumPyro Part <a id='NumPyro'></a>
 
-Note: Much of the following has been lifted directly from the [NumPyro introduction](https://hughmcdougall.github.io/blog/02_numpyro/01_gettingstarted/page.html) on my [blog](https://hughmcdougall.github.io/blog/02_numpyro/blog_numpyrohome.html)
+Note: Much of the following has been lifted directly from the [NumPyro introduction](https://hughmcdougall.github.io/blog/02_numpyro/01_gettingstarted/page.html) on my main [blog](https://hughmcdougall.github.io/blog/02_numpyro/blog_numpyrohome.html).
 
 ### Linear Regression
 
@@ -262,7 +282,7 @@ plt.show()
 
 
     
-![png](output_19_0.png)
+![png](output_20_0.png)
     
 
 
@@ -301,7 +321,7 @@ plt.show()
 
 
     
-![png](output_21_0.png)
+![png](output_22_0.png)
     
 
 
@@ -331,11 +351,11 @@ sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
 sampler.run(jax.random.PRNGKey(1), X,Y,E)  
 ```
 
-    sample: 100%|█| 10500/10500 [00:03<00:00, 3067.93it/s, 3 steps of size 2.95e
+    sample: 100%|█| 10500/10500 [00:04<00:00, 2513.01it/s, 3 steps of size 2.95e
 
 
-    CPU times: user 4.6 s, sys: 378 ms, total: 4.98 s
-    Wall time: 5.33 s
+    CPU times: user 5.37 s, sys: 94.3 ms, total: 5.46 s
+    Wall time: 5.87 s
 
 
 **GET FROM BLOG**
@@ -352,7 +372,7 @@ plt.show()
 
 
     
-![png](output_27_0.png)
+![png](output_28_0.png)
     
 
 
@@ -367,7 +387,7 @@ numpyro.render_model(model, model_args=(X,Y,E))
 
 
     
-![svg](output_29_0.svg)
+![svg](output_30_0.svg)
     
 
 
@@ -406,7 +426,7 @@ plt.show()
 
 
     
-![png](output_31_0.png)
+![png](output_32_0.png)
     
 
 
@@ -433,7 +453,7 @@ numpyro.render_model(model_reparam, model_args=(X,Y,E))
 
 
     
-![svg](output_32_0.svg)
+![svg](output_33_0.svg)
     
 
 
@@ -449,12 +469,12 @@ C.plotter.plot(parameters=['m','c'], truth = {'m':m_true, 'c':c_true})
 plt.show()
 ```
 
-    sample: 100%|█| 10500/10500 [00:02<00:00, 3679.65it/s, 7 steps of size 2.47e
+    sample: 100%|█| 10500/10500 [00:03<00:00, 3301.92it/s, 7 steps of size 2.47e
 
 
 
     
-![png](output_33_1.png)
+![png](output_34_1.png)
     
 
 
@@ -481,7 +501,7 @@ plt.show()
 
 
     
-![png](output_35_0.png)
+![png](output_36_0.png)
     
 
 
@@ -508,7 +528,7 @@ numpyro.render_model(model_XYerr, model_args = (X,Y,E/2, E))
 
 
     
-![svg](output_37_0.svg)
+![svg](output_38_0.svg)
     
 
 
@@ -641,19 +661,9 @@ plt.yscale('log')
 ```
 
 
-    ---------------------------------------------------------------------------
-
-    NameError                                 Traceback (most recent call last)
-
-    Cell In[20], line 3
-          1 # REDACT
-          2 np.random.seed(0)
-    ----> 3 J = np.random.choice(np.unique(cluster_index), 6, replace=False)
-          5 plt.figure(figsize=(8,4))
-          7 flag1, flag2 = True, True
-
-
-    NameError: name 'cluster_index' is not defined
+    
+![png](output_42_0.png)
+    
 
 
 
@@ -690,7 +700,7 @@ plt.show()
 
 
     
-![png](output_42_0.png)
+![png](output_43_0.png)
     
 
 
@@ -754,7 +764,7 @@ plt.show()
 
 
     
-![png](output_43_0.png)
+![png](output_44_0.png)
     
 
 
@@ -813,13 +823,11 @@ def HRmodel(cluster_index, logtemps, parallax = None, fluxcounts = None):
 hierarchy_sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(HRmodel),
                              num_chains = 1,
                              num_samples = 20_000,
-                             num_warmup = 5_000
+                             num_warmup = 5_000,
+                                       progress_bar = False
                             )
 hierarchy_sampler.run(rng_key = jax.random.PRNGKey(1), cluster_index = cluster_index, logtemps = logtemps, parallax = mock_data['parallax'], fluxcounts = mock_data['fluxcounts'])
 ```
-
-    sample: 100%|█| 25000/25000 [02:27<00:00, 169.68it/s, 1023 steps of size 1.0
-
 
 **PLACEHOLDER TEXT**
 
@@ -836,7 +844,7 @@ plt.show()
 
 
     
-![png](output_48_0.png)
+![png](output_49_0.png)
     
 
 
@@ -852,7 +860,7 @@ numpyro.render_model(HRmodel, model_args=(cluster_index, logtemps, mock_data['pa
 
 
     
-![svg](output_50_0.svg)
+![svg](output_51_0.svg)
     
 
 
@@ -892,7 +900,7 @@ plt.show()
 
 
     
-![png](output_52_0.png)
+![png](output_53_0.png)
     
 
 
@@ -919,6 +927,6 @@ plt.grid()
 
 
     
-![png](output_54_0.png)
+![png](output_55_0.png)
     
 
