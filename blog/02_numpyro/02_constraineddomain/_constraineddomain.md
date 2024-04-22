@@ -7,6 +7,7 @@ In this example, we cover a simple 1D example of how to transform parameters bet
 **Index**
 - [Explanation of The Constrained / Unconstrained Domain](#The-Constrained-&-Unconstrained-Domain)
 - [Getting Likelihoods from MCMC Chains](#Using-Domain-Transforms-to-get-MCMC-Sample-Likelihood)
+- [Specifying MCMC Start Positions](#Specifying-MCMC-Start-Positions)
 
 
 ```python
@@ -87,7 +88,7 @@ diff = (x_uncon[2:]-x_uncon[:-2]) / (x_con[2:]-x_con[:-2])
 
 Now we feed our unconstrained parameters into the likelihood function, which we access from the `potential_energy` utility function that NumPyro gives us. This potential energy returns the **negative log likelihood**. For our model `model_test()`, this looks something like:
 
-$PE(x_{uncon}) = -ln|\mathcal{L(x_{uncon})}|=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
+$PE(x_{uncon}) = -ln\vert\mathcal{L(x_{uncon})}\vert=$ `numpyro.infer.util.potential_energy(model_test, model_args=(), model_kwargs={}, params={'x': x})`
 
 Even though we have no model `args` or `kwargs`, these fields still have to be explicitly given as empty tuples like above. In a more complicated case with data, e.g. `model_with_data(X,Y,E)`, these would be fed into the `model_args` field.
 
@@ -114,10 +115,8 @@ y_true[-1]= 0
 plt.plot(x_con[2:], y, c='blue', lw=2, label = "$\mathcal{L}$ from finite diff")
 plt.plot(x_con[2:], y_true, c='c', lw=1, zorder=-1, label = "$\mathcal{L}$ True")
 
-plt.legend()
-plt.grid()
-plt.xlabel("$x_{con}$")
-plt.ylabel("$\mathcal{L}(x) (Approx)$")
+plt.legend(), plt.grid()
+plt.xlabel("$x_{con}$"), plt.ylabel("$\mathcal{L}(x) (Approx)$")
 plt.show()
 ```
 
@@ -175,10 +174,8 @@ y = jnp.nan_to_num(y, copy=False, nan=0.0) # A mask that stops errors at the poo
 
 # Plot
 plt.plot(x_con, y, c='blue', lw=2)
-plt.ylim(ymin=0, ymax = np.max(y)*2)
-plt.grid()
-plt.xlabel("$x_{con}$")
-plt.ylabel("$\mathcal{L}(x)$")
+plt.ylim(ymin=0, ymax = np.max(y)*2), plt.grid()
+plt.xlabel("$x_{con}$"), plt.ylabel("$\mathcal{L}(x)$")
 plt.show()
 ```
 
@@ -231,7 +228,7 @@ def np_model():
     numpyro.factor(name="prob_fac", log_factor = log_prob_func(x,y))
 ```
 
-### Generating MCMC-Like Chain
+### Generating MCMC-Like Chains
 
 Now fire a standard MCMC run at this using NUTS. In a simple distribution like this, a single chain should be fine. Note that, when running the MCMC sampler, we instruct it to also log "`extra_fields`" like the potential energy etc. We can do this for **any value tracked by the sampler state**. e.g. we're using `NUTS`, a type of HMC, so we can instruct NumPyro to track any of the values listed in the [HMCstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.hmc.HMCState) class (e.g. `z_grad`: the grad vector or `i`, the iteration number)
 
@@ -249,7 +246,6 @@ MCMC_sampler.run(jax.random.PRNGKey(1),
                  extra_fields=("potential_energy",)
                  ,)
 MCMC_results = MCMC_sampler.get_samples()
-print("Sampling done")
 ```
 
     sample: 100%|███████| 51000/51000 [00:11<00:00, 4402.70it/s, 3 steps of size 7.34e-01. acc. prob=0.94]
@@ -266,7 +262,7 @@ $$
 
 NumPyro uses this terminology consistently across all of its samplers, e.g. the sampler adaptive sampler ([SAstate](https://num.pyro.ai/en/stable/mcmc.html#numpyro.infer.sa.SAState)) also refers to 'potential energy' despite not actually being formulated in kinetic terms. As an aside, the 'extra fields' tuple can sometimes play up if you don't have a comma after the last argument. E.g. `extra_fields=("potential_energy",)` will work, but `extra_fields=("potential_energy")` won't. 
 
-Now, plot these results in chainconsumer to confirm everything is working correctly. As expected, we see a bivariate Gaussian with $\sigma_x=\sigma_y=1$
+Now, plot these results in chainconsumer to confirm everything is working correctly. As expected, we see a bivariate Gaussian with $\sigma_x=\sigma_y=1$:
 
 
 ```python
@@ -301,10 +297,9 @@ logLtrue = np.log(Ltrue)
 # Plotting
 plt.scatter(logLtrue, -1 * pot_en, s=1)
 plt.axline([0,1], slope=1,c='r',zorder=-1)
-plt.axis('square')
-plt.grid()
-plt.xlabel("True Likelihood")
-plt.ylabel("$-1 \\times $Potential Energy")
+
+plt.axis('square'), plt.grid()
+plt.xlabel("True Likelihood"), plt.ylabel("$-1 \\times $Potential Energy")
 plt.show()
 ```
 
@@ -314,13 +309,13 @@ plt.show()
     
 
 
-The issue here is simple: this `potential energy` is defined in terms of the **unconstrained parameter space**, and so we need to do a transformation back to real parameter space using a conversion factor $U_\theta(\theta) = U_x(x) \cdot D$:
+The issue here is simple: this `potential energy` is defined in terms of the **unconstrained parameter space**, and so we need to do a transformation back to real parameter space using a conversion factor $U_\theta(\theta) = U_x(x) \cdot D$. Our prior distribution is seperable ($x$ and $y$ are uncorrelated in the prior) so this is as simple as multiplying the gradients together:
 
-\begin{equation}
+$$
     D=\Pi_i \left( \frac{dx'_i}{d\theta_i} \right)
-\end{equation}
+$$
 
-This is simple enough to do, all have to do is:
+This is simple enough to do, all we have to do is:
 1. Get the transformation functions from $x\leftrightarrow\theta$
 2. Take their gradient using `jax.grad`
 3. Get a function that takes their product to get the conversion factor
@@ -368,5 +363,142 @@ plt.show()
 
     
 ![png](output_28_0.png)
+    
+
+
+## Specifying MCMC Start Positions
+One area that the confusion between constrained and unconstrained domains rears its head is in the all-too-common case of trying to nominate a starting position for an MCMC run. Though NumPyro does have a considerable suite of [initialization strategies](https://num.pyro.ai/en/stable/_modules/numpyro/infer/initialization.html), it's easy to imagine cases where we might want more direct control. In this section, I'm going to demonstrate how to use the `constrain_fn` and `unconstrain_fn` utilities specify bespoke initial conditions for a set of MCMC chains, the kind of thing you can easily imagine using for multimodal problems or distributions with fiddly geometry.
+
+To keep things simple, suppose we have a model with a simple 2D Gaussian posterior in parameters $x$ and $y$, constrained by a uniform prior, $x,y\in[-10,10]$:
+
+
+```python
+# REDACT
+def model():
+    x = numpyro.sample('x', numpyro.distributions.Uniform(-10,10))
+    y = numpyro.sample('y', numpyro.distributions.Uniform(-10,10))
+    numpyro.factor('poten',-(x**2+y**2)/2)
+
+plt.figure(figsize=(4,4))
+Xg, Yg = np.meshgrid(np.linspace(-12,12,256), np.linspace(-12,12,256))
+Zg = np.exp(-(Xg**2+Yg**2)/2)
+plt.imshow(Zg, extent = (-12,12,-12,12), label = 'Likelihood')
+plt.plot([10,10,-10,-10,10], [10,-10,-10,10,10], c='w', lw=1, alpha=0.5, label = 'Prior Boundary')
+plt.legend( loc = 'upper right')
+plt.title("Likelihood Density")
+plt.show()
+```
+
+
+    
+![png](output_30_0.png)
+    
+
+
+Now suppose we want to start $4$ MCMC chains at some pre-determine positions. For demonstrating, I'm going to put them in a cross at $\pm 5$ from the origin, i.e.:
+
+$$
+(x_0,y_0) = ([0,5],[5,0],[0,-5],[-5,0])
+$$
+
+First, lets create a sampler as per normal. Here, I've set `step_size` to be small to better see the initial movement of the walkers, and for the same reason set this to be all `warmup` phase, with as few `num_samples` as I can get away with. Though I'm doing this for demonstration / validation, it can sometimes be good to set a small `step_size` in cases like this to make sure your sampler doesn't jump away from your starting position, especially for narrow modes.
+
+
+```python
+sampler = numpyro.infer.MCMC(
+    numpyro.infer.NUTS(model, step_size = 1E-10),
+    num_chains = 4,
+    num_samples = 1,
+    num_warmup = 1_000
+)
+```
+
+    /tmp/ipykernel_503/1458533417.py:1: UserWarning: There are not enough devices to run parallel chains: expected 4 but got 1. Chains will be drawn sequentially. If you are running MCMC in CPU, consider using `numpyro.set_host_device_count(4)` at the beginning of your program. You can double-check how many devices are available in your system using `jax.local_device_count()`.
+      sampler = numpyro.infer.MCMC(
+
+
+Now, we're going to take our starting positions and encode them in a dictionary, `init_pos`, keyed by parameter name:
+
+
+```python
+init_pos = {'x': jnp.array([0,5,0,-5]),
+            'y': jnp.array([5,0,-5,0])
+           }
+```
+
+Now the interesting part. We're going to convert this to auto-grad friendly unconstrained parameter space using the `unconstrain_fn` utility. This does the same thing as the `transform_fn` utility in our previous example, but automatically reads in all of the information about the prior from `model`, saving us some legwork.
+
+
+```python
+init_pos_uncon = numpyro.infer.util.unconstrain_fn(model=model, 
+                                                   model_args=(), 
+                                                   model_kwargs={}, 
+                                                   params=init_pos
+                                                  )
+```
+
+In this stripped-down example, we don't have any data or arguments and so `model_args` and `model_kwargs` are blank. We then feed these initial positions to directly into the sampler at the `.run()` or `.warmup()` command. Again, for plotting purposes, I'm only running the warmup phase and collecting samples from it to make sure I capture the first movements of the walkers:
+
+
+```python
+sampler.warmup(jax.random.PRNGKey(1), 
+               init_params = init_pos_uncon, 
+               collect_warmup =True
+              )
+res = sampler.get_samples()
+nchains = sampler.num_chains
+```
+
+    warmup: 100%|█████████| 1000/1000 [00:00<00:00, 7122.27it/s, 7 steps of size 8.47e-01. acc. prob=0.80]
+    warmup: 100%|█████████| 1000/1000 [00:00<00:00, 7584.18it/s, 3 steps of size 9.52e-01. acc. prob=0.80]
+    warmup: 100%|█████████| 1000/1000 [00:00<00:00, 7519.92it/s, 3 steps of size 9.63e-01. acc. prob=0.80]
+    warmup: 100%|█████████| 1000/1000 [00:00<00:00, 7661.82it/s, 1 steps of size 8.99e-01. acc. prob=0.80]
+
+
+Now we can plot to confirm that these starting positions have all worked correctly:
+
+
+```python
+plt.figure()
+label = 'Actual chain start'
+for i in range(nchains):
+    plt.plot(res['x'][i*nsamples:(i+1)*nsamples], res['y'][i*nsamples:(i+1)*nsamples], lw=.5, alpha=0.25)
+    plt.scatter([res['x'][i*nsamples]], [res['y'][i*nsamples]], marker = 'o', facecolor='none', edgecolor='blue', s = 32, label = label)
+    label = None
+
+plt.axis('square'), plt.grid()
+plt.scatter([init_pos['x']], [init_pos['y']], c='r', marker = 'x', s = 10, label = 'Given init positions')
+plt.legend()
+plt.xlim(-11,11), plt.ylim(-11,11)
+plt.show()
+```
+
+
+    
+![png](output_40_0.png)
+    
+
+
+In this example setting the sampler `step_size` at a low value means that NUTS began by taking small cautious steps about its initial positions. The warmup phase of NUTS includes a step-scaling phase here it tunes this parameter (see the [old stan documenation](https://mc-stan.org/docs/2_19/reference-manual/hmc-algorithm-parameters.html) for a good overview), and so the walkers ramp up their speed as they move. This early caution isn't needed in our toy example, but can become necessary if your starting positions are bracketed by dangers "high gradient" regions (see my [guide](https://hughmcdougall.github.io/blog/02_numpyro/03_mcmcsamplers/page.html) on multi-modality and aliasing for an example). You can easily get unlucky and shoot right off the high-likelihood island of stability and lose all the benefits of your initial position.
+
+
+```python
+fig, (a1,a2) = plt.subplots(2,1, sharex=True)
+
+for i in range(nchains):
+    a1.plot(res['x'][i*nsamples:(i+1)*nsamples], lw=1.5)
+    a2.plot(res['y'][i*nsamples:(i+1)*nsamples], lw=1.5)
+plt.xlim(xmin=0, xmax=100)
+a1.grid(), a2.grid()
+fig.supxlabel("Itteration No.")
+a1.set_ylabel("Walker x Position"), a2.set_ylabel("Walker y Position")
+for a in [-5,5]:
+    a1.axhline(a,c='k',ls='--', zorder=-1), a2.axhline(a,c='k',ls='--', zorder = -1)
+plt.show()
+```
+
+
+    
+![png](output_42_0.png)
     
 
