@@ -336,7 +336,7 @@ Be aware that this only means that we've wrung as much precision as possible out
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

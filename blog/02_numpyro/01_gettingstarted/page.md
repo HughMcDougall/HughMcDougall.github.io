@@ -235,7 +235,7 @@ Small adjustments to this simple case will cover most basic cases of using NumPy
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

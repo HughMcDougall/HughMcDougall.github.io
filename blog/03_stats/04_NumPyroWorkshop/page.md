@@ -1,4 +1,4 @@
-Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	   
+Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	 Next Entry: [Jax Example](.\..\05_JAXexample\_page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
@@ -599,7 +599,7 @@ Because this is a mock-up example, we're free to compare our results to the grou
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

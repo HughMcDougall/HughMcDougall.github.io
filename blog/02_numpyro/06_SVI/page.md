@@ -21,7 +21,7 @@ The core benefit of SVI is that we turn the _integration_ problem of grid-search
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

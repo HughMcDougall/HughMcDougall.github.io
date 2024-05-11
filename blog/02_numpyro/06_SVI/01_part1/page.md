@@ -781,7 +781,7 @@ print("θ = %0.2f°" %(thet_rec * 180/ np.pi))
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

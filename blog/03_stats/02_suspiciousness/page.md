@@ -500,7 +500,7 @@ This is equivalent to a $\approx 4.5\sigma$ tension in a simple 1D gaussian, i.e
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

@@ -8,6 +8,7 @@ Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return t
 * [Data Tension Examples](.\02_suspiciousness\./page.html) - _An example of data tension_  
 * [Is the Raffle Rigged?](.\03_raffle\./page.html) - _Practical stats for a toy problem_  
 * [NumPyro Workshop](.\04_NumPyroWorkshop\./page.html) - _An introduction to NumPyro for the UQ astro group_  
+* [Jax Example](.\05_JAXexample\./_page.html) - _An example of how to use jit and vmap for my own convenience_  
   
 ---------  
   
@@ -18,7 +19,7 @@ This part of the blog is home to miscellaneous standalone articles on statistics
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   

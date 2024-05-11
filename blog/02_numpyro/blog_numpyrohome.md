@@ -37,7 +37,7 @@ If you're already confident, you might also consider Dan Foreman Mackey's [Astro
   
 ---------  
   
-This page by Hugh McDougall, 2023  
+This page by Hugh McDougall, 2024  
   
   
   
