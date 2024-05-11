@@ -17,7 +17,7 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
     * [NumPyro Workshop](.\03_stats\04_NumPyroWorkshop\./page.html) - _An introduction to NumPyro for the UQ astro group_  
-    * [Jax Example](.\03_stats\05_JAXexample\./_page.html) - _An example of how to use jit and vmap for my own convenience_  
+    * [Jax Example](.\03_stats\05_JAXexample\./page.html) - _An example of how to use jit and vmap for my own convenience_  
   
 ---------  
   

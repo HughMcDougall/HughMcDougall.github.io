@@ -1,8 +1,8 @@
-doc:	./_page.md
+doc:	./page.md
 source:	./_JaxExample.md
 title:	Jax Example
 date:	11/5/24
 desc:	An example of how to use jit and vmap for my own convenience
 nav:	TRUE
 tree:	TRUE
-render:	False
+render:	True
