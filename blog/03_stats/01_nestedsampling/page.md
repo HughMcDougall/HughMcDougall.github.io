@@ -8,11 +8,6 @@ Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..
 ---------  
   
   
-```python  
-#REDACT  
-import numpy as np  
-import matplotlib.pyplot as plt  
-```  
   
 # Nested Sampling - Integration with Style  
 MCMC is the workhorse of Bayesian fitting in astronomy: general purpose tools like `emcee` are a near panacea for the eternal question of "how do I measure my model parameters?". However, even the best MCMC algorithm in the world has a fundamental flaw: the mission statement of sampling only near the optimum means that MCMC chains contain little to no information about the (sometimes vast) regions of parameter space at _low_ likelihood. This isn't an issue if we're trying to **marginalize** or **constrain** parameters, but leaves us completely at sea if we want to __integrate__, e.g. to get the model [information](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) or [evidence](https://en.wikipedia.org/wiki/Marginal_likelihood).  

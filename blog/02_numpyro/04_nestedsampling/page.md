@@ -31,7 +31,7 @@ from chainconsumer import ChainConsumer
 In the strictest sense, NS is an _integrator_ rather than a true MCMC method, but its results can be easily weighted into a MCMC-like chain. However, because it takes many samples in the low probability regions of parameter space to properly map where the likelihood _isn't_  
 it tends to produce "rougher" contours for the same number of samples.  
   
-I have a more detailed writeup of the interface / mechanisms of NS in NumPyro over [here](../../03_stats/04_nestedsampling/page.html), but the central idea behind NS is:  
+I have a more detailed writeup of the interface / mechanisms of NS in NumPyro over [here](../../03_stats/01_nestedsampling/page.html), but the central idea behind NS is:  
 1. Generate a set of $N$ "Live Points", distributed evenly across the prior  
 2. Remove the first point and log it as a sample  
 3. Find another point drawn _uniformly_ from the regions of parameter space at _higher likelihood_ than this dead point  
