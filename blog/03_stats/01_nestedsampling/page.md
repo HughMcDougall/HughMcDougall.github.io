@@ -26,6 +26,7 @@ In the first part of the article, I step through the harmonic mean estimator: sh
         * [Diagnostics](#sec_02_01_02)  
         * [A Second (Better) Attempt](#sec_02_01_03)  
     * [MCMC Chains from Nested Sampling](#sec_02_02)  
+* [Some Final Notes](#sec_03)   
   
 ## Why We Need it: The Harmonic Mean Estimator <a id='sec_01'></a>  
   
@@ -55,19 +56,19 @@ $$
 \mathbb{E}\left[\frac{1}{\mathcal{L}}\right]_\theta = \frac{1}{Z}\times\int{\pi(\theta) d\theta}=\frac{1}{Z}  
 $$  
   
-Easy enough: this is **consistent estimator**, its expected value is bang-on the thing we're trying to estimate as $N\rightarrow\infty$. What we'll see in a moment is that this estimator has the correct average, its **variance** can be ridiculous. Rather than slog through this analytically, we can show it visually.   
+Easy enough: this is **consistent estimator**, its expected value is bang-on the thing we're trying to estimate as $N\rightarrow\infty$. What we'll see in a moment is that while this estimator has the correct convergence, its **variance** can be ridiculous. Rather than slog through this analytically, I'll demonstrate this visually with some nice graphics, though first we need to take a little detour into the geometry of the problem.  
   
   
   
 ### Voronoi Estimator <a id='sec_01_01'></a>  
   
-For the sake of simplicity, lets look at a toy model so that the evidence is an area integral. Suppose we have some set of MCMC samples, ${\theta_i}$ distributed proportional to the posterior, and we've been smart enough to keep a track of their likelihoods etc. One way to think of the evidence is by saying that each sample is 'responsible' for some small region of parameter space, $A_i$, so that the integral can be estimated like:  
+For the sake of simplicity, lets look at a toy model so that the evidence is an area integral. Suppose we have some set of MCMC samples, $\{\theta_i\}$ distributed proportional to the posterior, and we've been smart enough to keep a track of their likelihoods and such. One way to think of the evidence is by saying that each sample is 'responsible' for some small region of parameter space, $A_i$, so that the integral can be estimated like:  
   
 $$  
-Z = \int{\mathcal{L}(\theta)\pi(\theta) dA} = \sum_i{\mathcal{L}(\theta_i)\pi(\theta_i) A_i}  
+Z = \int{\mathcal{L}(\theta)\pi(\theta) dA} \approx \sum_i{\mathcal{L}(\theta_i)\pi(\theta_i) A_i}  
 $$  
   
-Any evidence integral is going to be _some_ kind of weighted sum, so this is true in general, but in our naive approach lets just say that $A_i$ is the area of the region closer to point $i$ than any other point. A point in a densely packed region has a small $A_i$, a point in a sparsely sampled region has a large $A_i$. This goes by a few names: the rectangular rule, zero-th order integration, nearest neighbor interpolation; absent a catchy name I'll call this the "Voronoi Estimator" after the [sort of diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) we estimate the areas with.  
+Any evidence integral is going to be _some_ kind of weighted sum, so this is true in general, but in our naive approach lets just say that $A_i$ is the region closest to point $i$ rather than any other point. A point in a densely packed region has a small $A_i$, a point in a sparsely sampled region has a large $A_i$. This goes by a few names: the rectangular rule, zero-th order integration, nearest neighbor interpolation. Absent a catchy name I'll call this the "Voronoi Estimator" after the [sort of diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) we estimate the areas with.  
   
   
 ```python  
@@ -144,7 +145,7 @@ We've landed right back at the harmonic mean estimator! **The Voronoi estimator 
 <sup>1</sup> _Because evidence is immune to re-parameterization, and we can always map to some domain where $\pi(\theta)$ is uniform, this "special case" that we used as an example holds in general barring any weird topological edge cases._  
   
 ### Where Things go Wrong <a id='sec_01_02'></a>  
-So we have a common-sense way to estimate an integral, and a nice easy way to calculate that estimate. We're home free, right? Unfortunately, no. While this harmonic mean trick converges to the right answer, its variance is absolutely atrocious. To see why, lets take look at our example from above,<sup>2</sup> but with a few different sample densities / MCMC chain lengths. As we get more samples, our measurements of the evidence near the center, at the peak likelihood, become more and more precise. By however, no matter how many samples we take there are always going to be enormous chunks out at the fringes of the mode that are both very large and extremely imprecise.  
+So we have a common-sense way to estimate an integral, and a nice easy way to calculate that estimate. We're home free, right? Unfortunately, no. While this harmonic mean trick converges to the right answer, its variance is absolutely atrocious. To see why, lets take look at our example from above,<sup>2</sup> but with a few different sample densities / MCMC chain lengths. As we get more samples, our areas get more granular and precise for the high likelihoods near the center. However, no matter how many samples we take there are always going to be enormous chunks out at the fringes that are both very large and extremely imprecise.  
   
 <sup>2</sup> _The exact case is a Cauchy distribution of width $5$ for the prior, and a Gaussian of width $1$ for the likelihood_  
   
@@ -160,7 +161,7 @@ What does this do to our error estimates? Nothing good. If we simulate these MCM
 1. Even though the distribution _slowly_ crawls towards $Z_{True}$ as $N\rightarrow\infty$, its still heavily skewed  
 2. Even disregarding this bias, there's still ridiculous amounts of variance  
   
-The reason for this is simple: MCMC chains, by their nature, give us a poor picture of what's going on at the fringes of the posterior contours, and _no_ information about whats going on in the low-likelihood "flat land" beyond. That means that some significant fraction of our Voronoi "chunks" are noisy and poorly conditioned, skewing things towards over-estimating $Z$ and leaving lots of elbow room for variance.  
+The reason for this is simple: MCMC chains, by their nature, give us a poor picture of what's going on at the fringes of the posterior contours, and _no_ information about whats going on in the low-likelihood "flat land" beyond. That means that some significant fraction of our Voronoi "chunks" are noisy and poorly conditioned, skewing things towards over-estimating $Z$ and leaving lots of elbow room for variance. Because the HME and Voronoi estimator are equivalent, they share all of the same issues.  
   
   
   
@@ -170,7 +171,7 @@ The reason for this is simple: MCMC chains, by their nature, give us a poor pict
       
   
   
-There has been some attempts to rescue the HME from these pitfalls by using importance sampling, but without these its a safe bet that HME will fail in most realistic problems.  
+There has been some attempts to rescue the HME from these pitfalls by using importance sampling, but without these its a safe bet that HME will fail in most realistic problems. If we want to perform integrals in Bayesian Statistics, we need something better than brute force grid integration, but that covers parameter space a bit more thoroughly than MCMC.  
   
 ## How Nested Sampling Works <a id='sec_02'></a>  
   
@@ -204,7 +205,7 @@ Suppose we have $N_{Live}=100$. Because the these live points are distributed un
     <b>Sketch of how Nested Sampling contours shrink over each itteration</b>  
 </center></html>  
   
-<sup>3</sup> _Nested sampling is technically only for systems with discrete prior boundaries like this, but reparameterization or "whitening" makes it useful in the general cases as well._  
+<sup>3</sup> _Nested sampling is technically only for systems with discrete prior boundaries like this, but reparameterization or "whitening" lets us apply it to the general case as well._  
   
 When we draw a new point from _inside_ that plate, the entire process repeats. At each iteration $i$ we know that the plate "volume" is roughly $0.99^i \cdot V_0$, and its thickness is $g_{i+1}-g_i$ so that the total Lebesgue integral is something like:  
   
@@ -212,7 +213,7 @@ $$
 Z \approx \sum_i 0.99^i \cdot V_0\cdot (g_{i+1}-g_{i})  
 $$  
   
-Where $g_i$ is our list of dead points. This is the core idea of nested sampling: even though we don't actually know the _shape_ of the plate, we have a statistical estimate of how _large_ they are compared to the initial prior volume. You'll often see sources talking about how nested sampling collapses the multi-dimensional integral into a one dimensional one:  
+Where $g_i$ is our list of dead points. This is the core idea of nested sampling: even though we don't actually know the _shape_ of the plate, we have a statistical estimate of how _large_ they are compared to the initial prior volume. You'll often see sources talking about how nested sampling collapses the multi-dimensional integral into being 1-dimensional:  
   
 $$  
 Z=\int V(f) df \approx \sum_i V_i \Delta f_i, \quad V_i = V_0 \lambda^i  
@@ -227,12 +228,13 @@ $$
 To be a bit more rigorous, instead of shrinking by a factor $\lambda=1-\frac{1}{N_{Live}}$, the shrinkage actually obeys a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), $\lambda \sim \beta(1,N_{Live}-1)$, but this converges for large $N_{Live}$.  
   
 ### Building a Nested Sampler <a id='sec_02_01'></a>  
-In this section, we're going to build an extremely simple nested sampling algorithm in python to see how they work, and how even a few common sense changes can make them drastically more efficient than grid-based or blind Monte Carlo integration. First up, pull in a few packages we'll need:  
+In this section, we're going to build an extremely simple nested sampling algorithm in python to see how they work, and then look at how even a few common sense changes can make them drastically more efficient than grid-based or blind Monte Carlo integration.   
+  
+First up, we'll pull in a few packages we'll need:  
   
   
 ```python  
 import numpy as np  
-import jax.numpy as jnp  
 import matplotlib.pyplot as plt  
 from chainconsumer import ChainConsumer  
 ```  
@@ -243,7 +245,7 @@ $$
 x\in [-5.0,5.0], \quad y \in [-2.5, 2.5]  
 $$  
   
-Making these in python, along with a log-probability function:  
+Making these in python:  
   
   
 ```python  
@@ -259,12 +261,9 @@ def prob_func(x,y):
     out/=2*np.pi  
     out*=Ztrue  
     return(out)  
-      
-def log_prob_func(x,y):  
-    return(np.log(prob_func(x,y)))  
 ```  
   
-In a toy case like this, integration is obviously tractable through simple brute force, but keep in mind that integration scales exponentially with dimension. In real-world problems where each tick is costly, scaling like this can be a death sentence.  
+In a toy case like this, integration is obviously tractable through simple brute force, but keep in mind that integration scales exponentially with dimension. In real-world problems where each evaluation can be costly, scaling like this can be a death sentence.  
   
   
 ```python  
@@ -274,6 +273,10 @@ xmin,xmax = -5.0, 5.0
 ymin,ymax = -2.5,2.5  
 V0 = (xmax-xmin) * (ymax-ymin)  
 #---------------------  
+# Grid Integration  
+Ngrid = 128  
+Xgrid, Ygrid = np.meshgrid(np.linspace(xmin,xmax,Ngrid), np.linspace(ymin,ymax,Ngrid))  
+heatmap_grid =prob_func(Xgrid,Ygrid)  
 Zgrid = np.sum(heatmap_grid) / np.sum(heatmap_grid>0) * V0  
 print("Evidence from grid integration is %0.4f, an error of %0.2f%% with %i evaluations" %(Zgrid,abs(Zgrid/Ztrue-1)*100, Ngrid**2) )  
 ```  
@@ -351,16 +354,17 @@ Now the actual nested sampling loop. This follows a few simple steps:
 3. Save the old live point and current volume  
 4. Repeat (1)-(3) until we hit our maximum number of evaluations  
   
-At each iteration, our live points draw inwards towards the contour peaks, packing together exponentially tightly. I'm also going to track the number of evaluations in the array `efficiency` to see how efficient our sampler is at different times  
+At each iteration, our live points draw inwards towards the contour peaks, packing together exponentially tightly. I'm also going to track the number of evaluations in the array `efficiency` to see how efficient we are at finding a new live point at different times:  
   
   
 ```python  
 dead_points = ([],[],[])  
 volumes = []  
-V = V0  
-shrinkage = 1-1/Nlive  
 efficiency = []  
   
+shrinkage = 1-1/Nlive  
+  
+V = V0  
 i=0  
 while i<=Nevals:  
     # Store the worst live point as a dead point  
@@ -375,8 +379,6 @@ while i<=Nevals:
     Xlive[0], Ylive[0], Flive[0] =  xnew, ynew, fnew  
   
     efficiency.append(nevals)  
-  
-    cost +=nevals  
   
     # Sort and repeat  
     Xlive, Ylive, Flive = sort_livepoints(Xlive, Ylive, Flive)  
@@ -397,6 +399,7 @@ Now we can estimate the integral. For comparison, I'm going to use both the Reim
 dZ1 = np.diff(dead_points[2]) * (np.array(volumes)[1:]+np.array(volumes)[:-1])/2  
 # Reimann  
 dZ2 = (np.array(dead_points[2][1:])+np.array(dead_points[2][:-1]))/2 * -np.diff(volumes)  
+  
 Z1, Z2 = dZ1.sum(), dZ2.sum()  
 #----------  
 print("For %i Total Evaluations:" %sum(efficiency))  
@@ -404,12 +407,12 @@ print("Lebesgue Integral is %.2f, an error of %.2f%%" %(Z1, abs(Z1/Ztrue-1)*100)
 print("Reimann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))  
 ```  
   
-    For 76154 Total Evaluations:  
-    Lesbegue Integral is 2.91, an error of 2.99%  
-    Reimann Integral is 2.76, an error of 8.06%  
+    For 85109 Total Evaluations:  
+    Lebesgue Integral is 3.00, an error of 0.15%  
+    Reimann Integral is 2.85, an error of 4.90%  
   
   
-Incredible, right? Well, not really. We did barely as well as a grid-integral for significantly more evaluations. The good news is that this is down to our patch implementation, not a fundamental limit of the method. In fact, our implementation has three things that make it less than ideal:  
+Incredible, right? Well, not really. We did barely as well as a grid-integral for significantly more evaluations. The good news is that this is down to our patchy implementation, and is not a fundamental limit of the method. In fact, our implementation has three things that make it less than ideal:  
 1. We discard the final live points   
 2. We approximate the volume shrinkage as being constant  
 3. Our method of selecting new live points is hugely wasteful  
@@ -421,7 +424,7 @@ $$
 Z = \sum \Delta Z_i, \quad \Delta Z_i = f_i \Delta V_i \approx \Delta f_i V_i  
 $$  
   
-So we can plot this how $\Delta Z$ and its sum change as the walks track inwards. For comparison, we'll also plot $f_i$ by itself.  
+So we can plot this how $\Delta Z$ and its sum change as the walks track inwards. For comparison, we'll also plot $f_i$ by itself, which shows how "high" the live points are as they track inwards:  
   
   
   
@@ -431,9 +434,9 @@ So we can plot this how $\Delta Z$ and its sum change as the walks track inwards
       
   
   
-We can see something interesting here: the amount of evidence at each nested shell peaks and then levels out, even though the 'height' of the function keeps going up. This is because the evidence in each shell is a product of height _and_ volume. The peak of the $\Delta Z$ bump is called the "typical set", sometimes explained as there being "only one _best_ fit, but many 'okay' fits".   
+We can see something interesting here: the amount of evidence at each nested shell peaks and then levels out, even though the 'height' of the function keeps going up. This is because the evidence in each shell is a product of height _and_ volume, and shells that are further out are bigger. The peak of the $\Delta Z$ bump is called the "typical set", sometimes explained as there being "only one _best_ fit, but many _okay_ fits".   
   
-Diagnostic graphs like this are a useful sanity check on nested sampling because they tell us at a glance if / how things are breaking. We can see, for starters, at the second and third panels haven't fully leveled out and the first panel has bumps that are a bit "cut off", suggesting we're missing some evidence at the modal peaks. In fact, we very much are: the live points shrink inwards and leave a trail of dead points in their wake, but our current algorithm just throws the final set of live points out, meaning we miss the evidence associated with them.  
+Diagnostic graphs like this are a useful sanity check on nested sampling because they tell us at a glance if / how things are breaking. We can see, for starters, that the second and third panels haven't fully leveled out and the first panel has bumps that "cut off" a bit early, suggesting that we're missing some evidence at the modal peaks. In fact, we very much are: the live points shrink inwards and leave a trail of dead points in their wake, but our current algorithm just throws the final set of live points out, meaning we miss the evidence associated with them.  
   
   
   
@@ -443,15 +446,20 @@ Diagnostic graphs like this are a useful sanity check on nested sampling because
       
   
   
-For the Lebesgue integral this only "snips" the top off of the evidence, as we miss a few narrow plates. For the Reimann integral, we're basically taking an apple-corer to the middle of our distribution, meaning it systematically under-estimates $Z$. A brute-force way to fix this is to increase $N_{eval}$ so the missing core shrinks, but there's a less wasteful approach: each of those last live points is already nested and sorted, so we can estimate their shell sizes in the usual way and add that to our shell volumes.  
+For the Lebesgue integral this only "snips" the top off of the evidence, as we miss a few narrow plates. For the Reimann integral, we're basically removing the middle of our distribution like an apple core, meaning we systematically under-estimate $Z$. A brute-force way to fix this is to increase $N_{eval}$ so the missing core shrinks, but there's a less wasteful approach: each of those last live points is already nested and sorted, so we can estimate their shell sizes in the usual way and add them to our dead points.  
   
 As to the sampling method, we can plot the efficiency of our sampler and see that it drops exponentially over time. This isn't surprising: at the moment we're shooting blindly and hoping to hit an exponentially shrinking target:  
   
   
   
+    /home/hughmc/anaconda3/envs/nestconda_latest/lib/python3.11/site-packages/numpy/core/fromnumeric.py:3504: RuntimeWarning: Mean of empty slice.  
+      return _methods._mean(a, axis=axis, dtype=dtype,  
+      ret = ret.dtype.type(ret / rcount)  
+  
+  
   
       
-![png](output_35_0.png)  
+![png](output_35_1.png)  
       
   
   
@@ -498,7 +506,7 @@ def new_live_point(X,Y,F):
       
   
   
-Equipped with this new proposal method, we can re-run with a few small change:  
+Equipped with this new proposal method, we can re-run with a few small changes:  
 1. We'll use our new method of searching for a new live point  
 2. Instead of $V_i = V_{i-1}\times \left(1-\frac{1}{N_{Live}}\right)$, we'll use $V_i = V_{i-1}\times \lambda, \quad \lambda \sim \beta(N_{Live}-1,1)$  
 3. After our main set of evaluations, we'll also use add up the evidence contributions from the final live points  
@@ -519,10 +527,11 @@ Xlive, Ylive, Flive = sort_livepoints(Xlive, Ylive, Flive)
 #--------------------------------------------  
 dead_points = ([],[],[])  
 volumes = []  
-V = V0  
-shrinkage = 1-1/Nlive  
 efficiency = []  
   
+shrinkage = 1-1/Nlive  
+  
+V = V0  
 i=0  
 while i<=Nevals:  
     # Store the worst live point as a dead point  
@@ -537,8 +546,6 @@ while i<=Nevals:
     Xlive[0], Ylive[0], Flive[0] =  xnew, ynew, fnew  
   
     efficiency.append(nevals)  
-  
-    cost +=nevals  
   
     # Sort and repeat  
     Xlive, Ylive, Flive = sort_livepoints(Xlive, Ylive, Flive)  
@@ -573,17 +580,17 @@ print("Reimann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))
   
     0	960	1920	2880	3840	4800	5760	6720	7680	8640	9600	Done Main Sampling  
     Done Peak Sampling  
-    For 12550 evaluations:  
-    Lebesgue Integral is 3.01, an error of 0.34%  
-    Reimann Integral is 3.01, an error of 0.34%  
+    For 12505 evaluations:  
+    Lebesgue Integral is 3.05, an error of 1.51%  
+    Reimann Integral is 3.05, an error of 1.51%  
   
   
 We're now hitting very good precision at _less_ evaluations than a raw grid search, even with our still relatively simple sampling method. The advantages of nested sampling might not be apparent in this problem: it's low dimensional and the function we're integrating is particularly well behaved against grid integration, but the beauty of nested sampling is that it can work well in increasingly high dimensions and with unusually shaped contours.  
   
 If we plot run our diagnostic plots, we see a few things:  
 1. Because our sampling range shrinks along with our contours, our efficiency is pretty steady  
-2. Because we're not snipping off the high final likelihood points, the Lebesgue and Reimann integrals align  
-3. With a higher number of evaluations, we're getting a good end-result precision  
+2. Because we're not snipping off the high final likelihood points, the Lebesgue and Reimann integrals agree with one another  
+3. With a higher number of evaluations, we're getting a good end-result precision at low cost  
   
 The hard part of building a good nested sampler is really down to point (1): finding some clever way to sample uniformly from our "nested contours" in a way that's both robust and efficient. The trick we used here, breaking our target space into two rectangles, is a common approach. The famous `python` package [`dynesty`](https://dynesty.readthedocs.io/en/latest/dynamic.html) uses the live points to draw a series of "ellipsoids", while cosmology's own [`polychord`](https://cobaya.readthedocs.io/en/latest/sampler_polychord.html#) abandons the rejection sampling approach in favour of [slice sampling](https://en.wikipedia.org/wiki/Slice_sampling). My personal weapon of choice, [`jaxns`](https://github.com/Joshuaalbert/jaxns), uses a combination of the two.  
   
@@ -603,7 +610,7 @@ The hard part of building a good nested sampler is really down to point (1): fin
   
 ### Getting MCMC-Like Chains from Nested Sampling <a id='sec_02_02'></a>  
   
-We've seen earlier that MCMC, a posterior estimator, is a poor tool for getting integrals, but does nested sampling, an integrator, work as a posterior estimator? Can we take our nested sampling results and spin get an MCMC-like chain? Conveniently, yes, and really quite easily. The idea goes like this:   
+We've seen earlier that MCMC, a posterior estimator, is a poor tool for getting integrals. Does nested sampling, an integrator, work as a posterior estimator? Can we take our nested sampling results get an MCMC-like chain? Conveniently, yes, and really quite easily. The idea goes like this:   
 1. Each sample in our dead points acts as a surrogate for an entire chunk of parameter space of volume $\Delta V_i$  
 2. The total "amount" of the posterior in this chunk is $\Delta Z_i = f_i \Delta V_i$  
 From (1) and (2), we can [importance sample](https://en.wikipedia.org/wiki/Importance_sampling), (i.e. take a weighted re-draw) of our dead-points with weights proportional to ${\Delta Z_i}$ and we'll get a list of points distributed proportional to the posterior density, i.e. an MCMC chain  
@@ -612,7 +619,7 @@ From (1) and (2), we can [importance sample](https://en.wikipedia.org/wiki/Impor
 ```python  
 #From earlier work, dZ2 = {f_i * dV_i}  
 weights = dZ2 / dZ2.sum()  
-I = np.random.choice(range(len(weight)), len(weight), p=weights, replace=True)  
+I = np.random.choice(range(len(weights)), len(weights), p=weights, replace=True)  
 samples = {'x':np.array(dead_points[0])[1:][I],  
           'y':np.array(dead_points[1])[1:][I]}  
 ```  
@@ -625,7 +632,7 @@ samples = {'x':np.array(dead_points[0])[1:][I],
       
   
   
-If we throw this into `ChainConsumer`, we sadly get some pretty choppy looking contours. This is a fundamental limit: Nested Sampling only takes so many samples, and we've effectively thrown most of them out. In this specific example even through we have $11,200$ samples from nested sampling, we only have $\sim 471$ "effective points" after taking the weighted re-draws. If you're dead-set on using nested sampling, the cure to this is to use more live points to slow down the progression of the sampler and force it to take more high-likelihood samples, but a much better approach is to _combine_ nested sampling and MCMC for their specific purposes.  
+If we throw this into `ChainConsumer`, we sadly get some pretty choppy looking contours. This is a fundamental limit: Nested Sampling only takes so many samples, and we've effectively thrown most of them out. In this specific example even through we have $11,200$ samples from nested sampling, we only have $\sim 471$ "effective points" after taking the weighted re-draws.  
   
   
 ```python  
@@ -643,6 +650,15 @@ plt.show()
 ![png](output_48_1.png)  
       
   
+  
+If you're dead-set on using nested sampling, the cure to this is to use more live points to slow down the progression of the sampler and force it to take more high-likelihood samples. This is a bite brutish, and a more principled approach is to use NS for a first scouting of the mode shapes before refining with MCMC.  
+  
+### Some Final Notes <a id='sec_03'></a>  
+In this example, I've built what is still a relatively rudimentary nested sampler. Aside from their clever ways of hunting for new live points, more developed samplers have a host of other more advanced features. Most keep track of the uncertainty in the shell volumes to give constraints on $Z$ instead of a single value, and dynamic samplers like `dynesty` allow $N_{Live}$ to vary across the run to increase the sample density near the typical set, focusing evaluations where the integral is most sensitive. We've also used a pretty rough halting condition: it's common practice to simply see when $\Delta Z$ gets small and halt when the integral has converged.  
+  
+Nested samplers can be at first a bit impenetrable, particularly the bespoke details of how each sampler handles the gritty details of generating proposals. In truth, the only truly difficult concept is the initial slight of hand involved in viewing the Lebesgue integral areas as shrunken fractions of the initial prior volume. With this "trick" under our belt, the rest of the principles follow mostly from geometry, even if they can be bit difficult to digest.  
+  
+Fortunately, or perhaps dangerously, pre-built packages mean the end-user can usually throw nested sampling at any sort of problem without any real understanding of how it operates and almost always get a reliable answer. The value in understanding these algorithms, whether you're involved in statistical methods or just an end-user data scientist, is in understanding how and when they _don't_ work.  
   
   
 ---------  
