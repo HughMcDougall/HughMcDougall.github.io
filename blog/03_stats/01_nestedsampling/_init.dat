@@ -1,5 +1,5 @@
 doc:	./page.md
-source:	./_page.md
+source:	./_nestedsampling.md
 notebook:	_nestedsampling.ipynb
 title:	Nested Sampling
 date:	26/6/24
