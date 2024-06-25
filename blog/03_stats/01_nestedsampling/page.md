@@ -71,44 +71,6 @@ $$
 Any evidence integral is going to be _some_ kind of weighted sum, so this is true in general, but in our naive approach lets just say that $A_i$ is the region closest to point $i$ rather than any other point. A point in a densely packed region has a small $A_i$, a point in a sparsely sampled region has a large $A_i$. This goes by a few names: the rectangular rule, zero-th order integration, nearest neighbor interpolation. Absent a catchy name I'll call this the "Voronoi Estimator" after the [sort of diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) we estimate the areas with.  
   
   
-```python  
-import matplotlib as mpl  
-import matplotlib.cm as cm  
-from scipy.spatial import Voronoi, voronoi_plot_2d  
-  
-f, (a1,a2,a3) = plt.subplots(1,3, sharex=True, sharey=True, figsize=(12,4))  
-  
-V = Voronoi(np.vstack([Xprior[I], Yprior[I]]).T)  
-  
-# find min/max values for normalization  
-C = L[I] * PI[I]  
-minima = min(C)  
-maxima = max(C)  
-  
-# normalize chosen colormap  
-norm = mpl.colors.Normalize(vmin=minima, vmax=maxima, clip=True)  
-mapper = cm.ScalarMappable(norm=norm, cmap=cm.Blues)  
-  
-voronoi_plot_2d(V, show_vertices =False, show_points = False, ax=a2)  
-  
-for r in range(len(V.point_region)):  
-    region = V.regions[V.point_region[r]]  
-    if not -1 in region:  
-        polygon = [V.vertices[i] for i in region]  
-        a3.fill(*zip(*polygon), color=mapper.to_rgba(C[r]))  
-  
-for a in (a1,a2,a3):  
-    a.grid()  
-    a.set_aspect('equal')  
-    if a !=a3: a.scatter(Xprior[I],Yprior[I], s=1, c='r')  
-    a.set_xlim(-5,5)  
-  
-a1.set_title("MCMC Chain")  
-a2.set_title("Voronoi Areas")  
-a3.set_title("Posterior Density")  
-plt.show()  
-  
-```  
   
   
       
@@ -147,7 +109,7 @@ We've landed right back at the harmonic mean estimator! **The Voronoi estimator 
 ### Where Things go Wrong <a id='sec_01_02'></a>  
 So we have a common-sense way to estimate an integral, and a nice easy way to calculate that estimate. We're home free, right? Unfortunately, no. While this harmonic mean trick converges to the right answer, its variance is absolutely atrocious. To see why, lets take look at our example from above,<sup>2</sup> but with a few different sample densities / MCMC chain lengths. As we get more samples, our areas get more granular and precise for the high likelihoods near the center. However, no matter how many samples we take there are always going to be enormous chunks out at the fringes that are both very large and extremely imprecise.  
   
-<sup>2</sup> _The exact case is a Cauchy distribution of width $5$ for the prior, and a Gaussian of width $1$ for the likelihood_  
+<sup>2</sup> _The exact case is a Uniform distribution of width $5$ for the prior, and a Gaussian of width $1$ for the likelihood_  
   
   
   
@@ -200,7 +162,7 @@ The nested sampling algorithm is, in brief:
 Suppose we have $N_{Live}=100$. Because the these live points are distributed uniformly, that tells us that $\sim 99\%$ of parameter space is at a strictly higher likelihood than the worst point. If the prior has volume $V_0$, that means the area of the 'plate' containing that $99\%$ of points is $\sim 0.99 V_0$, and the Lebesgue Integral volume is $\Delta Z \approx f_{Live,0}\cdot 0.99 \cdot V_0$.  
   
 <html><center>  
-    <img src="./media/NestedSampling.png" alt="alt text" height="256px" width="75%"/>  
+    <img src="./media/NestedSampling.png" alt="alt text" height="256px" width="100%"/>  
     <br>  
     <b>Sketch of how Nested Sampling contours shrink over each itteration</b>  
 </center></html>  
@@ -225,10 +187,10 @@ $$
 Z = \int f(V) dV \approx \sum f_i \Delta V_i, \quad \Delta V_i = V_0 (\lambda^i - \lambda^{i-1})  
 $$  
   
-To be a bit more rigorous, instead of shrinking by a factor $\lambda=1-\frac{1}{N_{Live}}$, the shrinkage actually obeys a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), $\lambda \sim \beta(1,N_{Live}-1)$, but this converges for large $N_{Live}$.  
+To be a bit more rigorous, instead of shrinking by a factor $\lambda=1-\frac{1}{N_{Live}}$, the shrinkage actually obeys a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), $\lambda \sim \beta(1,N_{Live}-1)$, but these converge for large $N_{Live}$.  
   
 ### Building a Nested Sampler <a id='sec_02_01'></a>  
-In this section, we're going to build an extremely simple nested sampling algorithm in python to see how they work, and then look at how even a few common sense changes can make them drastically more efficient than grid-based or blind Monte Carlo integration.   
+In this section, we're going to build an extremely simple nested sampling algorithm in python to see how they work, and then later look at how even a few small common sense changes can make them drastically more efficient than grid-based or blind Monte Carlo integration.   
   
 First up, we'll pull in a few packages we'll need:  
   
