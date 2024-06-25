@@ -9,14 +9,20 @@ MCMC is the workhorse of Bayesian fitting in astronomy: general purpose tools li
 
 Using MCMC for evidence integrals is not just tricky, but a losing battle from the get-go: there's a fundamental mismatch between the goal of MCMC, which focuses where the likelihood is high, and integration, which can be dominated by broad low likelihood contours. There have been some attempts to use MCMC outputs for these integrals, but these have been of limited success and sometimes a source of disastrous failure. One such attempt at wrenching integrals from an MCMC chain is the infamous Harmonic Mean Estimator, a _technically_ valid but practically infamous way of estimating evidence. Enter **Nested Sampling**, a clever, robust and surprisingly simple way of getting integrals by focusing our efforts on the regions of parameter space with the highest evidence contribution.
 
-In the first part of the article, I step through the harmonic mean estimator: showing how it's derived and then demonstrating how it can go dangerously wrong. In the second part, I walk the reader through the fundamentals of nested sampling, including building their own simple algorithm in python. In the final part, I take a quick look at the more advanced pre-built nested sampling tools that we see in the field.
+In the first part of the article, I step through the harmonic mean estimator: showing how it's derived and then demonstrating how it can go dangerously wrong. In the second part, I walk the reader through the fundamentals of nested sampling, including building their own simple algorithm in python.
 
 **Navigation**
-* one
-* two
-* three
+* [Why We Need it: The Harmonic Mean Estimator](#sec_01)
+    * [Voronoi Estimator](#sec_01_02)
+    * [Where Things go Wrong](#sec_01_02)
+* [How Nested Sampling Works](#sec_02)
+    * [Building a Nested Sampler](#sec_02_01)
+        * [A First, Bad Attempt](#sec_02_01_01)
+        * [Diagnostics](#sec_02_01_02)
+        * [A Second (Better) Attempt](#sec_02_01_03)
+    * [MCMC Chains from Nested Sampling](#sec_02_02)
 
-## Why We Need it: The Harmonic Mean Estimator
+## Why We Need it: The Harmonic Mean Estimator <a id='sec_01'></a>
 
 In this section we'll look at the Harmonic Mean Estimator, first introduced by [Newton & Rafferty (1994)](https://www.jstor.org/stable/2346025), including its derivation, a more geometrically-motivated explanation of what its assuming, and a demonstration of how these assumptions cause it to blow up under pretty typical conditions.
 
@@ -108,7 +114,7 @@ if False:
     plt.show()
 ```
 
-### Voronoi Estimator
+### Voronoi Estimator <a id='sec_01_01'></a>
 
 For the sake of simplicity, lets look at a toy model so that the evidence is an area integral. Suppose we have some set of MCMC samples, ${\theta_i}$ distributed proportional to the posterior, and we've been smart enough to keep a track of their likelihoods etc. One way to think of the evidence is by saying that each sample is 'responsible' for some small region of parameter space, $A_i$, so that the integral can be estimated like:
 
@@ -192,7 +198,7 @@ We've landed right back at the harmonic mean estimator! **The Voronoi estimator 
 
 <sup>1</sup> _Because evidence is immune to re-parameterization, and we can always map to some domain where $\pi(\theta)$ is uniform, this "special case" that we used as an example holds in general barring any weird topological edge cases._
 
-### Where Things go Wrong
+### Where Things go Wrong <a id='sec_01_02'></a>
 So we have a common-sense way to estimate an integral, and a nice easy way to calculate that estimate. We're home free, right? Unfortunately, no. While this harmonic mean trick converges to the right answer, its variance is absolutely atrocious. To see why, lets take look at our example from above,<sup>2</sup> but with a few different sample densities / MCMC chain lengths. As we get more samples, our measurements of the evidence near the center, at the peak likelihood, become more and more precise. By however, no matter how many samples we take there are always going to be enormous chunks out at the fringes of the mode that are both very large and extremely imprecise.
 
 <sup>2</sup> _The exact case is a Cauchy distribution of width $5$ for the prior, and a Gaussian of width $1$ for the likelihood_
@@ -298,7 +304,7 @@ plt.show()
 
 There has been some attempts to rescue the HME from these pitfalls by using importance sampling, but without these its a safe bet that HME will fail in most realistic problems.
 
-## How Nested Sampling Works
+## How Nested Sampling Works <a id='sec_02'></a>
 
 We've seen that the harmonic mean estimator falls over in estimating evidence integrals, but this is really a limitation of MCMC itself. MCMC tells us about where the likelihood is high, but can miss the wide and shallow regions that dominate the evidence. Even if we get clever about how we interpret an MCMC chain, there's a fundamental limit to what information it gives us.
 
@@ -352,7 +358,7 @@ $$
 
 To be a bit more rigorous, instead of shrinking by a factor $\lambda=1-\frac{1}{N_{Live}}$, the shrinkage actually obeys a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), $\lambda \sim \beta(1,N_{Live}-1)$, but this converges for large $N_{Live}$.
 
-### Building a Nested Sampler
+### Building a Nested Sampler <a id='sec_02_01'></a>
 In this section, we're going to build an extremely simple nested sampling algorithm in python to see how they work, and how even a few common sense changes can make them drastically more efficient than grid-based or blind Monte Carlo integration. First up, pull in a few packages we'll need:
 
 
@@ -444,7 +450,7 @@ plt.show()
     
 
 
-**A First (Bad) Attempt**  
+**A First (Bad) Attempt**  <a id='sec_02_01_01'></a>  
 Now onto the fun part. We're going to build an extremely simple (and initially quite inefficient) nested sampler. To build our sampler, we're going to need a way to draw new live points. As a first pass I'm going to do this with brute force prior sampling: trying points randomly until we get one that performs better than the worst live point. 
 
 There's a rule of thumb that the number of live points should be:
@@ -589,7 +595,7 @@ Incredible, right? Well, not really. We did barely as well as a grid-integral fo
 2. We approximate the volume shrinkage as being constant
 3. Our method of selecting new live points is hugely wasteful
 
-**Diagnostics**  
+**Diagnostics**  <a id='sec_02_01_02'></a>   
 To see where things are going askew, we'll use a couple of the common diagnostic graph for nested sampling. We know that the total evidence integral is:
 
 $$
@@ -693,7 +699,7 @@ plt.show()
     
 
 
-**A Second (Better) Attempt**
+**A Second (Better) Attempt** <a id='sec_02_01_03'></a>   
 
 So how can we improve things? Well, we can use some common sense ways to learn the shape of the distribution and narrow down or search range for new points. Below I've written a simple `new_live_point` that draws a rectangle around our live points and _only_ tests new samples within that rectangle. If the left and right sides of the distribution are separated by a wide enough margin, we break into two rectangles and continue. This is an example of targeted rejection sampling.
 
@@ -924,7 +930,7 @@ plt.show()
     
 
 
-### Getting MCMC-Like Chains from Nested Sampling
+### Getting MCMC-Like Chains from Nested Sampling <a id='sec_02_02'></a>
 
 We've seen earlier that MCMC, a posterior estimator, is a poor tool for getting integrals, but does nested sampling, an integrator, work as a posterior estimator? Can we take our nested sampling results and spin get an MCMC-like chain? Conveniently, yes, and really quite easily. The idea goes like this: 
 1. Each sample in our dead points acts as a surrogate for an entire chunk of parameter space of volume $\Delta V_i$
