@@ -14,6 +14,7 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
         * [SVI Part 1](.\02_numpyro\06_SVI\01_part1\./page.html) - _Introduction & Explanation_  
         * [SVI Part 2](.\02_numpyro\06_SVI\02_part2\./page.html) - _Examples & Comparison with MCMC_  
 * [Statistics Articles](.\03_stats\./page.html) - _General Statistics Articles_  
+    * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
     * [NumPyro Workshop](.\03_stats\04_NumPyroWorkshop\./page.html) - _An introduction to NumPyro for the UQ astro group_  

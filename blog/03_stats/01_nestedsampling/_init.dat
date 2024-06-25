@@ -1,8 +1,9 @@
 doc:	./page.md
 source:	./_page.md
+notebook:	_nestedsampling.ipynb
 title:	Nested Sampling
-date:	21/8/23
-desc:	How to use this blog homepage
+date:	26/6/24
+desc:	A hands-on intro to nested sampling
 nav:	TRUE
 tree:	TRUE
-render: FALSE
+render: TRUE
