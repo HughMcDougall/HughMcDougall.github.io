@@ -5,6 +5,8 @@ Go Back: [Stochastic Variational Inference](.\..\page.html)	&nbsp;	Return to [Bl
   
 ---------------------------------------------------------------------------  
   
+_The jupyter notebook for this article, including all plotting code, is available [here](https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/.\02_numpyro\06_SVI\01_part1\_SVI-01.ipynb)._  
+  
 ---------  
   
   

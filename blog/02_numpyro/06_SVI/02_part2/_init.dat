@@ -5,4 +5,4 @@ date:	12/9/23
 desc:	Examples & Comparison with MCMC
 nav:	TRUE
 tree:	TRUE
-notebook:	_SVI02.ipynb
+notebook:	_SVI-02.ipynb

@@ -127,6 +127,7 @@ Any evidence integral is going to be _some_ kind of weighted sum, so this is tru
 
 
 ```python
+# REDACT
 import matplotlib as mpl
 import matplotlib.cm as cm
 from scipy.spatial import Voronoi, voronoi_plot_2d

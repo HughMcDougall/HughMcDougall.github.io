@@ -5,4 +5,4 @@ date:	20/9/23
 desc:	Explanation of constranied vs unconstrained domains in NumPyro
 nav:	TRUE
 tree:	TRUE
-notebook:	./_constraineddomain.jpynb
+notebook:	./_constraineddomain.ipynb

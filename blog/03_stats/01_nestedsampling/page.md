@@ -73,44 +73,6 @@ $$
 Any evidence integral is going to be _some_ kind of weighted sum, so this is true in general, but in our naive approach lets just say that $A_i$ is the region closest to point $i$ rather than any other point. A point in a densely packed region has a small $A_i$, a point in a sparsely sampled region has a large $A_i$. This goes by a few names: the rectangular rule, zero-th order integration, nearest neighbor interpolation. Absent a catchy name I'll call this the "Voronoi Estimator" after the [sort of diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) we estimate the areas with.  
   
   
-```python  
-import matplotlib as mpl  
-import matplotlib.cm as cm  
-from scipy.spatial import Voronoi, voronoi_plot_2d  
-  
-f, (a1,a2,a3) = plt.subplots(1,3, sharex=True, sharey=True, figsize=(12,4))  
-  
-V = Voronoi(np.vstack([Xprior[I], Yprior[I]]).T)  
-  
-# find min/max values for normalization  
-C = L[I] * PI[I]  
-minima = min(C)  
-maxima = max(C)  
-  
-# normalize chosen colormap  
-norm = mpl.colors.Normalize(vmin=minima, vmax=maxima, clip=True)  
-mapper = cm.ScalarMappable(norm=norm, cmap=cm.Blues)  
-  
-voronoi_plot_2d(V, show_vertices =False, show_points = False, ax=a2)  
-  
-for r in range(len(V.point_region)):  
-    region = V.regions[V.point_region[r]]  
-    if not -1 in region:  
-        polygon = [V.vertices[i] for i in region]  
-        a3.fill(*zip(*polygon), color=mapper.to_rgba(C[r]))  
-  
-for a in (a1,a2,a3):  
-    a.grid()  
-    a.set_aspect('equal')  
-    if a !=a3: a.scatter(Xprior[I],Yprior[I], s=1, c='r')  
-    a.set_xlim(-5,5)  
-  
-a1.set_title("MCMC Chain")  
-a2.set_title("Voronoi Areas")  
-a3.set_title("Posterior Density")  
-plt.show()  
-  
-```  
   
   
       
