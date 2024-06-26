@@ -5,7 +5,7 @@ Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..
   
 ---------------------------------------------------------------------------  
   
-_The jupyter notebook for this article, including all plotting code, is available [here](./suspic02.ipynb)._  
+_The jupyter notebook for this article, including all plotting code, is available [here](https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/.\03_stats\02_suspiciousness\suspic02.ipynb)._  
   
 ---------  
   

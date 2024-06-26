@@ -285,7 +285,11 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     if initdata["notebook"]!="NONE":
         if os.path.isfile(entryfol+initdata["notebook"]):
             do_notebook = True
-            if initdata["notebook"][:2]!="./": initdata["notebook"]="./"+initdata["notebook"]
+            if initdata["notebook"][:2]=="./": notebookloc = initdata["notebook"][2:]
+            else:
+                notebookloc = ""+initdata["notebook"]
+            notebookloc = "https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/"+entryfol+notebookloc
+            
         else:
             flog.write("unable to find notebook file %s in entry %s \n" %(initdata["notebook"], entryfol))
 
@@ -342,7 +346,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     # Notebook link
     if do_notebook:
         fout.write("  \n")
-        fout.write("_The jupyter notebook for this article, including all plotting code, is available [here](%s)._" %initdata["notebook"])
+        fout.write("_The jupyter notebook for this article, including all plotting code, is available [here](%s)._" %notebookloc)
         fout.write("  \n")
 
     # write tree
