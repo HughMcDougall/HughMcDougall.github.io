@@ -5,6 +5,8 @@ Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blo
   
 ---------------------------------------------------------------------------  
   
+_The jupyter notebook for this article, including all plotting code, is available [here](./_gettingstarted.ipynb)._  
+  
 ---------  
   
   

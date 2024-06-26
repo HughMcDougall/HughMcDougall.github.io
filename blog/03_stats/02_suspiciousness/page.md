@@ -5,6 +5,8 @@ Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..
   
 ---------------------------------------------------------------------------  
   
+_The jupyter notebook for this article, including all plotting code, is available [here](./suspic02.ipynb)._  
+  
 ---------  
   
   

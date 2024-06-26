@@ -199,7 +199,7 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
     entryfol = entry.replace("_init.dat", "")
     print(entryfol)
 
-    do_nav, do_header, do_tree, do_file, do_footer = False, False, False, False, False # Reset all
+    do_nav, do_header, do_notebook, do_tree, do_file, do_footer = False, False, False, False, False, False # Reset all
 
     #------------------------------------
     # LOAD & CHECK
@@ -281,6 +281,14 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
             f_head = open(default_header,'r', encoding="utf8")
             do_header = True
 
+    # Check if the notebook can be found
+    if initdata["notebook"]!="NONE":
+        if os.path.isfile(entryfol+initdata["notebook"]):
+            do_notebook = True
+            if initdata["notebook"][:2]!="./": initdata["notebook"]="./"+initdata["notebook"]
+        else:
+            flog.write("unable to find notebook file %s in entry %s \n" %(initdata["notebook"], entryfol))
+
     if initdata["footer"]!="FALSE":
         # Check if a specific file is being nominated
         if initdata["footer"] != "DEFAULT":
@@ -330,6 +338,12 @@ for i, entry, level in zip(range(len(entries)), entries, levels):
                 line = line.replace(replacement[0],replacement[1])
             fout.write(line.replace("\n","  \n"))
             fout.write("  \n")
+            
+    # Notebook link
+    if do_notebook:
+        fout.write("  \n")
+        fout.write("_The jupyter notebook for this article, including all plotting code, is available [here](%s)._" %initdata["notebook"])
+        fout.write("  \n")
 
     # write tree
     if do_tree:
