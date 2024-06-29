@@ -22,7 +22,6 @@ Go Back: [Hugh McDougall Astro Blog](.\..\bloghome.html)	&nbsp;	Return to [Blog 
 * [Stochastic Variational Inference](.\06_SVI\./page.html) - _An intro and guide to SVI in NumPyro_  
     * [SVI Part 1](.\06_SVI\01_part1\./page.html) - _Introduction & Explanation_  
     * [SVI Part 2](.\06_SVI\02_part2\./page.html) - _Examples & Comparison with MCMC_  
-* [UtilTest](.\07_utils\./page.html) - _An example of using log likelihood utils in numpyro_  
   
 ---------  
   

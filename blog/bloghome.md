@@ -13,7 +13,6 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
     * [Stochastic Variational Inference](.\02_numpyro\06_SVI\./page.html) - _An intro and guide to SVI in NumPyro_  
         * [SVI Part 1](.\02_numpyro\06_SVI\01_part1\./page.html) - _Introduction & Explanation_  
         * [SVI Part 2](.\02_numpyro\06_SVI\02_part2\./page.html) - _Examples & Comparison with MCMC_  
-    * [UtilTest](.\02_numpyro\07_utils\./page.html) - _An example of using log likelihood utils in numpyro_  
 * [Statistics Articles](.\03_stats\./page.html) - _General Statistics Articles_  
     * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
