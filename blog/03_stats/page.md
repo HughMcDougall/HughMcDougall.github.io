@@ -1,7 +1,7 @@
   
   
   
-Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return to [Blog Home](.\..\bloghome.html)  
+Go Back: [UtilTest](.\..\02_numpyro\07_utils\page.html)	&nbsp;	Return to [Blog Home](.\..\bloghome.html)  
   
 ---------------------------------------------------------------------------  
 **Navigation**  

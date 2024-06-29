@@ -5,5 +5,5 @@ date:	29/06/24
 desc:	An example of using log likelihood utils in numpyro
 nav:	TRUE
 tree:	TRUE
-render: FALSE
+render: TRUE
 notebook:	NONE
