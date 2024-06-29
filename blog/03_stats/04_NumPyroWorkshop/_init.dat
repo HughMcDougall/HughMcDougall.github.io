@@ -5,5 +5,5 @@ date:	26/2/24
 desc:	An introduction to NumPyro for the UQ astro group
 nav:	TRUE
 tree:	TRUE
-render:	False
+render:	FALSE
 notebook:	present.ipynb

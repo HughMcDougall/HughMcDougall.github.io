@@ -1,0 +1,9 @@
+doc:	./page.md
+source:	./utilexample.md
+title:	UtilTest
+date:	290/06/23
+desc:	An example of using log likelihood utils in numpyro
+nav:	TRUE
+tree:	TRUE
+render: FALSE
+notebook:	NONE
