@@ -17,7 +17,6 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
     * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
-    * [The Bayes-Sics](.\03_stats\06_bayesics\./page.html) - _Bayesianism vs frequentism model fitting, in short_  
   
 ---------  
   
