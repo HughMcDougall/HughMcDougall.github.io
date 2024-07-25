@@ -400,8 +400,8 @@ print("Done!")
 ```  
   
     Starting run!  
-    CPU times: user 8.8 s, sys: 1.14 ms, total: 8.8 s  
-    Wall time: 8.8 s  
+    CPU times: user 7.8 s, sys: 9.9 ms, total: 7.81 s  
+    Wall time: 7.81 s  
     Done!  
   
   

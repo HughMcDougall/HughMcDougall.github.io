@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from chainconsumer import ChainConsumer
 
 from scipy import stats
-
 ```
 
 # The Bayes-Sics
@@ -43,7 +42,7 @@ H, W  = np.random.multivariate_normal(mean = np.array([hav,wav]), cov=COVAR, siz
 
 #--------------------
 
-f, (a1,a2) = plt.subplots(1,2, figsize=(12,5), sharex=True, sharey=True)
+f, (a1,a2) = plt.subplots(1,2, figsize=(8,5), sharex=True, sharey=True)
 for a in (a1,a2):
     a.scatter(H,W, marker='.', c='limegreen')
     a.grid()
@@ -167,7 +166,7 @@ H, W  = np.random.multivariate_normal(mean = np.array([hav,wav]), cov=COVAR, siz
 
 #--------------------
 
-f, (a1,a2) = plt.subplots(1,2, figsize=(12,5), sharex=True, sharey=True)
+f, (a1,a2) = plt.subplots(1,2, figsize=(8,4), sharex=True, sharey=True)
 for a in (a1,a2):
     a.grid()
     a.axhline(0, ls='--', c='k', zorder=-1)
@@ -283,7 +282,7 @@ $$
 
 ```python
 # REDACT
-f, (a1,a2,a3) = plt.subplots(1,3, figsize=(12,5), sharex=False, sharey=True, gridspec_kw={'width_ratios': [1, 1, 0.25]})
+f, (a1,a2,a3) = plt.subplots(1,3, figsize=(8,4), sharex=False, sharey=True, gridspec_kw={'width_ratios': [1, 1, 0.25]})
 
 f.supxlabel("Height (cm)" ), f.supylabel("Weight (kg)")
 
@@ -370,7 +369,7 @@ MU, SIG = np.linspace(50,100,512), np.linspace(5,50,256)
 density = np.zeros([len(MU),len(SIG)])
 for i in range(len(MU)):
     for j in range(len(SIG)):
-        mu, sig = MU[i], SIG[j]
+        mu, sig = MU[i], SIG[j] 
         density[i,j] = np.log(prior_one(mu,sig)) + log_likelihood_one(H,W,mu,sig)
 
 #----------------------------------------------
@@ -386,7 +385,7 @@ a1.grid(alpha=0.25), a2.grid(alpha=0.25)
 plt.show()
 ```
 
-    /tmp/ipykernel_21628/2687195259.py:8: RuntimeWarning: divide by zero encountered in log
+    /tmp/ipykernel_22098/1085907503.py:8: RuntimeWarning: divide by zero encountered in log
       density[i,j] = np.log(prior_one(mu,sig)) + log_likelihood_one(H,W,mu,sig)
 
 
@@ -460,7 +459,7 @@ $$
 
 ```python
 # REDACT
-f, (a1,a2) = plt.subplots(1,2, figsize=(12,6), sharex=False, sharey=True)
+f, (a1,a2) = plt.subplots(1,2, figsize=(8,4), sharex=False, sharey=True)
 
 f.supxlabel("Height (cm)" ), f.supylabel("Weight (kg)")
 
@@ -558,8 +557,8 @@ print("Done!")
 ```
 
     Starting run!
-    CPU times: user 8.8 s, sys: 1.14 ms, total: 8.8 s
-    Wall time: 8.8 s
+    CPU times: user 7.8 s, sys: 9.9 ms, total: 7.81 s
+    Wall time: 7.81 s
     Done!
 
 
