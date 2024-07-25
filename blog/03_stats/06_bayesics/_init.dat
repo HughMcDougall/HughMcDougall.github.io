@@ -1,0 +1,8 @@
+doc:	./page.md
+source:	./Bayes_Work.md
+title:	The Bayes-Sics
+date:	25/7/24
+desc:	Bayesianism vs frequentism model fitting, in short
+nav:	TRUE
+tree:	TRUE
+render:	TRUE
