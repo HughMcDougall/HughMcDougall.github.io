@@ -1,0 +1,8 @@
+doc:	./Nandita_SBI_Example.md
+source:	./Nandita_SBI_Example.md
+title:	SBI Example
+date:	20/8/24
+desc:	A rough example for the SBI package
+nav:	TRUE
+tree:	TRUE
+render:	TRUE
