@@ -1,4 +1,4 @@
-Previous Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)	&nbsp;	 Next Entry: [SBI Example](.\..\07_sbi_example\Nandita_SBI_Example.html)  
+Previous Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)	&nbsp;	 Next Entry: [SBI Example](.\..\07_sbi_example\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

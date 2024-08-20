@@ -17,7 +17,7 @@ Hi, I'm [Hugh McDougall](../), an astronomy PhD student at the University of Que
     * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
-    * [SBI Example](.\03_stats\07_sbi_example\./Nandita_SBI_Example.html) - _A rough example for the SBI package_  
+    * [SBI Example](.\03_stats\07_sbi_example\./page.html) - _A rough example for the SBI package_  
   
 ---------  
   
