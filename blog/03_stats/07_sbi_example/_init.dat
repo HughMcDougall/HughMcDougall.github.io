@@ -5,4 +5,4 @@ date:	20/8/24
 desc:	A rough example for the SBI package
 nav:	TRUE
 tree:	TRUE
-render:	TRUE
+render:	FALSE
