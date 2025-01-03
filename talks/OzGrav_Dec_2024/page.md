@@ -1,8 +1,20 @@
+# Statistical Methods: Important but not Scary
+## OzGrav ECR Workshop 2024 
+
+This is a rough transcript of a talk I presented to the early career researcher (ECR) workshop at the OzGrav 2024 retreat, hosted at the University of Queensland. You can download the slides directly [here]().
+
+
 ![jpg](./Slide1.JPG)  
 
-![jpg](./Slide2.JPG)  
+This is aimed at graduate students and early career post-docs, aiming to cover two main areas:
+1. That the tendency to treat statistical methods as black boxes can lead to dangerous failure modes 
+2. Despite their reputation, stats methods are actually quite easy to understand, and even a basic understanding equips you to know what tools will / won't fail in different jobs.
 
-![jpg](./Slide3.JPG)  
+![jpg](./Slide2.JPG)
+
+![jpg](./Slide3.JPG)
+
+Part one: why stats methods are important, and something we, as scientists, need a functional understanding of even if they aren't the main focus of our work.
 
 ![jpg](./Slide4.JPG)  
 
