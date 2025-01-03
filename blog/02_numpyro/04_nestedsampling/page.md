@@ -3,6 +3,8 @@ Previous Entry: [Testing Different MCMC Samplers](.\..\03_mcmcsamplers\page.html
   
 Go Back: [Comfortably NumPyro](.\..\blog_numpyrohome.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
   
 _The jupyter notebook for this article, including all plotting code, is available [here](https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/.\02_numpyro\04_nestedsampling\_nestedsampling_in_numpyro.ipynb)._  

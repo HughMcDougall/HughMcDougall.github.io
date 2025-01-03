@@ -3,6 +3,8 @@ Previous Entry: [Nested Sampling](.\..\01_nestedsampling\page.html)	&nbsp;	 Next
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
   
 _The jupyter notebook for this article, including all plotting code, is available [here](https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/.\03_stats\02_suspiciousness\suspic02.ipynb)._  

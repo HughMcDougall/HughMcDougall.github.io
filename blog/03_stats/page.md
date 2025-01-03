@@ -3,6 +3,8 @@
   
 Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return to [Blog Home](.\..\bloghome.html)  
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [Nested Sampling](.\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  

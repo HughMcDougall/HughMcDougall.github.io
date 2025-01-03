@@ -1,5 +1,7 @@
   
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
 **Navigation**  
 * [Comfortably NumPyro](.\02_numpyro\./blog_numpyrohome.html) - _A guide to NumPyro to help demystify its more obscure features_  

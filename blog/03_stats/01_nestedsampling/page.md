@@ -3,6 +3,8 @@ Next Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
   
 _The jupyter notebook for this article, including all plotting code, is available [here](https://github.com/HughMcDougall/HughMcDougall.github.io/blob/main/blog/.\03_stats\01_nestedsampling\_nestedsampling.ipynb)._  
