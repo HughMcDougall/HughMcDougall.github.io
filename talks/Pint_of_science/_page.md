@@ -1,36 +1,36 @@
-![image](Pint_of_science\Slide1.JPG) \  
+![jpg](./Slide1.JPG) \  
 
-![image](Pint_of_science\Slide2.JPG) \  
+![jpg](./Slide2.JPG) \  
 
-![image](Pint_of_science\Slide3.JPG) \  
+![jpg](./Slide3.JPG) \  
 
-![image](Pint_of_science\Slide4.JPG) \  
+![jpg](./Slide4.JPG) \  
 
-![image](Pint_of_science\Slide5.JPG) \  
+![jpg](./Slide5.JPG) \  
 
-![image](Pint_of_science\Slide6.JPG) \  
+![jpg](./Slide6.JPG) \  
 
-![image](Pint_of_science\Slide7.JPG) \  
+![jpg](./Slide7.JPG) \  
 
-![image](Pint_of_science\Slide8.JPG) \  
+![jpg](./Slide8.JPG) \  
 
-![image](Pint_of_science\Slide9.JPG) \  
+![jpg](./Slide9.JPG) \  
 
-![image](Pint_of_science\Slide10.JPG) \  
+![jpg](./Slide10.JPG) \  
 
-![image](Pint_of_science\Slide11.JPG) \  
+![jpg](./Slide11.JPG) \  
 
-![image](Pint_of_science\Slide12.JPG) \  
+![jpg](./Slide12.JPG) \  
 
-![image](Pint_of_science\Slide13.JPG) \  
+![jpg](./Slide13.JPG) \  
 
-![image](Pint_of_science\Slide14.JPG) \  
+![jpg](./Slide14.JPG) \  
 
-![image](Pint_of_science\Slide15.JPG) \  
+![jpg](./Slide15.JPG) \  
 
-![image](Pint_of_science\Slide16.JPG) \  
+![jpg](./Slide16.JPG) \  
 
-![image](Pint_of_science\Slide17.JPG) \  
+![jpg](./Slide17.JPG) \  
 
-![image](Pint_of_science\Slide18.JPG) \  
+![jpg](./Slide18.JPG) \  
 

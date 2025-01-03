@@ -1,68 +1,68 @@
-![image](OzGrav_Dec_2024\Slide1.JPG) \  
+![jpg](./Slide1.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide2.JPG) \  
+![jpg](./Slide2.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide3.JPG) \  
+![jpg](./Slide3.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide4.JPG) \  
+![jpg](./Slide4.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide5.JPG) \  
+![jpg](./Slide5.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide6.JPG) \  
+![jpg](./Slide6.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide7.JPG) \  
+![jpg](./Slide7.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide8.JPG) \  
+![jpg](./Slide8.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide9.JPG) \  
+![jpg](./Slide9.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide10.JPG) \  
+![jpg](./Slide10.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide11.JPG) \  
+![jpg](./Slide11.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide12.JPG) \  
+![jpg](./Slide12.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide13.JPG) \  
+![jpg](./Slide13.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide14.JPG) \  
+![jpg](./Slide14.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide15.JPG) \  
+![jpg](./Slide15.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide16.JPG) \  
+![jpg](./Slide16.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide17.JPG) \  
+![jpg](./Slide17.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide18.JPG) \  
+![jpg](./Slide18.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide19.JPG) \  
+![jpg](./Slide19.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide20.JPG) \  
+![jpg](./Slide20.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide21.JPG) \  
+![jpg](./Slide21.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide22.JPG) \  
+![jpg](./Slide22.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide23.JPG) \  
+![jpg](./Slide23.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide24.JPG) \  
+![jpg](./Slide24.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide25.JPG) \  
+![jpg](./Slide25.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide26.JPG) \  
+![jpg](./Slide26.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide27.JPG) \  
+![jpg](./Slide27.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide28.JPG) \  
+![jpg](./Slide28.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide29.JPG) \  
+![jpg](./Slide29.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide30.JPG) \  
+![jpg](./Slide30.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide31.JPG) \  
+![jpg](./Slide31.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide32.JPG) \  
+![jpg](./Slide32.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide33.JPG) \  
+![jpg](./Slide33.JPG) \  
 
-![image](OzGrav_Dec_2024\Slide34.JPG) \  
+![jpg](./Slide34.JPG) \  
 
