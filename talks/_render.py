@@ -10,6 +10,8 @@ for folder in glob("*/"):
     indices = np.argsort(numbers)
     files = files[indices]
     for file in files:
-        out.write("![jpg](%s) \\  \n\n" %file.replace(folder, "./" ))
+        out.write("![jpg](%s) \  \n\n" %file.replace(folder, "./" ))
 
     out.close()
+
+print("Done")
