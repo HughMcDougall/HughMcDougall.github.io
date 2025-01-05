@@ -82,7 +82,18 @@ So, all is lost, right? Our stats tools, which we rely on every day, can and wil
 
 ![jpg](./Slide14.JPG)  
 
+In astrophysics we typically work with __Bayesian__ statistics rather than __frequentist__. As a rough summary:
+ * If there's a $P$ value, it's probably frequentist
+ * If there's a prior, it's probably Bayesian
+ * If there's both, it's some unholy union of the two
+In Bayesian stats, we take the __prior__, which is everything we knew about the world before we got any data, and combine it with the __likelihood__, which is everything our data tells us, and combine them to get the __posterior density__.
 
+There's a lot of subtle details about these that you can find explained better elsewhere, but for our purposes today this posterior density is just some high-dimensional function, where some of the inputs are things we care about (in RM, the lag) and the rest are ones that we don't (in RM, everything else).
+
+There are three jobs we might want to do with this function:
+1. We can optimize, i.e. find the highest point in that function, the point in parameter space that best describes reality. This actually doesn't come up too often, so we won't spend a lot of time on it here
+2. We can _explore_ the shape of the distribution, integrating over all the parameters we don't care about to get an idea of the shape and density of the probability distribution for the ones we do. This is how we measure or _constrain_ physical properties, and it's how we get those familiar corner plots.
+3. We can also keep going, integrating over _every_ parameter to turn out probability density into a sort of probability mass. This is called the Bayesian evidence, it's a single number that gives a goodness of fit for the entire model over all parameters. By itself it tells us very little, but if we compare it for two different models, we get a relative measure of how well they describe reality.
 
 ![jpg](./Slide15.JPG)  
 
