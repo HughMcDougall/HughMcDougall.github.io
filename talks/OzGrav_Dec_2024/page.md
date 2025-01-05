@@ -111,9 +111,19 @@ That really just leaves these two central branches here: MCMC and Nested samplin
 
 ![jpg](./Slide16.JPG)  
 
+First up, MCMC, the go-to tool that has dominated bayesian fitting for the better part of a century. MCMC is an example of a __sampler__, meaning it's end result is a list of points, an MCMC-_chain_, that is distributed proportional to the posterior density. We can throw these chains into a scatterplot or a histogram to get an idea of the _shape_ of the distribution, but MCMC _cannot_ get the integral / model evidence.
+
+Rather than explain its inner workings in detail, I'm going to step through a hypothetical of how you, as physicists, might have invented the [Metropolis-Hastings Algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm), the first and oldest MCMC engine that all others are descended from. This won't be rigorous, but I think it'll do a better job of giving you a gut-feeling physical intuition for how these sorts of samplers work.
+
 ![jpg](./Slide17.JPG)  
 
+So, put yourself in the shoes of a scientist in the first half of the 20th century: you're working at Los Alamos working on some terrifying project for the US government, and you've got a problem. You have this physical system, this bundle of particles, than can be in all sorts of configurations, and you want to know the probability distribution of one or more of its properties (magnetic field, spin etc). You know that each of these possbile states has an energy, and statistical mechanics tells us that the probability the system will be in that state is based on the energy via the [Boltzmann Distribution](https://en.wikipedia.org/wiki/Boltzmann_distribution). You know that the _proper_ way to do this is to calculate every energy for every state and then map out the distribution with weighted averages. The problem is that this is absurdly expensive: you have thousands or tens of thousands of states, and this early in time (the macbook being half a century away) you simply do not have the requisite computational grunt.
+
+So what do you do? Well, you get clever and you _simulate_ it. 
+
 ![jpg](./Slide18.JPG)  
+
+
 
 ![jpg](./Slide19.JPG)  
 
