@@ -40,7 +40,7 @@ That's where revberation mapping comes in. The accretion disk isn't a static lig
 
 If you entered revberation mapping ten years ago, you would think that this was a solved problem. We have the physics which I just described, and we have a statistical model that describes the AGN light-curves as something called a damped random walk, a particular stochastic process that explains the properties of the flickering really well. This damped random walk is an example of a Gaussian process, which means we can simulate it, which means we can build a full Bayesian generative model and do Bayesian statistics.
 
-There's software that does this: a program called `JAVELIN` that fits the lag, plus a half dozen other parameters, and does its fitting using Markov Chain Monte Carlo (MCMC). Specifically, it uses the package program `emcee`, which you may have used or heard of as it's probably the most popular MCMC package in astrophysics. 
+There's software that does this: a [program called `JAVELIN`](https://arxiv.org/abs/1008.0641) that fits the lag, plus a half dozen other parameters, and does its fitting using Markov Chain Monte Carlo (MCMC). Specifically, it uses the package program `emcee`, which you may have used or heard of as it's probably the most popular MCMC package in astrophysics. 
 
 ![jpg](./Slide7.JPG)  
 
@@ -74,9 +74,15 @@ This is not some deviously complicated failure state, it's sitting right there i
 
 ![jpg](./Slide12.JPG)  
 
+So what went wrong in a literal sense is that `JAVELIN` wasn't built for multi-modal distributions. What went wrong in a more abstract sense is that `JAVELIN` had fallen foul of one of the four demons of Bayesian fitting, the four failure states of different statistical engines. We'll re-visit these in detail a little later, but for now just keep in mind that there are these ways that our stats tools can fail us, and if we're un-aware they will do so invisibly and without us knowing.
+
 ![jpg](./Slide13.JPG)  
 
+So, all is lost, right? Our stats tools, which we rely on every day, can and will betray us without us being any the wiser. We should all board up our doors and windows and give up on science, right? Well, obviously no. The good news is that you can avoid problems like this ahead of time by making sure you understand your stats tools and can pick the right one for your job. You don't actually need that detailed of an understanding to get have a workable knowledge base, and in fact I'll be able to cover a solid majority of it in the rest of this talk.
+
 ![jpg](./Slide14.JPG)  
+
+
 
 ![jpg](./Slide15.JPG)  
 
