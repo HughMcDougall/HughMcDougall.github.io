@@ -127,11 +127,11 @@ So you either move or stay, you either _accept_ or _reject_ this proposal. Then 
 
 Fast forward a few years and you have another clever idea. This works for statistical mechanics, but there's nothing here that actually _requires_ the mechanics part. Instead of having a system with physical energies that correspond to probabilities, you could take some probability distribution (e.g. a Bayesian posterior density) and just _pretend_ that this corresponds to some energy landscape. 
 
-Without changing anythng else, you've just invented the Metropolis-Hastings Algorithm.
-
-
+Without changing anythng else, you've just invented the Metropolis-Hastings Algorithm. This is the core idea that underpins pretty much every MCMC engine that has descended from here: you have a particle or cloud of particles wandering around some energy landscape, with various methods differing in how they make that proposal of where to go next. I also want to stress that it's this energy landscape, this _log_ probability landscape, which is where stats-methods actually live and work, and importantly where they break.
 
 ![jpg](./Slide19.JPG)  
+
+You may have noticed back in the family tree slide that I showed another branch descended from MCMC. This is the new kid on the block: __Hamiltonian Monte Carlo__ (HMC).
 
 ![jpg](./Slide20.JPG)  
 
