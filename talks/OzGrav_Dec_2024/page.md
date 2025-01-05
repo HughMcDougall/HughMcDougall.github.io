@@ -1,5 +1,5 @@
 # Statistical Methods: Important but not Scary
-## OzGrav ECR Workshop 2024 
+## OzGrav ECR Workshop 2024
 
 This is a rough transcript of a talk I presented to the early career researcher (ECR) workshop at the OzGrav 2024 retreat, hosted at the University of Queensland. You can download the slides directly [here]().
 
@@ -40,17 +40,25 @@ That's where revberation mapping comes in. The accretion disk isn't a static lig
 
 If you entered revberation mapping ten years ago, you would think that this was a solved problem. We have the physics which I just described, and we have a statistical model that describes the AGN light-curves as something called a damped random walk, a particular stochastic process that explains the properties of the flickering really well. This damped random walk is an example of a Gaussian process, which means we can simulate it, which means we can build a full Bayesian generative model and do Bayesian statistics.
 
-There's software that does this: a program called JAVELIN that fits the lag, plus a half dozen other parameters, and does its fitting using Markov Chain Monte Carlo (MCMC). Specifically, it uses the package program `emcee`, which you may have used or heard of as it's probably the most popular MCMC package in astrophysics. 
+There's software that does this: a program called `JAVELIN` that fits the lag, plus a half dozen other parameters, and does its fitting using Markov Chain Monte Carlo (MCMC). Specifically, it uses the package program `emcee`, which you may have used or heard of as it's probably the most popular MCMC package in astrophysics. 
 
 ![jpg](./Slide7.JPG)  
 
 So what's the problem? What's changed in the last ten years? What's changed more than anything is the sorts of surveys we do revberation mapping with. For early surveys you'd track a handful of nearby sources, at low redshift, really intensely for a couple of months. Now we work with in __industrial scale__ surveys like OzDES or the Sloan Digital Sky Survey (SDSS), which track hundreds to thousands of AGN out to deep redshifts over multiple years, working at lower precision and cadence but making up for it in depth and shear weight of numbers.
 
-The problem with these multi-year surveys is that, when you track any one AGN, you get half-yearly seasonal gaps in your observations owing to the Sun being in the way for half of that time. These seasonal gaps give rise to the problem of __aliasing__.
+The problem with these multi-year surveys is that, when you track any one AGN, you get half-yearly seasonal gaps in your observations owing to the Sun being in the way for half of that time. These seasonal gaps give rise to the problem of __aliasing__: when you run light-curves like this through `JAVELIN`, you get these multiple peaks in your recovered lag distribution. This is for simulated data, with the true lag at $180$ days, but there's a second _aliasing peak_ that emerges at $540$ days. What's going on here is that if you test a lag at half a year or one and a half years or so forth, there's no overlap in the data of your two light curves and so you can't tell if this is a good fit or not. It's an ambigious fit, a locally optimal one, and so you get these aliasing peaks emerging.
+
+If you're lucky, your aliasing looks like this where you can clearly tell that something has gone wrong. If you're _un_-lucky you can end up with the false aliasing peak being much clearer and more prevalent than the true peak, and you can end up moving forward with a __false positive__. You get a lag and a mass that is completely non-physical.
 
 ![jpg](./Slide8.JPG)  
 
+These false positives are dangerous: not only do they distort our understanding of the individual object, but that propogates through to other work as well. For example, in reverberation mapping we tune these scaling relationships between the luminosity of the AGN and its radius / lag, these so-called $R-L$ relationships. If these are contaminated by incorrect lags, we end up with the wrong scalings and we end up with the wrong answer anywhere that we use them.
+
 ![jpg](./Slide9.JPG)  
+
+This aliasing problem is basically _the_ defining problem of revberation mapping in the last generation of surveys, and there's been an incredible amount of time and effort put into characterising or counteracting it. Entire papers, thousands of human science hours and at least one entire PhD have been spent trying to come to grips with it. In OzDES, the survey I work with, we found that the best, most reliable, approach was to look for certain warning signs in the recovered lag distribution, tuned with simulations, and perform quality cuts to throw away anything that we didnt $100$ percent trust.
+
+This method works: we know from these simulations that it brings out false positive rate all the way down, but it comes at a high cost. Out of the nearly $800$ AGN that OzDES tracks, we only get to hold on to a few dozen, a loss rate of over $90 %$.
 
 ![jpg](./Slide10.JPG)  
 
