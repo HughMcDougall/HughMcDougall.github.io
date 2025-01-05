@@ -95,7 +95,19 @@ There are three jobs we might want to do with this function:
 2. We can _explore_ the shape of the distribution, integrating over all the parameters we don't care about to get an idea of the shape and density of the probability distribution for the ones we do. This is how we measure or _constrain_ physical properties, and it's how we get those familiar corner plots.
 3. We can also keep going, integrating over _every_ parameter to turn out probability density into a sort of probability mass. This is called the Bayesian evidence, it's a single number that gives a goodness of fit for the entire model over all parameters. By itself it tells us very little, but if we compare it for two different models, we get a relative measure of how well they describe reality.
 
+Really these are the two jobs we care about doing: _exploring_ for parameter _constraint_, and integrating to get _evidence_ for model _comparison_.
+
 ![jpg](./Slide15.JPG)  
+
+If you're new to this sort of modelling it can be easy to get bowled over by the sheer number of fitting methods and the dense terminology. The good news is that they can be broken up into a relatively narrow family tree, and often only need to care about a few of the branches. These are organized, left to right, from least fancy to most fancy. 
+
+On the left are what are called the __information criteria__. These aren't fully Bayesian methods, their _psuedo_ Bayesian ways of doing model comparison when you either don't have meaningful priors or don't have the computational power to do a full evidence integral. In short, they work by optimizing to find the best fit in the posterior density and then applying penalties based on how many parameters the model has (we want less complicated models). These are rough "shoot from the hip" tools, they're not fully Bayesian and we'll not dwell on them here.
+
+Next on is the family of Markov Chain Monte Carlo (MCMC) methods, the workhorse of astrostatistics. These are the powerful and widely used tools for doing parameter constraint, but they can't get integrals. Next on is Nested Sampling, the new kid on the block. In OzGrav you'd be familiar with this: Nested Sampling is what [Bibly](https://learn.adacs.org.au/project/bilby/) uses to fit your gravitational waves. Nested sampling is slower than MCMC on average, but it _can_ get those valuable evidence integrals.
+
+Anything off to right-hand side, things like [stochastic variational inference](https://hughmcdougall.github.io/blog/02_numpyro/06_SVI/page.html) or [simulated Bayesian inference](https://www.pnas.org/doi/10.1073/pnas.1912789117), tools which you either won't need to use or would look into as a focused speciality topic.
+
+That really just leaves these two central branches here: MCMC and Nested sampling. Over the next while I'm going to cover these, how they work, how they differ within and between their genealogical branches, and what they can / can't do.
 
 ![jpg](./Slide16.JPG)  
 
