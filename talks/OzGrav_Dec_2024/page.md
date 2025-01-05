@@ -46,7 +46,7 @@ There's software that does this: a program called `JAVELIN` that fits the lag, p
 
 So what's the problem? What's changed in the last ten years? What's changed more than anything is the sorts of surveys we do revberation mapping with. For early surveys you'd track a handful of nearby sources, at low redshift, really intensely for a couple of months. Now we work with in __industrial scale__ surveys like OzDES or the Sloan Digital Sky Survey (SDSS), which track hundreds to thousands of AGN out to deep redshifts over multiple years, working at lower precision and cadence but making up for it in depth and shear weight of numbers.
 
-The problem with these multi-year surveys is that, when you track any one AGN, you get half-yearly seasonal gaps in your observations owing to the Sun being in the way for half of that time. These seasonal gaps give rise to the problem of __aliasing__: when you run light-curves like this through `JAVELIN`, you get these multiple peaks in your recovered lag distribution. This is for simulated data, with the true lag at $180$ days, but there's a second _aliasing peak_ that emerges at $540$ days. What's going on here is that if you test a lag at half a year or one and a half years or so forth, there's no overlap in the data of your two light curves and so you can't tell if this is a good fit or not. It's an ambigious fit, a locally optimal one, and so you get these aliasing peaks emerging.
+The problem with these multi-year surveys is that, when you track any one AGN, you get half-yearly seasonal gaps in your observations owing to the Sun being in the way for half of that time. These seasonal gaps give rise to the problem of __aliasing__: when you run light-curves like this through `JAVELIN`, you get these multiple peaks in your recovered lag posterior distribution. This is for simulated data, with the true lag at $180$ days, but there's a second _aliasing peak_ that emerges at $540$ days. What's going on here is that if you test a lag at half a year or one and a half years or so forth, there's no overlap in the data of your two light curves and so you can't tell if this is a good fit or not. It's an ambigious fit, a locally optimal one, and so you get these aliasing peaks emerging.
 
 If you're lucky, your aliasing looks like this where you can clearly tell that something has gone wrong. If you're _un_-lucky you can end up with the false aliasing peak being much clearer and more prevalent than the true peak, and you can end up moving forward with a __false positive__. You get a lag and a mass that is completely non-physical.
 
@@ -58,11 +58,19 @@ These false positives are dangerous: not only do they distort our understanding 
 
 This aliasing problem is basically _the_ defining problem of revberation mapping in the last generation of surveys, and there's been an incredible amount of time and effort put into characterising or counteracting it. Entire papers, thousands of human science hours and at least one entire PhD have been spent trying to come to grips with it. In OzDES, the survey I work with, we found that the best, most reliable, approach was to look for certain warning signs in the recovered lag distribution, tuned with simulations, and perform quality cuts to throw away anything that we didnt $100$ percent trust.
 
-This method works: we know from these simulations that it brings out false positive rate all the way down, but it comes at a high cost. Out of the nearly $800$ AGN that OzDES tracks, we only get to hold on to a few dozen, a loss rate of over $90 %$.
+This method works: we know from these simulations that it brings out false positive rate all the way down, but it comes at a high cost. Out of the nearly $800$ AGN that OzDES tracks, we only get to hold on to a few dozen, a loss rate of over $90 \%$. But hey, if that's what the statistics tells us, if that's what our data is doing, then that's the world we're living in and the one we need to make peace with, right?
 
 ![jpg](./Slide10.JPG)  
 
+Well, actually no. Earlier, when I said that `JAVELIN` gives a lag posterior distribution like the top panel (below) when we feed it OzDES-like seasonal light-curves, this is only half true. This _is_ absolutely what `JAVELIN` gives you, but it's _not_ the true lag posterior. Instead, the _bottom_ panel is the real result. Notice that those dangerous all-destroying aliasing peaks have suddenly vanished. 
+
+Going back to our layers of modelling, I need to stress that these two plots are for the same data, the same physics, the same statistics. The only thing that differs between them is the _statistical method_. The aliasing problem has been misdiagnosed as a problem of our data or our observations, when it is, in large part, a problem of our _calculations_.
+
 ![jpg](./Slide11.JPG)  
+
+So, what's gone wrong here? Well, earlier I said that `JAVELIN` does its Bayesian fitting with the package `emcee`. `emcee` is an incredibly useful tool, a robust and easy to use MCMC package that is widely popular for a reason. But, if we go [crack open the paper](https://arxiv.org/abs/1202.3665) where it was first introduced, we find something interesting. __`emcee` doesn't work for multimodal distributions__. It doesn't converge properly: it simply will not give you the right answer. 
+
+This is not some deviously complicated failure state, it's sitting right there in this very short and readable paper. But very smart and dedicated people have skated right over it when working with `JAVELIN` because it had fallen into that dreaded numerical blind-spot.
 
 ![jpg](./Slide12.JPG)  
 
