@@ -119,9 +119,15 @@ Rather than explain its inner workings in detail, I'm going to step through a hy
 
 So, put yourself in the shoes of a scientist in the first half of the 20th century: you're working at Los Alamos working on some terrifying project for the US government, and you've got a problem. You have this physical system, this bundle of particles, than can be in all sorts of configurations, and you want to know the probability distribution of one or more of its properties (magnetic field, spin etc). You know that each of these possbile states has an energy, and statistical mechanics tells us that the probability the system will be in that state is based on the energy via the [Boltzmann Distribution](https://en.wikipedia.org/wiki/Boltzmann_distribution). You know that the _proper_ way to do this is to calculate every energy for every state and then map out the distribution with weighted averages. The problem is that this is absurdly expensive: you have thousands or tens of thousands of states, and this early in time (the macbook being half a century away) you simply do not have the requisite computational grunt.
 
-So what do you do? Well, you get clever and you _simulate_ it. 
+So what do you do? Well, you get clever and you _simulate_ it. You start with the system in some random configuration, and you make a __proposal__ of some nearby similar state that it wants to move to. If that state's at a lower energy, you go their immediately: highschool physics tells us that systems want to decrease their energy. If it's at a higher energy, there's still a chance you can make up the difference by absorbing it from the environment, with that chance again being given by the Boltzmann Distribution.
+
+So you either move or stay, you either _accept_ or _reject_ this proposal. Then you do this again and again and again, and your imaginary particle wanders around parameter space, mapping out the states that the system wants to be in. The joy of this is that, after some __burn-in__ time, you're only spending effort to calculate the low energy / high probability states that you actually care about.
 
 ![jpg](./Slide18.JPG)  
+
+Fast forward a few years and you have another clever idea. This works for statistical mechanics, but there's nothing here that actually _requires_ the mechanics part. Instead of having a system with physical energies that correspond to probabilities, you could take some probability distribution (e.g. a Bayesian posterior density) and just _pretend_ that this corresponds to some energy landscape. 
+
+Without changing anythng else, you've just invented the Metropolis-Hastings Algorithm.
 
 
 
