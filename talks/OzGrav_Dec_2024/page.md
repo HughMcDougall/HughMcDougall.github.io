@@ -111,7 +111,7 @@ That really just leaves these two central branches here: MCMC and Nested samplin
 
 ![jpg](./Slide16.JPG)  
 
-First up, MCMC, the go-to tool that has dominated bayesian fitting for the better part of a century. MCMC is an example of a __sampler__, meaning it's end result is a list of points, an MCMC-_chain_, that is distributed proportional to the posterior density. We can throw these chains into a scatterplot or a histogram to get an idea of the _shape_ of the distribution, but MCMC _cannot_ get the integral / model evidence.
+First up, MCMC, the go-to tool that has dominated Bayesian fitting for the better part of a century. MCMC is an example of a __sampler__, meaning it's end result is a list of points, an MCMC-_chain_, that is distributed proportional to the posterior density. We can throw these chains into a scatterplot or a histogram to get an idea of the _shape_ of the distribution, but MCMC _cannot_ get the integral / model evidence.
 
 Rather than explain its inner workings in detail, I'm going to step through a hypothetical of how you, as physicists, might have invented the [Metropolis-Hastings Algorithm](https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm), the first and oldest MCMC engine that all others are descended from. This won't be rigorous, but I think it'll do a better job of giving you a gut-feeling physical intuition for how these sorts of samplers work.
 
@@ -134,6 +134,8 @@ Without changing anythng else, you've just invented the Metropolis-Hastings Algo
 You may have noticed back in the family tree slide that I showed another branch descended from MCMC. This is the new kid on the block: __Hamiltonian Monte Carlo__ (HMC). HMC is a fancy new way of sampling that works well in complicated or high dimensional functions. The idea is this: suppose you have not only the energy function, but also its _gradient_, its slope. If you have slopes, you have the notion of forces. If you have forces, you have the notion of acceleration, momentum, _kinetic_ energy.
 
 By combining potential energy _and_ kinetic energy, HMC moves the analogy from a particle hopping around a potential well into a projectile navigating around the energy landscape. This might seem like a small change, but this ends up being stable and efficient into enormously more dimensions than regular MCMC. Where most MCMC engines will begin to stumble or falter after a few dozen dimensions, HMC can easily breeze into the thousands. For any one source it's unlikely you'll need that many, but if you were doing some _hierarchical model_, e.g. fitting a population of thousands of gravitational waves at once, this sort of tool is going to become necessary. 
+
+This sort of thing used to be difficult to implement, because you'd need to take the derivatives of your function by hand to get the gradients. Fortunately, we're all living in the future. Today there are automatic-differentiation tools like [`JAX`](https://jaxns.readthedocs.io/) which can calculate the gradients for you. To stress, this isn't finite differences are approximations like that, they literally perform the chain rule derivatives for you. This means that HMC can be used "out of the box" just like MCMC has been for decades.
 
 ![jpg](./Slide20.JPG)  
 
@@ -194,9 +196,18 @@ These categories are not absolute: just like cars we can have things that sit in
 
 ![jpg](./Slide31.JPG)  
 
+There's an exception to this rule though. As it happens, reverberation mapping is a particularly nasty numerical problem: it runs into three out of four of the demons of Bayesian fitting. It happens that Nested Sampling tends to be a decent enough tool for handling it, but it's a bit of a brute-force approach and it can be slow and unwieldy. My work is on building _speciality_ tools that can handle all of these problems at once. The result is `LITMUS` - __L__ag __I__nference __T__hrough the __M__ixed __U__se of __S__amplers, a python package I've written myself specifically for doing reverberation mapping extremely fast. In short, `LITMUS`:
+1. Does lag recovery accurately, handling the multimodal distributions properly
+2. Is an order of magnitude faster than existing methods
+3. Is built in a modular way so that, unlike other Reverberation Mapping tools that have their physics models hard-coded, it can be extended to more complex models.
+
+The trick to `LITMUS`'s performance is that it doesn't use MCMC or Nested Sampling, instead it's a new algorithm that I built myself, tuned for this problem in particular. It works by tracing out a ridge of the best fit parameters at each lag, this orange line on this sketch here, and then slicing the function up into these sort of Gaussian slices along a grid. This lets us map out the shape of the distribution, but because we know the area under these curves we can also get the evidence integral really easily.
+
+This sort of thing is only possible because of modern tools like `JAX`. These Gaussian slices are possible because `JAX` can get slopes _and_ curvatures. If we take the curvature of the log-probability, that's the same as a quadratic Taylor series, and a Gaussian in probability is the same as a quadratic in log probability. These days we have the ability to build these reliable ultra-fast tools for stats, but it comes at the cost of having someone sit down and build them for a particular job instead of using off-the-shelf pre-built tools. Sometimes, this just what we have to do.
+
 ![jpg](./Slide32.JPG)  
 
-![jpg](./Slide33.JPG)  
+So that's everything I have room to cover here. To review: your stats methods are not some tangential detail you can afford to ignore, they have a material impact on the science you can do and the results you get out. I gave an overview of the two families of Bayesian stats tools that cover the lion's share of the work we do in astrophysics: MCMC and Nested Sampling, and then gave an outline of how these tools can break and what to replace them with when they do. If there's one key takeaway here, it's that stats methods are not mystifying arcane machinery: they're really just layers of simple common sense stacked on top of one another. They can be understood, and you should always be aware of how your tools do or don't work to avoid nasty problems creeping in through that numerical blind-spot.
 
-![jpg](./Slide34.JPG)  
+![jpg](./Slide33.JPG)  
 
