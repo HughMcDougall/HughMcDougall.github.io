@@ -34,17 +34,17 @@ The issue, of course, is that SMBH's dark, compact and extremely far away: it's 
 
 So how do we use this to get the mass? Well, an AGN has more than just the black hole and disk, it has this entire complex geometry that builds up around it. For our purposes today, the AGN has only two parts: the accretion disk that throws of enormous amounts of light, and this fast-orbiting cloud around it called the broad line region that captures some of that light and re-emits it as emission lines. The width of the lines tells us how fast the orbit is, and so basic high-school level physics lets us get the central mass of the black hole, but only if we know the orbital radius.
 
-That's where revberation mapping comes in. The accretion disk isn't a static light source: it flickers wildly, AGN are highly variable. This flickering is "echoed" off the broad line region in the same pattern, but with a delay between the two because it takes time for the light to travel. If we can observe both objects for long enough, building up light-curves and measuring that delay, we can use this lag as a ruler to measure the scale of the system, and from there get the mass.
+That's where reverberation mapping comes in. The accretion disk isn't a static light source: it flickers wildly, AGN are highly variable. This flickering is "echoed" off the broad line region in the same pattern, but with a delay between the two because it takes time for the light to travel. If we can observe both objects for long enough, building up light-curves and measuring that delay, we can use this lag as a ruler to measure the scale of the system, and from there get the mass.
 
 ![jpg](./Slide6.JPG)
 
-If you entered revberation mapping ten years ago, you would think that this was a solved problem. We have the physics which I just described, and we have a statistical model that describes the AGN light-curves as something called a damped random walk, a particular stochastic process that explains the properties of the flickering really well. This damped random walk is an example of a Gaussian process, which means we can simulate it, which means we can build a full Bayesian generative model and do Bayesian statistics.
+If you entered reverberation mapping ten years ago, you would think that this was a solved problem. We have the physics which I just described, and we have a statistical model that describes the AGN light-curves as something called a damped random walk, a particular stochastic process that explains the properties of the flickering really well. This damped random walk is an example of a Gaussian process, which means we can simulate it, which means we can build a full Bayesian generative model and do Bayesian statistics.
 
 There's software that does this: a [program called `JAVELIN`](https://arxiv.org/abs/1008.0641) that fits the lag, plus a half dozen other parameters, and does its fitting using Markov Chain Monte Carlo (MCMC). Specifically, it uses the package program `emcee`, which you may have used or heard of as it's probably the most popular MCMC package in astrophysics. 
 
 ![jpg](./Slide7.JPG)  
 
-So what's the problem? What's changed in the last ten years? What's changed more than anything is the sorts of surveys we do revberation mapping with. For early surveys you'd track a handful of nearby sources, at low redshift, really intensely for a couple of months. Now we work with in __industrial scale__ surveys like OzDES or the Sloan Digital Sky Survey (SDSS), which track hundreds to thousands of AGN out to deep redshifts over multiple years, working at lower precision and cadence but making up for it in depth and shear weight of numbers.
+So what's the problem? What's changed in the last ten years? What's changed more than anything is the sorts of surveys we do reverberation mapping with. For early surveys you'd track a handful of nearby sources, at low redshift, really intensely for a couple of months. Now we work with in __industrial scale__ surveys like OzDES or the Sloan Digital Sky Survey (SDSS), which track hundreds to thousands of AGN out to deep redshifts over multiple years, working at lower precision and cadence but making up for it in depth and shear weight of numbers.
 
 The problem with these multi-year surveys is that, when you track any one AGN, you get half-yearly seasonal gaps in your observations owing to the Sun being in the way for half of that time. These seasonal gaps give rise to the problem of __aliasing__: when you run light-curves like this through `JAVELIN`, you get these multiple peaks in your recovered lag posterior distribution. This is for simulated data, with the true lag at $180$ days, but there's a second _aliasing peak_ that emerges at $540$ days. What's going on here is that if you test a lag at half a year or one and a half years or so forth, there's no overlap in the data of your two light curves and so you can't tell if this is a good fit or not. It's an ambigious fit, a locally optimal one, and so you get these aliasing peaks emerging.
 
@@ -56,7 +56,7 @@ These false positives are dangerous: not only do they distort our understanding 
 
 ![jpg](./Slide9.JPG)  
 
-This aliasing problem is basically _the_ defining problem of revberation mapping in the last generation of surveys, and there's been an incredible amount of time and effort put into characterising or counteracting it. Entire papers, thousands of human science hours and at least one entire PhD have been spent trying to come to grips with it. In OzDES, the survey I work with, we found that the best, most reliable, approach was to look for certain warning signs in the recovered lag distribution, tuned with simulations, and perform quality cuts to throw away anything that we didnt $100$ percent trust.
+This aliasing problem is basically _the_ defining problem of reverberation mapping in the last generation of surveys, and there's been an incredible amount of time and effort put into characterising or counteracting it. Entire papers, thousands of human science hours and at least one entire PhD have been spent trying to come to grips with it. In OzDES, the survey I work with, we found that the best, most reliable, approach was to look for certain warning signs in the recovered lag distribution, tuned with simulations, and perform quality cuts to throw away anything that we didnt $100$ percent trust.
 
 This method works: we know from these simulations that it brings out false positive rate all the way down, but it comes at a high cost. Out of the nearly $800$ AGN that OzDES tracks, we only get to hold on to a few dozen, a loss rate of over $90 \%$. But hey, if that's what the statistics tells us, if that's what our data is doing, then that's the world we're living in and the one we need to make peace with, right?
 
@@ -107,7 +107,7 @@ Next on is the family of Markov Chain Monte Carlo (MCMC) methods, the workhorse 
 
 Anything off to right-hand side, things like [stochastic variational inference](https://hughmcdougall.github.io/blog/02_numpyro/06_SVI/page.html) or [simulated Bayesian inference](https://www.pnas.org/doi/10.1073/pnas.1912789117), tools which you either won't need to use or would look into as a focused speciality topic.
 
-That really just leaves these two central branches here: MCMC and Nested sampling. Over the next while I'm going to cover these, how they work, how they differ within and between their genealogical branches, and what they can / can't do.
+That really just leaves these two central branches here: MCMC and Nested sampling. In a huge majority of cases, these two branches will be enough to handle most of the Bayesian fitting you might need to do in day-to-day science. Over the next while I'm going to cover these, how they work, how they differ within and between their genealogical branches, and what they can / can't do.
 
 ![jpg](./Slide16.JPG)  
 
@@ -131,29 +131,66 @@ Without changing anythng else, you've just invented the Metropolis-Hastings Algo
 
 ![jpg](./Slide19.JPG)  
 
-You may have noticed back in the family tree slide that I showed another branch descended from MCMC. This is the new kid on the block: __Hamiltonian Monte Carlo__ (HMC).
+You may have noticed back in the family tree slide that I showed another branch descended from MCMC. This is the new kid on the block: __Hamiltonian Monte Carlo__ (HMC). HMC is a fancy new way of sampling that works well in complicated or high dimensional functions. The idea is this: suppose you have not only the energy function, but also its _gradient_, its slope. If you have slopes, you have the notion of forces. If you have forces, you have the notion of acceleration, momentum, _kinetic_ energy.
+
+By combining potential energy _and_ kinetic energy, HMC moves the analogy from a particle hopping around a potential well into a projectile navigating around the energy landscape. This might seem like a small change, but this ends up being stable and efficient into enormously more dimensions than regular MCMC. Where most MCMC engines will begin to stumble or falter after a few dozen dimensions, HMC can easily breeze into the thousands. For any one source it's unlikely you'll need that many, but if you were doing some _hierarchical model_, e.g. fitting a population of thousands of gravitational waves at once, this sort of tool is going to become necessary. 
 
 ![jpg](./Slide20.JPG)  
 
+So that's MCMC, by covering that you're now equipped with the understanding for a pretty large portion of day-to-day Bayesian fitting. But MCMC is not a universal tool: most obviously, MCMC cannot be used to get evidence integrals: it might seem like you can, but at a fundamental level it cannot give reliable answers. That's where Nested Sampling comes in. Nested sampling is first and foremost a tool for efficiently integrating fuctions, in our case for getting Bayesian evidences for model comparison.
+
 ![jpg](./Slide21.JPG)  
+
+So Nested sampling is an integrator, but how exactly does it do this? First we need to introduce the idea of the Lebesgue integral. If you've taken any under-grad numerical methods course then you've probably encountered this common problem of "how do we find the mass / area under some function", and you've probably seen it approached like this figure on the left, where we break the function up into a series of chunks of known _area_ and estimate their average _height_. This is a [Riemann integral](https://en.wikipedia.org/wiki/Riemann_integral), and its the idea behind [Simpson's rule](https://en.wikipedia.org/wiki/Simpson%27s_rule), the rectangular and [trapezoidal](https://en.wikipedia.org/wiki/Trapezoidal_rule) rules and so forth.
+
+Nested sampling, meanwhile, relies on [Lebesgue Integration](https://en.wikipedia.org/wiki/Lebesgue_integral), where we break the mass up into plates of known _height_ and then approximate their _area_. This might seem like a trivial difference, but notice that the Riemann integral has multiple axes of integration, it has rows _and_ columns, while the Lebesgue integral is _one_ dimensional, the plates stack on top of one another in one direction.
 
 ![jpg](./Slide22.JPG)  
 
+How does this actually work in Nested samplers? Well, to begin with nested sampling only works on functions defined over a unit square, unit cube or so forth. If you don't have this, that's fine, you can just do a change of variables until you do. Then, we throw down a uniformly and randomly distributed set of __live points__ across that volume. For the sake of example I've used $15$, but normally you'd have dozens or hundreds. Next, we calculate the posterior density at each of these points and we sort them in order of the "worst" lowest density to the "best" highest density.
+
 ![jpg](./Slide23.JPG)  
+
+Next, we find the worst live point, and we kill it. This forms our first __dead point__. When we do this, we're sort of partitioning the volume into two regions: the points that are worse than this dead points and the region of points that are better. Now, we don't know the exact _shape_ of the contour that divides these regions, but we do have an estimate of the _size_. Here, we "killed" one out of fifteen of our live points, and so the idea goes that this is a proxy for about one fifteenth of the volume. We know that the height of the function in this region is between zero and density of our dead point, and so we have the heigh and an esimate of the area, enough information to build our first Lebesgue plate.
 
 ![jpg](./Slide24.JPG)  
 
+Now we draw a __replacement point__ from the uphill region, making sure we draw it _uniformly_. Now we're right back where we started: we have a set of fifteen uniformly distributed points of a region of (approximately) known volume. Again we sort them from worst to best, and again we kill the worst one, and again we make another Lebesgue plate.
+
 ![jpg](./Slide25.JPG)  
+
+Then we just keep doing this over and over, killing and replacing points and stacking this Lebesgue plates on top of eachother until we've built up a full picture of the mass of the entire distribution.
 
 ![jpg](./Slide26.JPG)  
 
+So that's nested sampling: a fundamentally different technique to MCMC, one that focuses on getting integrals. It just so happens that we can take our list of dead points and re-weight them by the mass of their Lebesgue plates to get something that _looks_ very much like an MCMC chain, and so nested sampling is a solid sampler as well. Unlike MCMC, where you can just run the chains longer if you want better resolution, nested sampling has a termination condition: if you run it longer you just add more tiny plates to the top of your stack. If you want better precision on nested sampling what you need to is increase the number of live points over all, so the plates shrink in more slowly.
+
+The difficult part of Nested Sampling is that part about "uniformly drawing a new replacement point". Much like how MCMC methods differ in their means of generating proposals, nested sampling methods differ in how they draw their replacement points. This is really hard to do efficiently and robustly, and this is why nested sampling often scales worse in complex models.  The good news is that a lot of the methods we've found to do this efficiently tend to also work well in multimodal distributions.
+
 ![jpg](./Slide27.JPG)  
+
+Okay, we now know the two main families of fitting methods: how they work and how different implementations differ. But how exactly do we know _which_ tool to use, and which ones to avoid for a particular problem? That's what we'll cover now.
 
 ![jpg](./Slide28.JPG)  
 
+Going back to the `JAVELIN` example I gave earlier, I mentioned that it had fallen fowl of one of the four demons of Bayesian fitting: the  challenges that your tool can break when it comes up against.
+
+1. `JAVELIN` specifically failed against multi-modal distributions: particularly for samplers, if you have multiple islands of probability it can be hard to migrate between them.
+2. Next up, Non-Gaussianity. This is usually the least catastrophic of the failure modes, but many fitting methods assume that your distributions are roughly gaussian. If you have shapes that are too wibbly-wobbly, or that have drastic changes from broad and smooth to extremely tight, many fitting methods have a really hard time adapting to this.
+3. Earlier on I emphasised that fitting lives and dies in the energy landscape. If those energies have really sharp pits or walls, many methods can get trapped up against them.
+4. And finally, the one that looms over everything, important enough to have its own special name, the "curse of dimensionality". As your models have more and more parameters, different methods can get slower, less efficient, and in some cases begin to veer off course entirely.
+
 ![jpg](./Slide29.JPG)  
 
+So are you expected to have an encyclopedic knowledge of every single MCMC and nested sampling engine on the planet and their inner workings? Absolutely not, but what you _should_ know is these four failure modes, and be able to ask the question about whether _your_ problem is likely to involve them and whether or not your tools are built to handle them.
+
 ![jpg](./Slide30.JPG)  
+
+Rather than going through a list of dozens of specific algorithms, I'm instead going to offer a bit of an analogy to give you an intuitive gut-feeling about what tools work and where. We imagine the failure modes sitting on a sort of triangle, where I've lumped Non-Gaussianity and high dimensionality because often tools that are good for one are good for the other. 
+
+Suppose you have a really rough and messy posterior that you need to explore: you'd need something like `emcee`, a rough and tumble tool, a bit like a dune buggy. Even though it broken in our reverberation mapping example, `emcee` is a popular tool for a reason: it's not the fastest or fanciest but it's _extremely_ robust and hard to break. If you have something that's really complex, maybe a hierarchichal model or a wobbly twisted posterior geometry, you need some high performance machine like HMC. These are like formula one race-cars: blisteringly fast, but they often need some fancy equipment to get running and tend to need a nice smooth track to run on. If you have a multi-modal distribution, that's a bit like moving house: you're going to need a speciality tool that's built to handle that specific problem, like a moving van. Just like a race-car isn't going to help you move a couch, if you have a tool that can't handle multi-modality it simply won't work.
+
+These categories are not absolute: just like cars we can have things that sit in between. Just like there are race-cars that can handle rough terrain, there are samplers that can navigate rough geometry at a decent level of complexity. Just like there are methods that can handle choppy posteriors _and_ multimodality, there are cars with good suspension and lots of boots space. The thing to focus on here is that the better you get at handling one thing, the worse you're likely to be at the others. If someone tries to tell you that they've invented some fancy new tool that can handle all problems all the time in every situation, they probably don't know what they're talking about.
 
 ![jpg](./Slide31.JPG)  
 
