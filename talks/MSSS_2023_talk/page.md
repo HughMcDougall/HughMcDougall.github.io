@@ -1,3 +1,9 @@
+# New Tools for an Old Job  
+
+## Mount Stromlo Student Seminar 2023
+
+This talk was presented at the Mount Stromlo Student Seminar, a conference for astrophysics grad students from across australia to come together to present their research. In this talk from the very beginning of my PhD, I introduced myself to the rest of the astro community and gave an introduction to Reverberation Mapping and my work with modelling time series signals with Gaussian Processes.
+
 ![jpg](./Slide1.JPG)  
 
 ![jpg](./Slide2.JPG)  
