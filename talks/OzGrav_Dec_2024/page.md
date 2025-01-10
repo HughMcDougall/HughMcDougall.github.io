@@ -1,7 +1,7 @@
 # Statistical Methods: Important but not Scary
 ## OzGrav ECR Workshop 2024
 
-This is a rough transcript of a talk I presented to the early career researcher (ECR) workshop at the OzGrav 2024 retreat, hosted at the University of Queensland. You can download the slides directly [here]().
+This is a rough transcript of a talk I presented to the early career researcher (ECR) workshop at the OzGrav 2024 retreat, hosted at the University of Queensland. You can download the slides directly [here](./OzGravTalk_slides.pptx).
 
 
 ![jpg](./Slide1.JPG)  
