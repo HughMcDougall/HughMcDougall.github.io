@@ -54,7 +54,7 @@ $$
 \mathbb{E}\left[\frac{1}{\mathcal{L}}\right]_\theta = \int{ \frac{1}{\mathcal{L(\theta)}} \times \frac{1}{Z} \mathcal{L(\theta)}\pi(\theta) d\theta}  
 $$  
   
-The $\mathcal{L(\theta)}$ terms cancel, $Z$ factorizes out as a constant, and we're left with the integral of the posterior which comes to $1$:  
+The $\mathcal{L(\theta)}$ terms cancel, $Z$ factorizes out as a constant, and we're left with the integral of the prior which comes to $1$:  
   
 $$  
 \mathbb{E}\left[\frac{1}{\mathcal{L}}\right]_\theta = \frac{1}{Z}\times\int{\pi(\theta) d\theta}=\frac{1}{Z}  
