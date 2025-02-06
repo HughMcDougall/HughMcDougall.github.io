@@ -1,4 +1,4 @@
-Previous Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)	&nbsp;	   
+Previous Entry: [Data Tension Examples](.\..\02_suspiciousness\page.html)	&nbsp;	 Next Entry: [Numpyro Zero Sum Example](.\..\08_NT\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

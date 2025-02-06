@@ -1,0 +1,8 @@
+doc:	./page.md
+source:	./summy.md
+title:	Numpyro Zero Sum Example
+date:	06/2/25
+desc:	A demonstration of how to generate a constrain distribution of samples in NumPyro
+nav:	TRUE
+tree:	TRUE
+render:	TRUE

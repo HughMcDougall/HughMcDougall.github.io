@@ -16,6 +16,7 @@
     * [Nested Sampling](.\03_stats\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
     * [Data Tension Examples](.\03_stats\02_suspiciousness\./page.html) - _An example of data tension_  
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
+    * [Numpyro Zero Sum Example](.\03_stats\08_NT\./page.html) - _A demonstration of how to generate a constrain distribution of samples in NumPyro_  
   
 ---------  
   
