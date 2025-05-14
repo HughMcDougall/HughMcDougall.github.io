@@ -9,7 +9,9 @@ import numpy as np
 import os
 
 for folder in glob("*/"):
+    print("Looking in %s" %folder)
     out = open(folder + "_page.md",'w')
+    print("\t writing to %s" %(folder + "_page.md"))
 
     os.chdir(folder+"/slides/")
 
@@ -21,7 +23,7 @@ for folder in glob("*/"):
     indices = np.argsort(numbers)
     files = files[indices]
     for file in files:
-        out.write("![jpg](%s)  \n\n" %file.replace(folder, "./" ))
+        out.write("![jpg](%s)  \n\n" %("./slides/"+file))
 
     out.close()
     os.chdir("..")
