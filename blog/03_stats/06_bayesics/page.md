@@ -3,6 +3,8 @@ Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
   
+[Return to Site Home](https://hughmcdougall.github.io/)  
+  
 ---------------------------------------------------------------------------  
   
 ---------  

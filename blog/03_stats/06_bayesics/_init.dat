@@ -5,4 +5,4 @@ date:	25/7/24
 desc:	Bayesianism vs frequentism model fitting, in short
 nav:	TRUE
 tree:	TRUE
-render:	FALSE
+render:	TRUE
