@@ -10,7 +10,6 @@ Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return t
 * [Nested Sampling](.\01_nestedsampling\./page.html) - _A hands-on intro to nested sampling_  
 * [Data Tension Examples](.\02_suspiciousness\./page.html) - _An example of data tension_  
 * [Is the Raffle Rigged?](.\03_raffle\./page.html) - _Practical stats for a toy problem_  
-* [Numpyro Zero Sum Example](.\08_NT\./page.html) - _A demonstration of how to generate a constrain distribution of samples in NumPyro_  
   
 ---------  
   

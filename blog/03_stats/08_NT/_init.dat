@@ -5,4 +5,4 @@ date:	06/2/25
 desc:	A demonstration of how to generate a constrain distribution of samples in NumPyro
 nav:	TRUE
 tree:	TRUE
-render:	TRUE
+render:	FALSE
