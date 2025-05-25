@@ -147,12 +147,12 @@ Enter [Nested Sampling](https://en.wikipedia.org/wiki/Nested_sampling_algorithm)
   
 In this section, we'll explain how nested sampling works in principle, and also build a crude implementation in python to get a more physical feel for what it's doing.  
   
-The first change we have to make is a switch on how we think about integrals. The natural way to think of integration in high dimensions is to talk about the area "under" each point, e.g. in the HME example we chunked parameter space up into little columns, estimated their height and added everything together. This is an instance of a [Reimann Integral](https://en.wikipedia.org/wiki/Riemann_integral). For nested sampling, we quite literally turn things sideways for a [Lebesgue Integral](https://en.wikipedia.org/wiki/Lebesgue_integration), imagining the integral as a series of plates stacked on one another like a [Tower of Hanoi puzzle](https://en.wikipedia.org/wiki/Tower_of_Hanoi):  
+The first change we have to make is a switch on how we think about integrals. The natural way to think of integration in high dimensions is to talk about the area "under" each point, e.g. in the HME example we chunked parameter space up into little columns, estimated their height and added everything together. This is an instance of a [Riemann Integral](https://en.wikipedia.org/wiki/Riemann_integral). For nested sampling, we quite literally turn things sideways for a [Lebesgue Integral](https://en.wikipedia.org/wiki/Lebesgue_integration), imagining the integral as a series of plates stacked on one another like a [Tower of Hanoi puzzle](https://en.wikipedia.org/wiki/Tower_of_Hanoi):  
   
 <html><center>  
-    <img src="./media/Reimann_Integral.png" alt="alt text" width="30%"/>, <img src="./media/Lesbegue_Integral.png" alt="alt text" width="30%"/>  
+    <img src="./media/Riemann_Integral.png" alt="alt text" width="30%"/>, <img src="./media/Lesbegue_Integral.png" alt="alt text" width="30%"/>  
     <br>  
-    <b>Sketch of Reimann Integral (Left) and Lebesgue Integral (Right)</b>  
+    <b>Sketch of Riemann Integral (Left) and Lebesgue Integral (Right)</b>  
 </center></html>  
   
 The nested sampling algorithm is, in brief:  
@@ -185,7 +185,7 @@ $$
 Z=\int V(f) df \approx \sum_i V_i \Delta f_i, \quad V_i = V_0 \lambda^i  
 $$  
   
-Or, alternately treating the area _between_ plates as the area elements in a Reimann-like integral:  
+Or, alternately treating the area _between_ plates as the area elements in a Riemann-like integral:  
   
 $$  
 Z = \int f(V) dV \approx \sum f_i \Delta V_i, \quad \Delta V_i = V_0 (\lambda^i - \lambda^{i-1})  
@@ -363,19 +363,19 @@ Now we can estimate the integral. For comparison, I'm going to use both the Reim
 ```python  
 # Lebesgue  
 dZ1 = np.diff(dead_points[2]) * (np.array(volumes)[1:]+np.array(volumes)[:-1])/2  
-# Reimann  
+# Riemann  
 dZ2 = (np.array(dead_points[2][1:])+np.array(dead_points[2][:-1]))/2 * -np.diff(volumes)  
   
 Z1, Z2 = dZ1.sum(), dZ2.sum()  
 #----------  
 print("For %i Total Evaluations:" %sum(efficiency))  
 print("Lebesgue Integral is %.2f, an error of %.2f%%" %(Z1, abs(Z1/Ztrue-1)*100))  
-print("Reimann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))  
+print("Riemann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))  
 ```  
   
     For 84891 Total Evaluations:  
     Lebesgue Integral is 3.00, an error of 0.01%  
-    Reimann Integral is 2.85, an error of 5.10%  
+    Riemann Integral is 2.85, an error of 5.10%  
   
   
 Incredible, right? Well, not really. We did barely as well as a grid-integral for significantly more evaluations. The good news is that this is down to our patchy implementation, and is not a fundamental limit of the method. In fact, our implementation has three things that make it less than ideal:  
@@ -412,7 +412,7 @@ Diagnostic graphs like this are a useful sanity check on nested sampling because
       
   
   
-For the Lebesgue integral this only "snips" the top off of the evidence, as we miss a few narrow plates. For the Reimann integral, we're basically removing the middle of our distribution like an apple core, meaning we systematically under-estimate $Z$. A brute-force way to fix this is to increase $N_{eval}$ so the missing core shrinks, but there's a less wasteful approach: each of those last live points is already nested and sorted, so we can estimate their shell sizes in the usual way and add them to our dead points.  
+For the Lebesgue integral this only "snips" the top off of the evidence, as we miss a few narrow plates. For the Riemann integral, we're basically removing the middle of our distribution like an apple core, meaning we systematically under-estimate $Z$. A brute-force way to fix this is to increase $N_{eval}$ so the missing core shrinks, but there's a less wasteful approach: each of those last live points is already nested and sorted, so we can estimate their shell sizes in the usual way and add them to our dead points.  
   
 As to the sampling method, we can plot the efficiency of our sampler and see that it drops exponentially over time. This isn't surprising: at the moment we're shooting blindly and hoping to hit an exponentially shrinking target:  
   
@@ -529,28 +529,28 @@ print("Done Peak Sampling")
   
 # Lebesgues  
 dZ1 = np.diff(dead_points[2]) * (np.array(volumes)[1:]+np.array(volumes)[:-1])/2   
-#Reimann  
+#Riemann  
 dZ2 = (np.array(dead_points[2][1:])+np.array(dead_points[2][:-1]))/2 * -np.diff(volumes)  
   
 Z1, Z2 = dZ1.sum(), dZ2.sum()  
   
 print("For %i evaluations:" %sum(efficiency))  
 print("Lebesgue Integral is %.2f, an error of %.2f%%" %(Z1, abs(Z1/Ztrue-1)*100))  
-print("Reimann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))  
+print("Riemann Integral is %.2f, an error of %.2f%%" %(Z2, abs(Z2/Ztrue-1)*100))  
 ```  
   
     0	960	1920	2880	3840	4800	5760	6720	7680	8640	9600	Done Main Sampling  
     Done Peak Sampling  
     For 12556 evaluations:  
     Lebesgue Integral is 3.08, an error of 2.74%  
-    Reimann Integral is 3.08, an error of 2.74%  
+    Riemann Integral is 3.08, an error of 2.74%  
   
   
 We're now hitting very good precision at _less_ evaluations than a raw grid search, even with our still relatively simple sampling method. The advantages of nested sampling might not be apparent in this problem: it's low dimensional and the function we're integrating is particularly well behaved against grid integration, but the beauty of nested sampling is that it can work well in increasingly high dimensions and with unusually shaped contours.  
   
 If we plot run our diagnostic plots, we see a few things:  
 1. Because our sampling range shrinks along with our contours, our efficiency is pretty steady  
-2. Because we're not snipping off the high final likelihood points, the Lebesgue and Reimann integrals agree with one another  
+2. Because we're not snipping off the high final likelihood points, the Lebesgue and Riemann integrals agree with one another  
 3. With a higher number of evaluations, we're getting a good end-result precision at low cost  
   
 The hard part of building a good nested sampler is really down to point (1): finding some clever way to sample uniformly from our "nested contours" in a way that's both robust and efficient. The trick we used here, breaking our target space into two rectangles, is a common approach. The famous `python` package [`dynesty`](https://dynesty.readthedocs.io/en/latest/dynamic.html) uses the live points to draw a series of "ellipsoids", while cosmology's own [`polychord`](https://cobaya.readthedocs.io/en/latest/sampler_polychord.html#) abandons the rejection sampling approach in favour of [slice sampling](https://en.wikipedia.org/wiki/Slice_sampling). My personal weapon of choice, [`jaxns`](https://github.com/Joshuaalbert/jaxns), uses a combination of the two.  
