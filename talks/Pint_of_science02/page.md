@@ -39,8 +39,8 @@ For our Sun, in the war between pressure and gravity, victory is going to go to 
 Gravity gets stronger the closer you are to something. Here on earth, We're as close as I can get - We're right on the surface. If we were to try and get closer, we'd be inside the earth, and there'd be less _stuff_ to pull on us, so gravity would actually get weaker. But with a singularity, this isn't the case: you can just get closer and closer, and gravity can get stronger and stronger, until at a certain point it becomes so strong that even light can't escape. You have a pit of gravity that, once it falls in, light can't escape from. You have a __black hole__.
 <div>
 
-	<video width="960" height="540" controls>
-	  <source src="SCM_anim.avi" type="video/avi">
+	<video width="640" height="360" controls>
+	  <source src="SCM_anim.mp4" type="video/mp4">
 	Your browser does not support the video tag.
 	</video> 
 
