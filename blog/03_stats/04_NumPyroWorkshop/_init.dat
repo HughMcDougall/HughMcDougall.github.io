@@ -5,5 +5,5 @@ date:	22/7/25
 desc:	An introduction to NumPyro & Jax
 nav:	TRUE
 tree:	TRUE
-render:	True
+render:	TRUE
 notebook:	present.ipynb
