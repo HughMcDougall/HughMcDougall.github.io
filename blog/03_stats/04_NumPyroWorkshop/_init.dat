@@ -1,9 +1,9 @@
 doc:	./page.md
 source:	./present.md
 title:	NumPyro Workshop
-date:	26/2/24
-desc:	An introduction to NumPyro for the UQ astro group
+date:	22/7/25
+desc:	An introduction to NumPyro & Jax
 nav:	TRUE
 tree:	TRUE
-render:	FALSE
+render:	True
 notebook:	present.ipynb

@@ -1,7 +1,9 @@
-Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	   
+Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	 Next Entry: [The Bayes-Sics](.\..\06_bayesics\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
+  
+[Return to Site Home](https://hughmcdougall.github.io/)  
   
 ---------------------------------------------------------------------------  
   
@@ -11,9 +13,9 @@ _The jupyter notebook for this article, including all plotting code, is availabl
   
   
 # A Brief Introduction to NumPyro  
-## Presentation for Astro Group 26/2/24  
+## Presentation for Swinburne Cookies & Code 28/7/25  
   
-This is a page to accompany a presentation to the UQ astro group on Monday 26/2, outlining some of the features of JAX and NumPyro and briefly explaining the fundamentals of using them. I've intentionally kept as much brief as I can, with more involved walk-throughs detailed in my main [NumPyro Guide](../../02_numpyro/blog_numpyrohome.html).  
+This is a page to accompany a presentation to the Swinburne University "Cookies and Code" meeting on Monday 28/7/25, outlining some of the features of `JAX` and `NumPyro` and briefly explaining the fundamentals of using them. I've intentionally kept as much brief as I can, with more involved walk-throughs detailed in my main [NumPyro Guide](../../02_numpyro/blog_numpyrohome.html).  
   
   
 **Contents**  
@@ -21,7 +23,11 @@ This is a page to accompany a presentation to the UQ astro group on Monday 26/2,
 * [NumPyro Stuff](#JAX)  
   
 ---  
+## Introduction  
   
+  
+---  
+## Setup  
 If you're installing NumPyro for the first time, you'll need kind of linux machine and the following packages:  
   
 ```  
@@ -51,9 +57,14 @@ from chainconsumer import ChainConsumer
 ```  
   
 ## The JAX Part <a id='JAX'></a>  
-JAX is a [Just-In-Time Compiled](https://en.wikipedia.org/wiki/Just-in-time_compilation) (JIT) language that you can interface with using python. In short: it lets you write python code, but bake into a compiled function at runtime to get a massive speedup. It also has [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) (Autodiff) which means it can calculate _analytical_ gradients for any function you write in it.  
+`JAX` is a [Just-In-Time Compiled](https://en.wikipedia.org/wiki/Just-in-time_compilation) (JIT) language that you can interface with using python. In short: it lets you write python code, but bake into a compiled function at runtime to get a massive speedup. It also has [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) (Autodiff) which means it can calculate _analytical_ gradients for any function you write in it.  
   
-To show how JIT compilation can give serious speedup for even straightforward problems, I've put together a short example to compare JAX with raw python, as well as the extremely popular [numpy](https://numpy.org/) package. Consider the following: You have a series of optical filters (green, red and infrared bands) for some telescope, and you want to calculate what colour a black body will appear to be at various temperatures.  
+To show how JIT compilation can give serious speedup for even straightforward problems, I've put together a short example to compare   
+1. Raw python (i.e. nested for loops)  
+2. `NumPy`'s vectorization  
+3. `JAX`'s JIT compilation    
+  
+Consider the following: You have a series of optical filters (green, red and infrared bands) for some telescope, and you want to calculate what colour a black body will appear to be at various temperatures.  
   
   
   
@@ -113,11 +124,11 @@ for i in range(N_temps):
     out_normal[i] = np.log10(g_flux / r_flux)  
 ```  
   
-    CPU times: user 1min 59s, sys: 15 ms, total: 1min 59s  
-    Wall time: 2min 9s  
+    CPU times: user 2min 35s, sys: 0 ns, total: 2min 35s  
+    Wall time: 2min 35s  
   
   
-Aside from being a little bit messier to read, raw python is also _slow_. In my benchmark, this takes over two whole minutes, practically an eternity in computer time. There isn't anything fancy in our code that should be particularly costly, this is all about how python handles its loops and calculations. Namely, it handles them poorly.  
+Aside from being a little bit messier to read, raw python is also _slow_. In my benchmark, this takes over two whole minutes, practically an eternity in computer time. There isn't anything fancy in our code that should be particularly costly, this is all about how python handles its loops and calculations. Namely, it handles them _poorly_.  
   
 **Doing it with numpy: the better way**    
 If you've spent any time with python, you've probably learned that doing as much as you can with `numpy.array`'s will earn you a much faster code. In our case, swapping the inner loop for `numpy`'s vectorized functions cuts the run-time down by a factor of _sixty_ over base python:  
@@ -135,61 +146,57 @@ for i in range(N_temps):
     out_numpy[i] = np.log10(g_flux / r_flux)  
 ```  
   
-    CPU times: user 1.76 s, sys: 8.9 ms, total: 1.77 s  
-    Wall time: 1.91 s  
+    CPU times: user 3.29 s, sys: 0 ns, total: 3.29 s  
+    Wall time: 3.28 s  
   
   
 **Doing it with JAX, the fastest way**    
-Now we can take a swing at things with JAX. In the snippet below, I first do a bit of house keeping by converting my arrays to JAX-friendly ones, and then define my entire process in a function. You'll notice how similar this is to doing things with `numpy`, the only difference is that I've swapped out the `numpy` math functions (`.np`) functions with `jax.numpy` calls (`jnp.`). These are one-to-one with the familiar `numpy` math functions, but are set up to play nicely with JAX's compilation.  
+Now we can take a swing at things with `JAX`. In the snippet below, I first do a bit of house keeping by converting my arrays to `JAX`-friendly ones, and then define my entire process in a function. You'll notice how similar this is to doing things with `numpy`, the only difference is that I've swapped out the `numpy` math functions (`.np`) functions with `jax.numpy` calls (`jnp.`). These are one-to-one with the familiar `numpy` math functions, but are set up to play nicely with `JAX`'s compilation.  
   
-We tell JAX to compile out function into a fast version with `jax.vmap`, specifically "vector mapping" mapping it, i.e. compiling to a form that takes in a vector, even though the function as written is for one number at a time. You can also compile _without_ vector mapping with `jax.jit`. JAX will do the compilation the first time you call the function, so I've run and timed `jax_vectorized_function` twice to show the time with and without the overhead from compiling.  
+We tell JAX to compile out function into a fast version with `jax.vmap`, specifically "vector mapping" mapping it, i.e. compiling to a form that takes in a vector, even though the function as written is for one number at a time. You can also compile _without_ vector mapping with `jax.jit`. `JAX` will do the compilation the first time you call the function, so I've run and timed `jax_vectorized_function` twice to show the time with and without the overhead from compiling.  
   
   
 ```python  
-# Convert some arrays to JAX-friendly versions  
-betas_forjax = jnp.array(betas)  
-LAM_forjax = jnp.array(LAM)  
-g_fil_forjax = jnp.array(g_fil[:,1])  
-r_fil_forjax = jnp.array(r_fil[:,1])  
-  
-#--------------------------  
-  
 # Make a function that does all our working with jax.numpy (jnp) instead of numpy (np)  
 def jax_function(beta):  
-    bb_spec = np.power(LAM_forjax,-2) * jnp.power((jnp.exp(jnp.power(LAM_forjax*beta,-1))-1),-1)  
-    g_flux = jnp.sum(g_fil_forjax * bb_spec)  
-    r_flux = jnp.sum(r_fil_forjax * bb_spec)  
+    bb_spec = 1/LAM**2 * (jnp.exp(1/LAM/beta)-1)**-1  
+    g_flux = jnp.sum(g_fil[:,1] * bb_spec)  
+    r_flux = jnp.sum(r_fil[:,1] * bb_spec)  
     out = jnp.log10(g_flux/r_flux)  
       
     return(out)  
   
 # Make a "vector mapped" function with jax.vmap  
+jax_vectorized_function = jax.jit(jax_function)  
 jax_vectorized_function = jax.vmap(jax_function)  
   
 # Run and time twice to see with and without compile time  
-%time out_jax = jax_vectorized_function(betas_forjax)  
-%time out_jax = jax_vectorized_function(betas_forjax)  
+%time out_jax = jax_vectorized_function(betas)  
+%time out_jax = jax_vectorized_function(betas)  
 ```  
   
-    CPU times: user 1.51 s, sys: 1.1 s, total: 2.62 s  
-    Wall time: 1 s  
-    CPU times: user 1.48 s, sys: 944 ms, total: 2.43 s  
-    Wall time: 916 ms  
+    An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.  
+  
+  
+    CPU times: user 1.8 s, sys: 2.7 s, total: 4.5 s  
+    Wall time: 1.42 s  
+    CPU times: user 968 ms, sys: 2.5 s, total: 3.46 s  
+    Wall time: 952 ms  
   
   
 **Autodiff**    
-As well as the speed it wrings out of its compilation, JAX has a second powerful feature in the form of its auto-differentiation. For any JAX-friendly function (i.e. one we can compile), JAX can also calculate the gradient via the chain rule. In the snippet below, we take `jax_function()` from above, take the derivative with `jax.vmap`, then convert this into a vector-input function with `jax.vmap`. In two lines of code, we get a function that can calculate $df(x)/dx$ as easily as $f(x)$:  
+As well as the speed it wrings out of its compilation, `JAX` has a second powerful feature in the form of its auto-differentiation. For any `JAX`-friendly function (i.e. one we can compile), `JAX` can also calculate the gradient via the chain rule. In the snippet below, we take `jax_function()` from above, take the derivative with `jax.vmap`, then convert this into a vector-input function with `jax.vmap`. In two lines of code, we get a function that can calculate $df(x)/dx$ as easily as $f(x)$:  
   
   
 ```python  
 # Do auto-differentiation  
-do_grad = jax.grad(jax_function)  
+gradient_of_colours = jax.grad(jax_function)  
   
 # Do auto-vectorization  
-do_grad = jax.vmap(do_grad)  
+gradient_of_colours = jax.vmap(gradient_of_colours)  
 ```  
   
-For example, suppose we want to plot our log-colour and its gradient side-by side. Thanks to JAX, it's as easy as running our two compiled (fast) functions:  
+For example, suppose we want to plot our log-colour and its gradient side-by side. Thanks to `JAX`, it's as easy as running our two compiled (fast) functions:  
   
   
 ```python  
@@ -199,7 +206,7 @@ betas_forplot = np.logspace(-2,0,1000)
 colours = jax_vectorized_function(betas_forplot)  
   
 # Evaluate Gradient Function  
-grads = do_grad(betas_forplot)  
+grads = gradient_of_colours(betas_forplot)  
   
 # Plotting  
 fig, (a1,a2) = plt.subplots(1,2, figsize=(8,3), sharex=True)  
@@ -219,8 +226,7 @@ plt.show()
       
   
   
-We can apply `jax.grad` multiple times over to get higher order derivatives as well. The only caveat is that the way JAX calculates these derivatives means they can lose precision due to computational rounding.  
-In particular, be aware that JAX's `exp` function isn't very precise when you get to big values. At anything bigger than $\approx exp(10)$, JAX's outputs will begin to get much noiser than comparable `numpy` code, and this only gets worse as you go down the differentiation chain.  
+We can apply `jax.grad` multiple times over to get higher order derivatives as well, and this works in as many dimensions as we want. Autograd means that you can, automatically in your code, get Hessians, Jacobians, Fisher informations and any other derivative based measure you want. This opens up a whole new world of tools that work "out of the box", making autodiff tools like `JAX` immediately better at handling complicated problems.   
   
 ## The NumPyro Part <a id='NumPyro'></a>  
   
@@ -294,11 +300,11 @@ sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
 sampler.run(jax.random.PRNGKey(1), X,Y,E)    
 ```  
   
-    sample: 100%|█| 10500/10500 [00:04<00:00, 2513.01it/s, 3 steps of size 2.95e  
+    sample: 100%|█| 10500/10500 [00:03<00:00, 3007.71it/s, 3 steps of size 3.16e  
   
   
-    CPU times: user 5.37 s, sys: 94.3 ms, total: 5.46 s  
-    Wall time: 5.87 s  
+    CPU times: user 5.85 s, sys: 148 ms, total: 6 s  
+    Wall time: 5.93 s  
   
   
 When the `numpyro.infer.MCMC` object is created, we feed it a `numpyro.infer.NUTS` object, which in turn wraps around our probabilistic model. This argument determines what kind of MCMC sampler we use (in this case the No U-Turn Sampler (NUTS)). If you want to use a different sampler (e.g. the [sample adaptive](https://num.pyro.ai/en/latest/mcmc.html#numpyro.infer.sa.SA) sampler), we can swap this first argument out for something else.  
@@ -405,7 +411,7 @@ C.plotter.plot(parameters=['m','c'], truth = {'m':m_true, 'c':c_true})
 plt.show()  
 ```  
   
-    sample: 100%|█| 10500/10500 [00:03<00:00, 3301.92it/s, 7 steps of size 2.47e  
+    sample: 100%|█| 10500/10500 [00:03<00:00, 3078.09it/s, 7 steps of size 2.49e  
   
   
   
@@ -460,8 +466,14 @@ The examples so far have been intentionally simple: linear regressions are the k
 "Someone spilled a cup of coffee and accidentally deleted every Hertzprung-Russell Diagram on the planet. You need to re-fit it using only some particularly low quality telescope data and some old records of colour temperatures."  
 </i></p>  
   
+**Data & Goal**  
   
-The data you have on hand consists of a few dozen clusters of stars with about a half dozen stars per cluster. For the nearest few clusters you have rough parallax measurements, and for every star you have photon-count measurements of brightness, which are subject to [Poisson Distribution](https://en.wikipedia.org/wiki/Poisson_distribution) shot noise.  
+The data you have on hand consists of:  
+* A few hundred stars,  
+* Spread over a few dozen clusters, with about a half dozen stars per cluster  
+* For a handful of the nearest clusters you have distances from parallax measurements  
+* For every star you already know the colour temperature, and  
+* For each star you have apparent brightness from photon counts on your telescope  
   
 I'm going to make the grievous approximation of pretending that the HR diagram is a straight line in this example, i.e. that absolute magnitudes $M$ obey:  
   
@@ -469,9 +481,19 @@ $$
 M = \alpha \cdot \log_{10}(T) + \beta \pm \mathcal{N}(0,\sigma)  
 $$  
   
-Where $\alpha$, $\beta$ and $\sigma$ are the slope, offset and inherent scatter of the relation. If you plot the flux-count from each star against its log-temperature, we see that each cluster (colour coded) is roughly a straight line, like we expect, but to get a proper HR diagram we need to vertically shift each cluster until they line up.   
+Where $\alpha$, $\beta$ and $\sigma$ are the slope, offset and inherent scatter of the relation, and $\mathcal{N}$ means some normally distributed randomness. Our brightness measurements are patchy as well, owing to the photon counts obeying a [Poisson Distribution](https://en.wikipedia.org/wiki/Poisson_distribution) and being vulnerable to shot noise.  
   
   
+  
+  
+```python  
+mock_data.keys()  
+```  
+  
+  
+  
+  
+    dict_keys(['absolute_magnitude', 'apparent_magnitude', 'distance', 'fluxcounts', 'fluxmag', 'offset', 'parallax', 'root_dist', 'slope', 'spread'])  
   
   
   
@@ -483,7 +505,7 @@ Where $\alpha$, $\beta$ and $\sigma$ are the slope, offset and inherent scatter 
       
   
   
-If we knew the distances this would be easy: we'd just turn each star's flux into an apparent brightness, get the distance modulus and correct accordingly. The issue is that we're at the mercy of our distance measurements, which fall apart rapidly as we go to bigger distances / smaller parallax angles:  
+Our end goal is to measure $\alpha$, $\beta$ and $\sigma$. Why is this hard? Well, our parallax distances are _terrible_, we only know the distances for a a dozen or so clusters, and even then we only know them vaguely. If we knew the distances this would be easy: we'd just turn each star's flux into an apparent brightness, get the distance modulus and correct accordingly. The issue is that we're at the mercy of these distance measurements which fall apart rapidly as we go to bigger distances / smaller parallax angles:  
   
   
   
@@ -503,36 +525,36 @@ Then, couple this with the fact that each cluster has only a few stars. If we we
       
   
   
-The solution is in the form of a [Bayesian Hierarchical Model](https://en.wikipedia.org/wiki/Bayesian_hierarchical_modeling). Though any one cluster / star has a tiny bit of information, the sum total of them gives us more information.  
+**The Bayesian Model**  
   
-Like always, we start by building a generative model. First, we say that every cluster has a distance, which gives a parallax angle, including uncertainty:  
-  
-$$  
-\theta_p = \frac{1}{d_{pc}} \pm \Delta_\theta  
-$$  
-  
-Second, that its temperature gives each star an absolute magnitude:  
+The solution is in the form of a [Bayesian Hierarchical Model](https://en.wikipedia.org/wiki/Bayesian_hierarchical_modeling). Though any one cluster / star has a tiny bit of information, the sum total of them gives us more information. Like always, we start by building a generative model. First, we say that **every cluster has a distance**, which gives a parallax angle, including uncertainty:  
   
 $$  
-M = \alpha \cdot (\log_{10}(T)-4)+ \beta \pm \mathcal{N}(0,\sigma)  
+\theta_p^\mathrm{cluster} = \frac{1}{d^\mathrm{cluster}_{pc}} \pm \Delta_\theta  
 $$  
   
-That this converts to an apparent magnitude based on the distance modulus:  
+Second, that **each star has a temperature which determines its absolute magnitude**:  
   
 $$  
-m = M + 5.0\times \log_{10} \left(\frac{d}{10 pc}\right)  
+M^\mathrm{star} = \alpha \cdot (\log_{10}(T^\mathrm{star})-4)+ \beta \pm \mathcal{N}(0,\sigma)  
 $$  
   
-Which turns into a flux:  
+That **this converts to an apparent magnitude** based on the distance modulus of its host cluster:  
   
 $$  
-f = c \cdot 10^{-(m-m_0) / 2.5}  
+m^\mathrm{star} = M^\mathrm{star} + 5.0\times \log_{10} \left(\frac{d^{\mathrm{cluster}}}{10 pc}\right)  
 $$  
   
-Which we observe as a photon count, obeying a photon distribution:  
+Which **turns into a flux**:  
   
 $$  
-N_{flux} \sim Poisson(f)  
+f^\mathrm{star} = c \cdot 10^{-(m^\mathrm{star}-m_0) / 2.5}  
+$$  
+  
+Which **we observe as a photon count**, obeying a Poisson distribution:  
+  
+$$  
+N_\mathrm{flux}^\mathrm{star} \sim \mathrm{Poisson}(f^\mathrm{star})  
 $$  
   
 Despite the number of plates to juggle here, this is pretty easy to code up as a NumPyro model, including all the complexity that we would need to pave-over or approximate with old fashioned "working backwards" methods, e.g. the Poisson distributions and non-gaussian distance errors.  
@@ -548,8 +570,7 @@ def HRmodel(cluster_index, logtemps, parallax = None, fluxcounts = None):
     n_stars = cluster_index.size  
   
     with numpyro.plate("clusters", n_clusters):  
-        root_dist = numpyro.sample('root_dist', dist.Uniform(min_dist**(1/3),max_dist**(1/3)) )  
-        distance = numpyro.deterministic('distance', jnp.power(root_dist,3))  
+        distance = numpyro.sample('root_dist', dist.DoublyTruncatedPowerLaw(alpha=2.0, low=min_dist, high=max_dist) )  
         dist_mod = jnp.log10(distance/10) * 5.0  
           
         numpyro.sample('parallax', dist.Normal(jnp.power(distance,-1), E_parallax), obs=parallax)  
@@ -557,18 +578,19 @@ def HRmodel(cluster_index, logtemps, parallax = None, fluxcounts = None):
     with numpyro.plate('stars', n_stars):  
         absolute_magnitude = numpyro.sample('absolute_magnitude', dist.Normal((logtemps-logtemp0) * slope + offset,spread))  
         apparent_magnitude = numpyro.deterministic('apparent_magnitude',absolute_magnitude + dist_mod[cluster_index])  
-          
-        flux = jnp.power(10,-(apparent_magnitude-mag0)/2.5) * gain  
+  
+        fluxmag = numpyro.deterministic('fluxmag', -(apparent_magnitude-mag0)/2.5)  
+        flux = jnp.power(10,fluxmag) * gain  
           
         numpyro.sample('fluxcounts', dist.Poisson(flux), obs = fluxcounts)  
           
 ```  
   
+_Note: I've defined the distance prior going like $P(d)\propto d^2$, a result of basic spherical geometry. This is because there are more places a cluster can exist the further out we go._  
+  
+Because of `NumPyro`'s speed from `JAX` , this whole model takes only about 10 minutes on my laptop, and recovers ground truth to within $1 \sigma$:  
   
   
-_Note: I've defined the distance prior as being uniform in $d^{1/3}$. This converts to a prior on distance that goes like $P(d)\propto d^2$, which comes from basic geometry._  
-  
-Because of NumPyro's JAX-like speed, this whole model takes only about 10 minutes on my laptop, and recovers ground truth to within $1 \sigma$:  
   
   
   
@@ -579,6 +601,8 @@ Because of NumPyro's JAX-like speed, this whole model takes only about 10 minute
   
   
   
+  
+**Did This Work?**  
   
 Because this is a mock-up example, we're free to compare our results to the ground truth. Sure enough, once fully converged the model does a remarkably close job of recovering the underlying truth, including the inherent scatter. Through hierachical modeling, we've pulled meaningful information out of patchy data.  
   
