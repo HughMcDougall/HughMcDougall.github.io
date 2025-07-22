@@ -1,0 +1,9 @@
+doc:	./page.md
+source:	./present.md
+title:	NumPyro Workshop
+date:	22/7/25
+desc:	An introduction to NumPyro & Jax
+nav:	TRUE
+tree:	TRUE
+render:	TRUE
+notebook:	present.ipynb
