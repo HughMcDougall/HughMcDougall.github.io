@@ -6,4 +6,4 @@ desc:	An introduction to NumPyro & Jax
 nav:	TRUE
 tree:	TRUE
 render:	TRUE
-notebook:	present.ipynb
+notebook:	_present.ipynb
