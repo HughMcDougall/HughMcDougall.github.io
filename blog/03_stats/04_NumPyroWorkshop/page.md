@@ -38,7 +38,7 @@ If you're installing NumPyro for the first time, you'll need kind of linux machi
 In these examples, I'm using the pre-updated version of [ChainConsumer](https://samreay.github.io/ChainConsumer/). If you're new to this work and want to go directly from my code snippets, you'll need to install an older version with:  
   
 ```python  
-    pip install chainconsumer==0.34.0`  
+    pip install chainconsumer==0.34.0  
 ```  
   
   
@@ -175,8 +175,6 @@ jax_vectorized_function = jax.vmap(jax_function)
 %time out_jax = jax_vectorized_function(betas)  
 ```  
   
-    An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.  
-  
   
     CPU times: user 1.8 s, sys: 2.7 s, total: 4.5 s  
     Wall time: 1.42 s  
@@ -300,8 +298,6 @@ sampler = numpyro.infer.MCMC(numpyro.infer.NUTS(model),
 sampler.run(jax.random.PRNGKey(1), X,Y,E)    
 ```  
   
-    sample: 100%|█| 10500/10500 [00:03<00:00, 3007.71it/s, 3 steps of size 3.16e  
-  
   
     CPU times: user 5.85 s, sys: 148 ms, total: 6 s  
     Wall time: 5.93 s  
@@ -411,8 +407,6 @@ C.plotter.plot(parameters=['m','c'], truth = {'m':m_true, 'c':c_true})
 plt.show()  
 ```  
   
-    sample: 100%|█| 10500/10500 [00:03<00:00, 3078.09it/s, 7 steps of size 2.49e  
-  
   
   
       
@@ -482,18 +476,6 @@ M = \alpha \cdot \log_{10}(T) + \beta \pm \mathcal{N}(0,\sigma)
 $$  
   
 Where $\alpha$, $\beta$ and $\sigma$ are the slope, offset and inherent scatter of the relation, and $\mathcal{N}$ means some normally distributed randomness. Our brightness measurements are patchy as well, owing to the photon counts obeying a [Poisson Distribution](https://en.wikipedia.org/wiki/Poisson_distribution) and being vulnerable to shot noise.  
-  
-  
-  
-  
-```python  
-mock_data.keys()  
-```  
-  
-  
-  
-  
-    dict_keys(['absolute_magnitude', 'apparent_magnitude', 'distance', 'fluxcounts', 'fluxmag', 'offset', 'parallax', 'root_dist', 'slope', 'spread'])  
   
   
   
