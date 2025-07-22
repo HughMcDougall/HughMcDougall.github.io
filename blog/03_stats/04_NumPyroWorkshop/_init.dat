@@ -1,5 +1,5 @@
 doc:	./page.md
-source:	./present.md
+source:	./presentation.md
 title:	NumPyro Workshop
 date:	22/7/25
 desc:	An introduction to NumPyro & Jax
