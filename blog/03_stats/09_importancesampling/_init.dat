@@ -1,0 +1,8 @@
+doc:	./page.md
+source:	./The_Importance_of_Importance_Sampling.md
+title:	The Importance of Importance Sampling
+date:	28/7/25
+desc:	A roadmap of the under-appreciated art of importance sampling
+nav:	TRUE
+tree:	TRUE
+render:	TRUE

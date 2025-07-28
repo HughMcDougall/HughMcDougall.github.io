@@ -1,4 +1,4 @@
-Previous Entry: [NumPyro Workshop](.\..\04_NumPyroWorkshop\page.html)	&nbsp;	   
+Previous Entry: [NumPyro Workshop](.\..\04_NumPyroWorkshop\page.html)	&nbsp;	 Next Entry: [The Importance of Importance Sampling](.\..\09_importancesampling\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  

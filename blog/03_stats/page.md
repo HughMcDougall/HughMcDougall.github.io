@@ -12,6 +12,7 @@ Go Back: [SVI Part 2](.\..\02_numpyro\06_SVI\02_part2\page.html)	&nbsp;	Return t
 * [Is the Raffle Rigged?](.\03_raffle\./page.html) - _Practical stats for a toy problem_  
 * [NumPyro Workshop](.\04_NumPyroWorkshop\./page.html) - _An introduction to NumPyro & Jax_  
 * [The Bayes-Sics](.\06_bayesics\./page.html) - _Bayesianism vs frequentism model fitting, in short_  
+* [The Importance of Importance Sampling](.\09_importancesampling\./page.html) - _A roadmap of the under-appreciated art of importance sampling_  
   
 ---------  
   

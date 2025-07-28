@@ -18,6 +18,7 @@
     * [Is the Raffle Rigged?](.\03_stats\03_raffle\./page.html) - _Practical stats for a toy problem_  
     * [NumPyro Workshop](.\03_stats\04_NumPyroWorkshop\./page.html) - _An introduction to NumPyro & Jax_  
     * [The Bayes-Sics](.\03_stats\06_bayesics\./page.html) - _Bayesianism vs frequentism model fitting, in short_  
+    * [The Importance of Importance Sampling](.\03_stats\09_importancesampling\./page.html) - _A roadmap of the under-appreciated art of importance sampling_  
   
 ---------  
   
