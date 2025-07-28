@@ -12,4 +12,6 @@ kramdown:
   enable_coderay: false
   auto_ids: true
   footnote_nr: 1
-  
+compress_html:
+  clippings: all
+  blanklines: true
