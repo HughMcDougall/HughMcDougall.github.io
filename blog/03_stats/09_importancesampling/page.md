@@ -61,10 +61,12 @@ I discuss this more at the end of this article, but the same reasoning can be ap
   
 **But Why?**  
   
-Given importance sampling is conceptually analagous to weighted re-draws, you might find yourself asking "why bother?" The answer is down to sample size - anything we do to recycle existing samples is necessarily going to result in a _smaller_ final chain of sample, and we want to keep this loss rate as low as possible. For weighted redraws, our new sample size is just the number of unique samples that we've retained. For importance sampling, we can make use of an estimator outline in [this paper](https://arxiv.org/pdf/1602.03572), which gives an effective sample size (ESS) of:  
+Given importance sampling is conceptually analagous to weighted re-draws, you might find yourself asking "why bother?" The answer is down to sample size - anything we do to recycle existing samples is necessarily going to result in a _smaller_ final chain of sample, and we want to keep this loss rate as low as possible. For weighted redraws, our new sample size is just the number of unique samples that we've retained. For importance sampling, we can make use of an estimator outline in [this paper](https://arxiv.org/pdf/1602.03572), which gives an effective sample size (ESS) of:    
+  
 $$  
 \mathrm{ESS}_\mathrm{Imp. Samp.} = \frac{\left( \sum_{i}{w_i} \right)^2}{\sum_{i}{w_i^2}}  
 $$  
+  
 If we do this for our example above, we find that full importance sampling gives us a markedly higher sample size. The reason is pretty intuitive: re-drawing necessarily throws away all our low-density samples. Individually these aren't interesting, but in aggregate those low weight samples stack up to a significant amount of the domain. In importance sampling, we keep track of every sample site we can. This low weight "shell" mightn't be that big In this 2D example, but it's easy to imagine how it might grow to form the lion's share of the samples in higher dimensions or in distributions with long tails.  
   
   
@@ -141,7 +143,7 @@ $$
 \frac{P_T(\theta)}{P_S(\theta)} = \frac{\pi(\theta \vert M)}{\pi(\theta \vert \varnothing)}  
 $$  
   
-Meaning we could get $\theta \sim P(\theta \vert d,M)$ by doing a weighted redraw of $\theta \sim P(\theta \vert d,\varnothing)$. In GW circles this is called _recycling_ of the posterior chains. The motivation here is that fitting the posterior chains is expensive and time consuming, and we'd rather not burn all that CPU time to slightly nudge our priors. Importance sampling shines here because it lets us re-shape our samples without needing to re-do the onerous likelihood calculations and without needing to tangle with the difficult task of finding contours in high dimensions, as the heavy lifting was already done in the initial fit to $\varnothing$.  
+Meaning we could get $\theta \sim P(\theta \vert d,M)$ by doing a weighted redraw of $\theta \sim P(\theta |d,\varnothing)$. In GW circles this is called _recycling_ of the posterior chains. The motivation here is that fitting the posterior chains is expensive and time consuming, and we'd rather not burn all that CPU time to slightly nudge our priors. Importance sampling shines here because it lets us re-shape our samples without needing to re-do the onerous likelihood calculations and without needing to tangle with the difficult task of finding contours in high dimensions, as the heavy lifting was already done in the initial fit to $\varnothing$.  
   
   
   
@@ -187,7 +189,9 @@ $$
 \prod_j \frac{1}{Z(d_j)} \left( {\int \mathcal{L}(\theta_j \vert d_j) \frac{\pi (\theta_j \vert \Lambda )}{\pi (\theta_j \vert \varnothing)} \times \pi (\theta_j \vert \varnothing) d\theta_j} \right)  
 \propto \prod_j E_{\theta_j \sim P(\theta_j \vert d_j,\varnothing)} \left[ {\frac{\pi (\theta_j \vert \Lambda )}{\pi (\theta_j \vert \varnothing)} } \right]  
 $$  
+  
 Or, for some discrete chain of samples:  
+  
 $$  
 \mathcal{L}(\Lambda \vert d)   
 \approx   
@@ -243,9 +247,13 @@ Now let's test this is working. Conditioning at some reasonable guesses for $\be
 beta_test, sig_test = 1.4, 0.3  
 alpha_tests = np.linspace(-1.0, 1.0, 256)  
 alpha_likelihood = [log_likelihood_marg(alpha = a, beta = 1.53, sig = 0.44, loglums = loglums, lag_samples = samples) for a in alpha_tests]  
+```  
   
+  
+```python  
 #-------------  
-plt.figure()  
+# REDACT  
+plt.figure(figsize=(7,3.5))  
 plt.plot(alpha_tests, alpha_likelihood, color = 'royalblue')  
 plt.axvline(alpha, label = "True $\\alpha$", c='k', ls='--')  
 plt.xlabel("R-L Test Slope, $\\alpha$")  
@@ -261,7 +269,7 @@ plt.show()
   
   
       
-![png](output_18_0.png)  
+![png](output_19_0.png)  
       
   
   
@@ -283,6 +291,7 @@ $$
 Here $\mathrm{KL}_{S \rightarrow M}$ is the [Kullback-Leibler Divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence) between the sampling and target distributions, a measure of how different they are. The core idea of SVI is to have some parameter $P_S (\theta)$ and tweak those parameters to get the ELBO as low as possible, and because of the one-sided inequality as close to the actual evidence as possible.   
   
 A slightly less known cousin to the $\mathrm{ELBO}$ is the evidence _upper_ bound, the $\mathrm{EUBO}$. This can be drived pretty directly from symmetry. If the KL divergence from $S \rightarrow M$ puts a lower bound on $Z_m$, the inverse distance KLD from $M \rightarrow S$ should put a lower bond on the inverse evidence:  
+  
 $$  
 \ln \left| \frac{1}{Z_m} \right| \ge \mathrm{KL}_{M \rightarrow S} = E_M \left[\ln \left| \frac{1}{\mathcal{R}(\theta)} \right| \right]  
 $$  
@@ -316,7 +325,7 @@ If this _isn't_ the case, we 're-weight' to the fringes of the distribution wher
   
   
       
-![png](output_22_0.png)  
+![png](output_23_0.png)  
       
   
   
@@ -326,7 +335,7 @@ If this _isn't_ the case, we 're-weight' to the fringes of the distribution wher
   
   
       
-![png](output_24_0.png)  
+![png](output_25_0.png)  
       
   
   
@@ -345,17 +354,17 @@ In this case, we can run something like `bilby` to get posterior samples for all
   
   
       
-![png](output_27_0.png)  
+![png](output_28_0.png)  
       
   
   
-So what's the issue? Simple: the little spikes posterior spikes from the galaxies are much narrower than the spacing between test samples. Only a scant handful of the galaxy spikes are sampled at all, and the few that are have barely any samples in them and are subjec to shot noise.  
+So what's the issue? Simple: the little spikes posterior spikes from the galaxies are much narrower than the spacing between test samples. Only a scant handful of the galaxy spikes are sampled at all, and the few that are have barely any samples in them and are subject to shot noise.  
   
   
   
   
       
-![png](output_29_0.png)  
+![png](output_30_0.png)  
       
   
   
@@ -412,8 +421,8 @@ import dynesty
 def prob_func(x,y):    
     # Two gaussian modes    
     out=0    
-    out+=np.exp(-(x - 2)**2-y**2)     
-    out+=np.exp(-(x + 2)**2-y**2)    
+    out+=np.exp(-(x - 2)**2-y**2)  
+    out+=np.exp(-(x + 2)**2-y**2)  
     return(np.log(out))  
   
 def loglike(x):  
@@ -426,7 +435,7 @@ def ptform(u):
 # Sample from our distribution.  
 sampler = dynesty.NestedSampler(loglike, ptform, ndim=2,  
                                 bound='single', nlive=1_000)  
-sampler.run_nested(dlogz=0.01)  
+sampler.run_nested(dlogz=0.01, print_progress = False)  
 res = sampler.results  
   
 #-----------  
@@ -440,6 +449,8 @@ w_norm/=w_norm.sum()
 Instopos = np.random.choice(range(len(Xns)), len(Xns), replace=True, p = w_norm)  
 Xpos, Ypos = Xns[Instopos], Yns[Instopos] # These are posterior distributed  
 ```  
+  
+    8799it [00:03, 2497.38it/s, +1000 | bound: 34 | nc: 1 | ncall: 86197 | eff(%): 11.502 | loglstar:   -inf < -0.000 <    inf | logz: -4.184 +/-  0.057 | dlogz:  0.000 >  0.010]  
   
   
 This gives us a series of nested samples and weights for converting to posterior samples. Now suppose I've got some other distribution we want to use these samples to integrate or explore. I'm framing this as a question of going to a target distribution, but remember that this really applies to any target function in general. In this case, I've deliberately chosen a target distribution that _doesn't_ align with the dual guassians of the sample distribution: a unit gaussian centered above them along the x-axis:  
@@ -456,7 +467,7 @@ def target_dist(x):
   
   
       
-![png](output_35_0.png)  
+![png](output_36_0.png)  
       
   
   
@@ -476,8 +487,8 @@ print("ESS for Posterior Samples is ~%i" %ESS1)
 print("ESS for NS Directly is ~%i" %ESS2)  
 ```  
   
-    ESS for Posterior Samples is ~61  
-    ESS for NS Directly is ~320  
+    ESS for Posterior Samples is ~11  
+    ESS for NS Directly is ~308  
   
   
 But this is really only the start of the problems with using posterior samples. See in the example below: we only have a few posterior samples that map the target distribution, but even worse they barely scrape a single side of the target. They offer terrible _support_ to the thing we're trying to explore.  
@@ -486,7 +497,7 @@ But this is really only the start of the problems with using posterior samples. 
   
   
       
-![png](output_39_0.png)  
+![png](output_40_0.png)  
       
   
   
@@ -498,7 +509,19 @@ What's the take away here? Simple: if you fit with nested sampling, **don't subs
   
   
       
-![png](output_41_0.png)  
+![png](output_42_0.png)  
+      
+  
+  
+What does this actually do to our answers? Suppose we were trying to integrate the target distribution. Using both methods we get the same answer _on average_, they're unbiased by their derivations. Where they differ is in their _variance_. If we run the fitting process a few hundred times for both methods, we can see that the direct nested sampling method has a _much_ tighter spread (bottom panel), while the seemingly small step of subsampling to the posterior completely blows out the tails of the distribution (top panel).  
+  
+  
+  
+  
+  
+  
+      
+![png](output_45_0.png)  
       
   
   
