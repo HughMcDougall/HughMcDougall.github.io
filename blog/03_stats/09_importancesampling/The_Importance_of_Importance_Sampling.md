@@ -764,9 +764,6 @@ Instopos = np.random.choice(range(len(Xns)), len(Xns), replace=True, p = w_norm)
 Xpos, Ypos = Xns[Instopos], Yns[Instopos] # These are posterior distributed
 ```
 
-    8799it [00:03, 2497.38it/s, +1000 | bound: 34 | nc: 1 | ncall: 86197 | eff(%): 11.502 | loglstar:   -inf < -0.000 <    inf | logz: -4.184 +/-  0.057 | dlogz:  0.000 >  0.010]
-
-
 This gives us a series of nested samples and weights for converting to posterior samples. Now suppose I've got some other distribution we want to use these samples to integrate or explore. I'm framing this as a question of going to a target distribution, but remember that this really applies to any target function in general. In this case, I've deliberately chosen a target distribution that _doesn't_ align with the dual guassians of the sample distribution: a unit gaussian centered above them along the x-axis:
 
 
