@@ -235,7 +235,7 @@ $$
 \frac{P_T(\theta)}{P_S(\theta)} = \frac{\pi(\theta \vert M)}{\pi(\theta \vert \varnothing)}
 $$
 
-Meaning we could get $\theta \sim P(\theta \vert d,M)$ by doing a weighted redraw of $\theta \sim P(\theta |d,\varnothing)$. In GW circles this is called _recycling_ of the posterior chains. The motivation here is that fitting the posterior chains is expensive and time consuming, and we'd rather not burn all that CPU time to slightly nudge our priors. Importance sampling shines here because it lets us re-shape our samples without needing to re-do the onerous likelihood calculations and without needing to tangle with the difficult task of finding contours in high dimensions, as the heavy lifting was already done in the initial fit to $\varnothing$.
+Meaning we could get $\theta \sim P(\theta \vert d,M)$ by doing a weighted redraw of $\theta \sim P(\theta \vert d,\varnothing)$. In GW circles this is called _recycling_ of the posterior chains. The motivation here is that fitting the posterior chains is expensive and time consuming, and we'd rather not burn all that CPU time to slightly nudge our priors. Importance sampling shines here because it lets us re-shape our samples without needing to re-do the onerous likelihood calculations and without needing to tangle with the difficult task of finding contours in high dimensions, as the heavy lifting was already done in the initial fit to $\varnothing$.
 
 
 ```python
@@ -265,7 +265,7 @@ Xt = np.random.choice(Xs, Nsamp, p=w, replace=True)
 
 
 ```python
-# Redact
+# REDACT
 Xgrid  = np.linspace(-4,4,1024)
 Xs = Xs[Xs.argsort()]
 R = prior_new(Xs) / prior_old(Xs)
@@ -323,7 +323,7 @@ The problem here is simple: if we have a few dozen RM sources and a half dozen p
 $$
 \mathcal{L}(\Lambda \vert d) =
 \prod_j \frac{1}{Z(d_j)} \left( {\int \mathcal{L}(\theta_j \vert d_j) \frac{\pi (\theta_j \vert \Lambda )}{\pi (\theta_j \vert \varnothing)} \times \pi (\theta_j \vert \varnothing) d\theta_j} \right)
-\propto \prod_j E_{\theta_j \sim P(\theta_j|d_j,\varnothing)} \left[ {\frac{\pi (\theta_j \vert \Lambda )}{\pi (\theta_j \vert \varnothing)} } \right]
+\propto \prod_j E_{\theta_j \sim P(\theta_j \vert d_j,\varnothing)} \left[ {\frac{\pi (\theta_j \vert \Lambda )}{\pi (\theta_j \vert \varnothing)} } \right]
 $$
 Or, for some discrete chain of samples:
 $$
@@ -331,7 +331,7 @@ $$
 \approx 
  \prod_j\frac{1}{I} \sum_i  {\frac{\pi (\theta_j^i \vert \Lambda )}{\pi (\theta_j^i \vert \varnothing)} }
 , \;\;
-\{ \theta_j^i\}  \sim P(\theta_j|d_j,\varnothing)
+\{ \theta_j^i\}  \sim P(\theta_j \vert d_j,\varnothing)
 $$
 
 In the above, we'd ended up with an approximate form for $\mathcal{L}(d \vert \Lambda)$ that only requires basic operations (multiplication, addition, etc), but more importantly we've reduced the degrees of freedom we need to explore to the dimensionality of $\Lambda$. Essentially, we've used our vague fits of $P(\theta_j \vert d_j, \varnothing)$ to marginalize over the individual source parameters. In the RM example, this reduces our free dimensions from hundreds to a breazy $3$.
@@ -754,8 +754,6 @@ w_norm/=w_norm.sum()
 Instopos = np.random.choice(range(len(Xns)), len(Xns), replace=True, p = w_norm)
 Xpos, Ypos = Xns[Instopos], Yns[Instopos] # These are posterior distributed
 ```
-
-    8848it [00:04, 2054.04it/s, +1000 | bound: 35 | nc: 1 | ncall: 89029 | eff(%): 11.187 | loglstar:   -inf < -0.000 <    inf | logz: -4.233 +/-  0.057 | dlogz:  0.000 >  0.010]
 
 
 This gives us a series of nested samples and weights for converting to posterior samples. Now suppose I've got some other distribution we want to use these samples to integrate or explore. I'm framing this as a question of going to a target distribution, but remember that this really applies to any target function in general. In this case, I've deliberately chosen a target distribution that _doesn't_ align with the dual guassians of the sample distribution: a unit gaussian centered above them along the x-axis:
