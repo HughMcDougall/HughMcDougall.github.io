@@ -1,4 +1,4 @@
-Previous Entry: [The Bayes-Sics](.\..\06_bayesics\page.html)	&nbsp;	   
+Previous Entry: [NumPyro Workshop](.\..\04_NumPyroWorkshop\page.html)	&nbsp;	   
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
@@ -250,22 +250,6 @@ alpha_likelihood = [log_likelihood_marg(alpha = a, beta = 1.53, sig = 0.44, logl
 ```  
   
   
-```python  
-#-------------  
-# REDACT  
-plt.figure(figsize=(7,3.5))  
-plt.plot(alpha_tests, alpha_likelihood, color = 'royalblue')  
-plt.axvline(alpha, label = "True $\\alpha$", c='k', ls='--')  
-plt.xlabel("R-L Test Slope, $\\alpha$")  
-plt.ylabel("Likelihood, $\mathcal{L}(d \\vert  \\alpha, \\beta=%.2f, \\sigma=%.2f)$" %(beta_test, sig_test))  
-plt.gca().set_yticklabels([])  
-plt.grid()  
-plt.xlim(alpha_tests.min(), alpha_tests.max())  
-plt.ylim(ymin=0)  
-plt.gcf().tight_layout()  
-plt.legend()  
-plt.show()  
-```  
   
   
       

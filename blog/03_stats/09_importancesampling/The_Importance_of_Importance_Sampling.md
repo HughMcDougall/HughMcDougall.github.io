@@ -450,7 +450,6 @@ alpha_likelihood = [log_likelihood_marg(alpha = a, beta = 1.53, sig = 0.44, logl
 
 
 ```python
-#-------------
 # REDACT
 plt.figure(figsize=(7,3.5))
 plt.plot(alpha_tests, alpha_likelihood, color = 'royalblue')
