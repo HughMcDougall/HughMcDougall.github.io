@@ -34,5 +34,5 @@ for targ in glob("*.gif"):
         im_out = im_out.crop((left, top, right, bottom))
          
         # Shows the image in image viewer
-        im_out.save(targ.replace(".gif","_thumb.png"))
+        im_out.save("./anim_thumbs/"+targ.replace(".gif","_thumb.png"))
         im_out.close()

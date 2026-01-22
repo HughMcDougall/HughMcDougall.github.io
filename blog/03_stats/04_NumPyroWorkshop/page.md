@@ -1,4 +1,4 @@
-Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	 Next Entry: [The Bayes-Sics](.\..\06_bayesics\page.html)  
+Previous Entry: [Is the Raffle Rigged?](.\..\03_raffle\page.html)	&nbsp;	 Next Entry: [Numpyro Zero Sum Example](.\..\08_NT\page.html)  
   
   
 Go Back: [Statistics Articles](.\..\page.html)	&nbsp;	Return to [Blog Home](.\..\..\bloghome.html)  
