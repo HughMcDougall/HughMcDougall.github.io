@@ -2444,9 +2444,9 @@ input, select, textarea {
 		-ms-transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 		transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 		background-color: transparent;
-		border-radius: 0.35em;
+		border-radius: 0.85em;
 		border: solid 3px #efefef;
-		color: #787878 !important;
+		color: #087878 !important;
 		cursor: pointer;
 		display: inline-block;
 		font-weight: 400;
@@ -3219,3 +3219,9 @@ input, select, textarea {
 			}
 
 	}
+	
+	.roundedimage {
+		border-radius: 30px;
+		border: solid 8px #999999;
+		margin-bottom: 32px;
+		}
