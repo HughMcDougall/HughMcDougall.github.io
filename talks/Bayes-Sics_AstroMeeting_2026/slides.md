@@ -78,3 +78,19 @@
 
 ![jpg](./slides/Slide40.JPG)  
 
+![jpg](./slides/Slide41.JPG)  
+
+![jpg](./slides/Slide42.JPG)  
+
+![jpg](./slides/Slide43.JPG)  
+
+![jpg](./slides/Slide44.JPG)  
+
+![jpg](./slides/Slide45.JPG)  
+
+![jpg](./slides/Slide46.JPG)  
+
+![jpg](./slides/Slide47.JPG)  
+
+![jpg](./slides/Slide48.JPG)  
+
